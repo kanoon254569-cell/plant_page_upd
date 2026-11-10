@@ -1,0 +1,804 @@
+<!-- Page Name -->
+<div class="header-section">
+  <div class="header-section-icon">
+    <mat-icon>group</mat-icon>
+  </div>
+  <span>User Management</span>
+</div>
+
+<!-- Search Filter -->
+<div class="search-filter">
+  <div class="search-filter-header">Search Filter</div>
+
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+      <!-- Username -->
+      <div class="search-filter-field">
+        <label>Username :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.userName" placeholder="ค้นหาชื่อผู้ใช้งาน" />
+        </mat-form-field>
+      </div>
+
+      <!-- Thai Name -->
+      <div class="search-filter-field">
+        <label>Thai Name :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.thaiName" placeholder="ค้นหาชื่อภาษาไทย" />
+        </mat-form-field>
+      </div>
+
+      <!-- English Name -->
+      <div class="search-filter-field">
+        <label>English Name :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.engName" placeholder="ค้นหาชื่อภาษาอังกฤษ" />
+        </mat-form-field>
+      </div>
+
+      <!-- Department -->
+      <div class="search-filter-field">
+        <label>Department :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.departmentId">
+            <mat-option [value]="0"> ทั้งหมด </mat-option>
+
+            <mat-option *ngFor="let d of optionsDepartment" [value]="d.id">
+              {{ d.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Role -->
+      <div class="search-filter-field">
+        <label>Role :</label>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.roleId">
+            <mat-option [value]="0"> ทั้งหมด </mat-option>
+
+            <mat-option *ngFor="let role of optionsRole" [value]="role.id">
+              {{ role.role_name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="Clear" (click)="resetFilter()">
+          <img src="assets/images/clear.png" />
+        </button>
+        <button type="button" class="search-button" title="Search" (click)="onClickSearch()">
+          <img src="assets/images/search.png" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- <div class="search-action">
+        <span>* ใช้ตัวกรองด้านบนเพื่อค้นหาข้อมูล</span>
+      </div> -->
+</div>
+
+<!-- Display Table -->
+<div class="display-table">
+  <!-- Header -->
+  <div class="display-table-header">
+    <div>
+      User List
+      <span class="table-count"> {{ totalCount }} Records </span>
+    </div>
+
+    <div class="table-header-actions">
+      <!-- Export Excel Button -->
+      <button *hasPermission="'data.export'"
+        type="button"
+        class="export-excel-button"
+        [disabled]="isExportingExcel || totalCount === 0"
+        (click)="exportToExcel()"
+      >
+        <mat-icon>{{ isExportingExcel ? 'hourglass_empty' : 'file_download' }}</mat-icon>
+        Export Excel
+      </button>
+
+      <!-- Print Selected QR Button (current page only, up to pageSize) -->
+      <button *hasPermission="'data.print_qr'"
+        type="button"
+        class="bulk-print-button"
+        [disabled]="selectedUserIds.size === 0"
+        (click)="printSelectedUsers()"
+      >
+        <mat-icon>print</mat-icon>
+        Print Selected ({{ selectedUserIds.size }})
+      </button>
+
+      <!-- Add User Button -->
+      <button *hasPermission="'user.create'" type="button" class="add-user-button" (click)="openAddModal()">
+        <mat-icon>add</mat-icon>
+        Add User
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="display-table-content">
+    <!-- Skeleton while the user list loads: same columns as the real table -->
+    <div class="table-container p-0" *ngIf="isLoading" aria-hidden="true">
+      <table class="adm-skel-table" skeletonWidthsTo="user-list">
+        <thead>
+          <tr>
+            <th class="mat-column-select"></th>
+            <th class="mat-column-no">#</th>
+            <th class="mat-column-userName">Username</th>
+            <th class="mat-column-thaiName">Thai Name</th>
+            <th class="mat-column-engName">English Name</th>
+            <th class="mat-column-department">Department</th>
+            <th class="mat-column-role">Role</th>
+            <th class="mat-column-lastUpdate">Last Update</th>
+            <th class="mat-column-isAd">AD</th>
+            <th class="mat-column-print">Print</th>
+            <th class="mat-column-edit">Edit</th>
+            <th class="mat-column-delete">Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of skeletonRows">
+            <td><span class="adm-skel adm-skel--box" style="width: 16px; height: 16px"></span></td>
+            <td><span class="adm-skel" style="width: 18px"></span></td>
+            <td><span class="adm-skel" style="width: 100px"></span></td>
+            <td><span class="adm-skel" style="width: 120px"></span></td>
+            <td><span class="adm-skel" style="width: 120px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 90px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 100px"></span></td>
+            <td>
+              <span class="adm-skel" style="width: 78px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 52px"></span>
+            </td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 26px"></span></td>
+            <td><span class="adm-skel adm-skel--box" style="width: 32px; height: 32px"></span></td>
+            <td><span class="adm-skel adm-skel--box" style="width: 32px; height: 32px"></span></td>
+            <td><span class="adm-skel adm-skel--box" style="width: 32px; height: 32px"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="table-container mat-elevation-z8 p-0"
+      *ngIf="!isLoading && userList && userList.length > 0"
+      style="box-shadow: none !important"
+    >
+      <table mat-table [dataSource]="userList" class="w-100" skeletonWidthsFrom="user-list">
+        <!-- Select (for Print Selected) -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef>
+            <input
+              type="checkbox"
+              class="select-checkbox"
+              title="เลือกทั้งหน้า"
+              [checked]="isAllUsersSelected"
+              [indeterminate]="isSomeUsersSelected"
+              (change)="toggleAllUsers($any($event.target).checked)"
+            />
+          </th>
+          <td mat-cell *matCellDef="let u">
+            <input
+              type="checkbox"
+              class="select-checkbox"
+              [checked]="isUserSelected(u)"
+              (change)="toggleUserSelection(u, $any($event.target).checked)"
+            />
+          </td>
+        </ng-container>
+
+        <!-- No -->
+        <ng-container matColumnDef="no">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let u; let i = index">
+            {{ ((filter.page ?? 1) - 1) * (filter.pageSize ?? 25) + i + 1 }}
+          </td>
+        </ng-container>
+
+        <!-- Username -->
+        <ng-container matColumnDef="userName">
+          <th mat-header-cell *matHeaderCellDef>Username</th>
+          <td mat-cell *matCellDef="let u">
+            <div class="user-cell">
+              <span class="user-avatar">{{ (u.user_name || '?').charAt(0).toUpperCase() }}</span>
+              <strong>{{ u.user_name }}</strong>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Thai Name -->
+        <ng-container matColumnDef="thaiName">
+          <th mat-header-cell *matHeaderCellDef>Thai Name</th>
+          <td mat-cell *matCellDef="let u">
+            {{ u.thai_name || '-' }}
+          </td>
+        </ng-container>
+
+        <!-- English Name -->
+        <ng-container matColumnDef="engName">
+          <th mat-header-cell *matHeaderCellDef>English Name</th>
+          <td mat-cell *matCellDef="let u">
+            {{ u.eng_name || '-' }}
+          </td>
+        </ng-container>
+
+        <!-- Department -->
+        <ng-container matColumnDef="department">
+          <th mat-header-cell *matHeaderCellDef>Department</th>
+          <td mat-cell *matCellDef="let u">
+            <span class="badge-chip badge-chip--blue" *ngIf="u.department_name; else noDept">
+              <mat-icon>apartment</mat-icon>
+              {{ u.department_name }}
+            </span>
+            <ng-template #noDept>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Role -->
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Role</th>
+          <td mat-cell *matCellDef="let u">
+            <span class="badge-chip badge-chip--purple" *ngIf="u.role_name; else noRole">
+              <mat-icon>badge</mat-icon>
+              {{ u.role_name }}
+            </span>
+            <ng-template #noRole>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Last Update -->
+        <ng-container matColumnDef="lastUpdate">
+          <th mat-header-cell *matHeaderCellDef>Last Update</th>
+
+          <td mat-cell *matCellDef="let u">
+            <div class="last-update-cell">
+              <span class="last-update-date">{{ u.last_update_datetime | date: 'dd/MM/yyyy' }}</span>
+              <span class="last-update-time">{{ u.last_update_datetime | date: 'HH:mm:ss' }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- AD -->
+        <ng-container matColumnDef="isAd">
+          <th mat-header-cell *matHeaderCellDef>AD</th>
+
+          <td mat-cell *matCellDef="let u">
+            <span class="status-chip" [class.status-chip--active]="u.is_ad === 'Y'" [class.status-chip--inactive]="u.is_ad !== 'Y'">
+              <mat-icon>{{ u.is_ad === 'Y' ? 'check_circle' : 'cancel' }}</mat-icon>
+              {{ u.is_ad === 'Y' ? '' : '' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Print QR -->
+        <ng-container matColumnDef="print">
+          <th mat-header-cell *matHeaderCellDef>Print</th>
+
+          <td mat-cell *matCellDef="let u">
+            <button *hasPermission="'data.print_qr'" type="button" class="print-button" title="Print QR Code" (click)="printUserQr(u)">
+              <mat-icon>qr_code_2</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Edit -->
+        <ng-container matColumnDef="edit">
+          <th mat-header-cell *matHeaderCellDef>Edit</th>
+
+          <td mat-cell *matCellDef="let u">
+            <button *hasPermission="'user.update'" type="button" class="edit-button" (click)="openEditModal(u)">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Delete -->
+        <ng-container matColumnDef="delete">
+          <th mat-header-cell *matHeaderCellDef>Delete</th>
+
+          <td mat-cell *matCellDef="let u">
+            <button *hasPermission="'user.delete'" type="button" class="delete-button" (click)="submitDeleteUser(u)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && (!userList || userList.length === 0)">
+      <app-empty-state variant="table" title="ไม่พบข้อมูล" message="กรุณาลองเปลี่ยนเงื่อนไขการค้นหา"></app-empty-state>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator
+    [length]="totalCount"
+    [pageSize]="filter.pageSize ?? 25"
+    [pageSizeOptions]="[25, 50, 75, 100]"
+    [showFirstLastButtons]="true"
+    (page)="onPageEvent($event)"
+  >
+  </mat-paginator>
+</div>
+
+<!-- Add User Modal -->
+<div class="ul-modal-overlay" *ngIf="showAddModal">
+  <div class="ul-modal" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="ul-modal__header">
+      <div class="ul-modal__title">
+        <span class="material-icons">person_add</span>
+        เพิ่มผู้ใช้งานใหม่
+      </div>
+      <button class="ul-modal__close" (click)="closeAddModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="ul-modal__body">
+      <form [formGroup]="userForm">
+        <div class="row g-3 gx-4">
+          <div class="col-md-6 mb-2">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">ข้อมูลทั่วไป</div>
+              <div class="card-body pb-0">
+                <div class="row g-3">
+                  <div class="col-md-12">
+                    <label class="ul-label">ชื่อภาษาไทย <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="f['thaiName'].invalid && f['thaiName'].touched"
+                      formControlName="thaiName"
+                      placeholder="เช่น สมชาย ใจดี"
+                    />
+                    <div class="invalid-feedback">กรุณากรอกชื่อภาษาไทย</div>
+                  </div>
+
+                  <div class="col-md-12">
+                    <label class="ul-label"
+                      >ชื่อภาษาอังกฤษ <span class="text-danger">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="f['engName'].invalid && f['engName'].touched"
+                      formControlName="engName"
+                      placeholder="เช่น Somchai Jaidee"
+                    />
+                    <div class="invalid-feedback">กรุณากรอกชื่อภาษาอังกฤษ</div>
+                  </div>
+
+                  <div class="col-md-12">
+                    <label class="ul-label">หน่วยงาน <span class="text-danger">*</span></label>
+                    <select
+                      class="form-select form-select-sm"
+                      [class.is-invalid]="f['departmentId'].invalid && f['departmentId'].touched"
+                      formControlName="departmentId"
+                    >
+                      <option [value]="0" disabled hidden>เลือกหน่วยงาน</option>
+                      <option *ngFor="let d of optionsDepartment" [value]="d.id">
+                        {{ d.name }}
+                      </option>
+                    </select>
+                    <div class="invalid-feedback">กรุณาเลือกหน่วยงาน</div>
+                  </div>
+
+                  <div class="col-md-12">
+                    <label class="ul-label">บทบาท <span class="text-danger">*</span></label>
+                    <select
+                      class="form-select form-select-sm"
+                      [class.is-invalid]="f['roleId'].invalid && f['roleId'].touched"
+                      formControlName="roleId"
+                    >
+                      <option [value]="0" disabled hidden>เลือกบทบาท</option>
+                      <option *ngFor="let r of optionsRole" [value]="r.id">
+                        {{ r.role_name }}
+                      </option>
+                    </select>
+                    <div class="invalid-feedback">กรุณาเลือกบทบาท</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-2">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">ข้อมูลบัญชีการใช้งาน</div>
+              <div class="card-body pb-0">
+                <div class="row g-3">
+                  <div class="row g-3 p-0 m-0">
+                    <div class="col-md-6">
+                      <label class="ul-label"
+                        >ประเภทผู้ใช้งาน <span class="text-danger">*</span></label
+                      >
+                      <select
+                        class="form-select form-select-sm"
+                        [class.is-invalid]="f['userTypeId'].invalid && f['userTypeId'].touched"
+                        formControlName="userTypeId"
+                      >
+                        <option [value]="0" disabled hidden>เลือกประเภทผู้ใช้งาน</option>
+                        <option *ngFor="let t of optionsUserType" [value]="t.id">
+                          {{ t.name }}
+                        </option>
+                      </select>
+                      <div class="invalid-feedback">กรุณาเลือกประเภทผู้ใช้งาน</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="ul-label"
+                        >เปิดใช้งานโหมด WH <span class="text-danger">*</span></label
+                      >
+                      <select
+                        class="form-select form-select-sm"
+                        [class.is-invalid]="f['enableWH'].invalid && f['enableWH'].touched"
+                        formControlName="enableWH"
+                      >
+                        <option [value]="''" disabled hidden>เลือกใช้งานโหมด WH</option>
+                        <option *ngFor="let t of optionsEnableWH" [value]="t.value">
+                          {{ t.name }}
+                        </option>
+                      </select>
+                      <div class="invalid-feedback">กรุณาเลือกการใช้งานโหมด WH</div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-12">
+                    <label class="ul-label">ชื่อผู้ใช้งาน <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="f['userName'].invalid && f['userName'].touched && passwordRuleStatus.invalid"
+                      formControlName="userName"
+                      placeholder="เช่น somchai.j"
+                    />
+                    <div class="invalid-feedback">กรุณากรอกชื่อผู้ใช้งาน</div>
+                  </div>
+
+                  <div class="col-md-12 password-field-group" *ngIf="f['userTypeId'].value != 1">
+                    <label class="ul-label">รหัสผ่าน <span class="text-danger">*</span></label>
+                    <input
+                      type="password"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="
+                        (f['password'].invalid && f['password'].touched) ||
+                        (f['password'].value && passwordRuleStatus.invalid)
+                      "
+                      formControlName="password"
+                      placeholder="กรอกรหัสผ่าน"
+                      (focus)="passwordFieldFocused = true"
+                      (blur)="passwordFieldFocused = false"
+                    />
+                    <div class="invalid-feedback">กรุณากรอกรหัสผ่าน</div>
+                    <div
+                      class="invalid-feedback d-block"
+                      *ngIf="userForm.hasError('passwordContainsUserName') && f['password'].touched"
+                    >
+                      รหัสผ่านต้องไม่มีชื่อผู้ใช้งานอยู่ในรหัสผ่าน
+                    </div>
+                    <div class="password-rules-popover" *ngIf="passwordFieldFocused">
+                      <p class="password-rules-title">รหัสผ่านต้องประกอบด้วย</p>
+                      <ul class="password-rules">
+                        <li [class.is-valid]="passwordRuleStatus.minLength">
+                          อย่างน้อย {{ passwordMinLength }} ตัวอักษร
+                        </li>
+                        <li [class.is-valid]="passwordRuleStatus.uppercase">ตัวพิมพ์ใหญ่ (A-Z)</li>
+                        <li [class.is-valid]="passwordRuleStatus.lowercase">ตัวพิมพ์เล็ก (a-z)</li>
+                        <li [class.is-valid]="passwordRuleStatus.digit">ตัวเลข (0-9)</li>
+                        <li [class.is-valid]="passwordRuleStatus.special">อักขระพิเศษ (เช่น !@#$%)</li>
+                        <li [class.is-valid]="passwordRuleStatus.noWhitespace">ไม่มีช่องว่าง</li>
+                        <li [class.is-valid]="passwordRuleStatus.noRepeated">
+                          ไม่มีตัวอักษรซ้ำติดกันเกิน 2 ตัว
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="col-md-12" *ngIf="f['userTypeId'].value != 1">
+                    <label class="ul-label"
+                      >ยืนยันรหัสผ่าน <span class="text-danger">*</span></label
+                    >
+                    <input
+                      type="password"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="
+                        (f['confirmPassword'].invalid || userForm.hasError('passwordMismatch')) &&
+                        f['confirmPassword'].touched
+                      "
+                      formControlName="confirmPassword"
+                      placeholder="ยืนยันรหัสผ่าน"
+                    />
+                    <div
+                      class="invalid-feedback"
+                      *ngIf="!userForm.hasError('passwordMismatch') && f['confirmPassword'].touched"
+                    >
+                      กรุณายืนยันรหัสผ่าน
+                    </div>
+                    <div
+                      class="invalid-feedback"
+                      *ngIf="userForm.hasError('passwordMismatch') && f['confirmPassword'].touched"
+                    >
+                      รหัสผ่านไม่ตรงกัน
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="ul-modal__footer">
+      <button class="btn modal-btn-cancel" (click)="closeAddModal()">
+        ยกเลิก
+      </button>
+      <button class="btn modal-btn-save" (click)="submitAddUser()">
+        บันทึก
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="ul-modal-overlay" *ngIf="showEditModal">
+  <div class="ul-modal" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="ul-modal__header">
+      <div class="ul-modal__title">
+        <span class="material-icons">person</span>
+        แก้ไขผู้ใช้งาน
+      </div>
+      <button class="ul-modal__close" (click)="closeEditModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="ul-modal__body">
+      <form [formGroup]="userForm">
+        <div class="row g-3 gx-4">
+          <div class="col-md-6 mb-2">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">ข้อมูลทั่วไป</div>
+              <div class="card-body pb-0">
+                <div class="row g-3">
+                  <div class="col-md-12">
+                    <label class="ul-label">ชื่อภาษาไทย <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="f['thaiName'].invalid && f['thaiName'].touched"
+                      formControlName="thaiName"
+                      placeholder="เช่น สมชาย ใจดี"
+                    />
+                    <div class="invalid-feedback">กรุณากรอกชื่อภาษาไทย</div>
+                  </div>
+
+                  <div class="col-md-12">
+                    <label class="ul-label"
+                      >ชื่อภาษาอังกฤษ <span class="text-danger">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="f['engName'].invalid && f['engName'].touched"
+                      formControlName="engName"
+                      placeholder="เช่น Somchai Jaidee"
+                    />
+                    <div class="invalid-feedback">กรุณากรอกชื่อภาษาอังกฤษ</div>
+                  </div>
+
+                  <div class="col-md-12">
+                    <label class="ul-label">รหัสพนักงาน</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      formControlName="empId"
+                      placeholder="เช่น 123456"
+                    />
+                  </div>
+
+                  <div class="col-md-12">
+                    <label class="ul-label">หน่วยงาน <span class="text-danger">*</span></label>
+                    <select
+                      class="form-select form-select-sm"
+                      [class.is-invalid]="f['departmentId'].invalid && f['departmentId'].touched"
+                      formControlName="departmentId"
+                    >
+                      <option [value]="0" disabled hidden>เลือกหน่วยงาน</option>
+                      <option *ngFor="let d of optionsDepartment" [value]="d.id">
+                        {{ d.name }}
+                      </option>
+                    </select>
+                    <div class="invalid-feedback">กรุณาเลือกหน่วยงาน</div>
+                  </div>
+
+                  <div class="col-md-12">
+                    <label class="ul-label">บทบาท <span class="text-danger">*</span></label>
+                    <select
+                      class="form-select form-select-sm"
+                      [class.is-invalid]="f['roleId'].invalid && f['roleId'].touched"
+                      formControlName="roleId"
+                    >
+                      <option [value]="0" disabled hidden>เลือกบทบาท</option>
+                      <option *ngFor="let r of optionsRole" [value]="r.id">
+                        {{ r.role_name }}
+                      </option>
+                    </select>
+                    <div class="invalid-feedback">กรุณาเลือกบทบาท</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-2">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">ข้อมูลบัญชีการใช้งาน</div>
+              <div class="card-body pb-0">
+                <div class="row g-3">
+                  <div class="row g-3 p-0 m-0">
+                    <div class="col-md-6">
+                      <label class="ul-label"
+                        >ประเภทผู้ใช้งาน <span class="text-danger">*</span></label
+                      >
+                      <select
+                        class="form-select form-select-sm"
+                        [class.is-invalid]="f['userTypeId'].invalid && f['userTypeId'].touched"
+                        formControlName="userTypeId"
+                      >
+                        <option [value]="0" disabled hidden>เลือกประเภทผู้ใช้งาน</option>
+                        <option *ngFor="let t of optionsUserType" [value]="t.id">
+                          {{ t.name }}
+                        </option>
+                      </select>
+                      <div class="invalid-feedback">กรุณาเลือกประเภทผู้ใช้งาน</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="ul-label"
+                        >เปิดใช้งานโหมด WH <span class="text-danger">*</span></label
+                      >
+                      <select
+                        class="form-select form-select-sm"
+                        [class.is-invalid]="f['enableWH'].invalid && f['enableWH'].touched"
+                        formControlName="enableWH"
+                      >
+                        <option [value]="''" disabled hidden>เลือกใช้งานโหมด WH</option>
+                        <option *ngFor="let t of optionsEnableWH" [value]="t.value">
+                          {{ t.name }}
+                        </option>
+                      </select>
+                      <div class="invalid-feedback">กรุณาเลือกการใช้งานโหมด WH</div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-12">
+                    <label class="ul-label">ชื่อผู้ใช้งาน <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="f['userName'].invalid && f['userName'].touched"
+                      formControlName="userName"
+                      placeholder="เช่น somchai.j"
+                    />
+                    <div class="invalid-feedback">กรุณากรอกชื่อผู้ใช้งาน</div>
+                  </div>
+
+                  <div class="col-md-12 password-field-group" *ngIf="f['userTypeId'].value != 1">
+                    <label class="ul-label">รหัสผ่าน <span class="text-danger">*</span></label>
+                    <div class="input-group input-group-sm">
+                      <input
+                        type="password"
+                        class="form-control form-control-sm"
+                        [class.is-invalid]="f['password'].invalid && f['password'].touched && passwordRuleStatus.invalid"
+                        [attr.readonly]="!canEditPassword ? true : null"
+                        formControlName="password"
+                        placeholder="กรอกรหัสผ่าน"
+                        (focus)="passwordFieldFocused = true"
+                        (blur)="passwordFieldFocused = false"
+                      />
+                      <button
+                        *ngIf="!isEditUserAd"
+                        type="button"
+                        class="btn btn-sm"
+                        [class.btn-outline-warning]="!canEditPassword"
+                        [class.btn-outline-secondary]="canEditPassword"
+                        (click)="handleEditPassword()"
+                      >
+                        <span
+                          class="material-icons"
+                          style="font-size: 15px; vertical-align: middle"
+                          >{{ canEditPassword ? 'lock_open' : 'lock' }}</span
+                        >
+                      </button>
+                      <div class="invalid-feedback" *ngIf="canEditPassword">กรุณากรอกรหัสผ่าน</div>
+                      <div
+                        class="invalid-feedback d-block"
+                        *ngIf="canEditPassword && userForm.hasError('passwordContainsUserName') && f['password'].touched"
+                      >
+                        รหัสผ่านต้องไม่มีชื่อผู้ใช้งานอยู่ในรหัสผ่าน
+                      </div>
+                    </div>
+                    <div class="password-rules-popover" *ngIf="canEditPassword && passwordFieldFocused">
+                      <p class="password-rules-title">รหัสผ่านต้องประกอบด้วย</p>
+                      <ul class="password-rules">
+                        <li [class.is-valid]="passwordRuleStatus.minLength">
+                          อย่างน้อย {{ passwordMinLength }} ตัวอักษร
+                        </li>
+                        <li [class.is-valid]="passwordRuleStatus.uppercase">ตัวพิมพ์ใหญ่ (A-Z)</li>
+                        <li [class.is-valid]="passwordRuleStatus.lowercase">ตัวพิมพ์เล็ก (a-z)</li>
+                        <li [class.is-valid]="passwordRuleStatus.digit">ตัวเลข (0-9)</li>
+                        <li [class.is-valid]="passwordRuleStatus.special">อักขระพิเศษ (เช่น !@#$%)</li>
+                        <li [class.is-valid]="passwordRuleStatus.noWhitespace">ไม่มีช่องว่าง</li>
+                        <li [class.is-valid]="passwordRuleStatus.noRepeated">
+                          ไม่มีตัวอักษรซ้ำติดกันเกิน 2 ตัว
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="col-md-12" *ngIf="f['userTypeId'].value != 1 && canEditPassword">
+                    <label class="ul-label"
+                      >ยืนยันรหัสผ่าน <span class="text-danger">*</span></label
+                    >
+                    <input
+                      type="password"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="
+                        (f['confirmPassword'].invalid || userForm.hasError('passwordMismatch')) &&
+                        f['confirmPassword'].touched
+                      "
+                      formControlName="confirmPassword"
+                      placeholder="ยืนยันรหัสผ่าน"
+                    />
+                    <div
+                      class="invalid-feedback"
+                      *ngIf="!userForm.hasError('passwordMismatch') && f['confirmPassword'].touched"
+                    >
+                      กรุณายืนยันรหัสผ่าน
+                    </div>
+                    <div
+                      class="invalid-feedback"
+                      *ngIf="userForm.hasError('passwordMismatch') && f['confirmPassword'].touched"
+                    >
+                      รหัสผ่านไม่ตรงกัน
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="ul-modal__footer">
+      <button class="btn modal-btn-cancel" (click)="closeEditModal()">
+        ยกเลิก
+      </button>
+      <button class="btn modal-btn-save" (click)="submitEditUser()">
+        บันทึก
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Print QR Section -->
+<div id="print-user-area" #printUserArea></div>

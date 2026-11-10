@@ -1,0 +1,2460 @@
+<!-- Page Name -->
+<div class="header-section">
+  <div class="header-section-title">
+    <div class="header-section-icon">
+      <mat-icon>list_alt</mat-icon>
+    </div>
+    <span>{{ pageCode }} - {{ topicName || pageTitle }}</span>
+    <app-page-help page="job-list"></app-page-help>
+  </div>
+  <div class="header-section-actions" data-tour="header-actions">
+    <button
+      type="button"
+      class="upload-button shipment-button"
+      data-bs-toggle="modal"
+      data-bs-target="#shipmentListModal"
+      (click)="openShipmentListModal()"
+    >
+      <mat-icon>local_shipping</mat-icon>
+      รายการงานขาย
+    </button>
+    <button *hasPermission="'job.import_shipment'"
+      type="button"
+      class="upload-button"
+      data-bs-toggle="modal"
+      data-bs-target="#uploadShipmentModal"
+      (click)="resetUploadForm()"
+    >
+      <img src="assets/images/add.png" alt="upload-icon" />
+      อัปโหลด
+    </button>
+  </div>
+</div>
+
+<!-- Closed multi-select text: every selected value, comma-separated (cut with
+     "…" when too long). Hover shows the full labels ('full', default = labels). -->
+<ng-template #multiTrigger let-labels let-full="full">
+  <span class="filter-trigger" [title]="(full ?? labels).join(', ')">{{ labels.join(', ') }}</span>
+</ng-template>
+
+<!-- Search Filter -->
+<div class="search-filter" data-tour="search-filter">
+  <div class="row search-filter-row">
+    <!-- System Number -->
+    <div class="col-md search-filter-col">
+      <label>เลขที่ใบงาน</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <!-- <mat-label>เลขที่ใบงาน</mat-label> -->
+        <input matInput [(ngModel)]="filter.systemNo" placeholder="พิมพ์หมายเลขใบงาน" />
+      </mat-form-field>
+    </div>
+
+    <!-- Date -->
+    <div class="col-md search-filter-col">
+      <label>วันที่</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-date-range-input [rangePicker]="rangePicker">
+          <input
+            matStartDate
+            [(ngModel)]="filter.dateFrom"
+            placeholder="วันที่เริ่มต้น"
+            readonly
+            (click)="rangePicker.open()"
+          />
+          <input
+            matEndDate
+            [(ngModel)]="filter.dateTo"
+            placeholder="สิ้นสุด"
+            readonly
+            (click)="rangePicker.open()"
+          />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
+        <mat-date-range-picker #rangePicker></mat-date-range-picker>
+      </mat-form-field>
+    </div>
+
+    <!-- Src Location -->
+    <div class="col-md-2 search-filter-col" *ngIf="showFromCcFilter">
+      <label>Plant ต้นทาง (CC Code)</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <!-- <mat-label>ต้นทาง (CC Code)</mat-label> -->
+        <mat-select
+          [(ngModel)]="filter.fromCcCodes"
+          multiple
+          placeholder="ทั้งหมด"
+          panelClass="filter-multi-panel"
+        >
+          <mat-select-trigger>
+            <ng-container *ngTemplateOutlet="multiTrigger; context: { $implicit: fromCcNames(), full: fromCcLabels() }"></ng-container>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{ filter.fromCcCodes?.length ? 'เลือก ' + filter.fromCcCodes?.length + ' รายการ' : 'ทั้งหมด' }}</span>
+            <button
+              type="button"
+              class="filter-multi-clear"
+              *ngIf="filter.fromCcCodes?.length"
+              (click)="filter.fromCcCodes = []"
+            >
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let option of _srcLocation" [value]="option?.bg_plant_code">
+            <span class="filter-option-code">{{ option?.bg_plant_code }}</span>
+            <span class="filter-option-name">{{ option?.bg_plant_location }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- To Warehouse (WH01 Inbound only -- ct_location.wh_code of MWH to-locations) -->
+    <div class="col-md-2 search-filter-col" *ngIf="useToWhFilter">
+      <label>WH ปลายทาง</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-select
+          [(ngModel)]="filter.toWhCodes"
+          multiple
+          placeholder="ทั้งหมด"
+          panelClass="filter-multi-panel"
+        >
+          <mat-select-trigger>
+            <ng-container *ngTemplateOutlet="multiTrigger; context: { $implicit: toWhLabels() }"></ng-container>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{ filter.toWhCodes?.length ? 'เลือก ' + filter.toWhCodes?.length + ' รายการ' : 'ทั้งหมด' }}</span>
+            <button
+              type="button"
+              class="filter-multi-clear"
+              *ngIf="filter.toWhCodes?.length"
+              (click)="filter.toWhCodes = []"
+            >
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let option of _toWhOptions" [value]="option?.wh_code">
+            <span class="filter-option-name">{{ option?.wh_name }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Dest Location -->
+    <div class="col-md-2 search-filter-col" *ngIf="showToCcFilter">
+      <label>แพลนต์ปลายทาง (CC Code)</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <!-- <mat-label>ปลายทาง (CC Code)</mat-label> -->
+        <mat-select
+          [(ngModel)]="filter.toCcCodes"
+          multiple
+          placeholder="ทั้งหมด"
+          panelClass="filter-multi-panel"
+        >
+          <mat-select-trigger>
+            <ng-container *ngTemplateOutlet="multiTrigger; context: { $implicit: filter.toCcCodes, full: toCcLabels() }"></ng-container>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{ filter.toCcCodes?.length ? 'เลือก ' + filter.toCcCodes?.length + ' รายการ' : 'ทั้งหมด' }}</span>
+            <button
+              type="button"
+              class="filter-multi-clear"
+              *ngIf="filter.toCcCodes?.length"
+              (click)="filter.toCcCodes = []"
+            >
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let option of _destLocation" [value]="option?.cc_code">
+            <span class="filter-option-code">{{ option?.cc_code }}</span>
+            <span class="filter-option-name">{{ option?.cc_desc }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- From / To Location (WH02 Outbound only). Options from location masters (sql/36):
+         a group header row = whole location type, rows under it = one location. -->
+    <div class="col-md-2 search-filter-col" *ngIf="useLocationFilter">
+      <label>ตำแหน่งต้นทาง</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-select
+          [(ngModel)]="filter.fromLocations"
+          multiple
+          [compareWith]="compareLocationFilter"
+          placeholder="ทั้งหมด"
+          panelClass="location-filter-panel"
+          (openedChange)="!$event && (fromLocationSearch = '')"
+        >
+          <mat-select-trigger>
+            <ng-container *ngTemplateOutlet="multiTrigger; context: { $implicit: locationsFilterLabels(filter.fromLocations) }"></ng-container>
+          </mat-select-trigger>
+          <div class="location-filter-search" (keydown)="$event.stopPropagation()">
+            <div class="location-filter-search-box">
+              <mat-icon>search</mat-icon>
+              <input
+                type="text"
+                placeholder="ค้นหา location / ประเภท"
+                [(ngModel)]="fromLocationSearch"
+                (click)="$event.stopPropagation()"
+              />
+            </div>
+          </div>
+          <mat-option
+            *ngFor="let option of filteredLocationOptions(fromLocationSearch)"
+            [value]="toLocationFilter(option)"
+            [class.location-option-group]="option.location_key === null"
+            [class.location-option-item]="option.location_key !== null"
+          >
+            <ng-container *ngIf="option.location_key === null; else itemLabel">
+              <mat-icon class="location-option-icon">{{ locationTypeIcon(option.location_type) }}</mat-icon>
+              <span class="location-option-group-name">{{ option.type_name }}</span>
+              <span class="location-option-all">ทั้งหมด</span>
+            </ng-container>
+            <ng-template #itemLabel>{{ option.label }}</ng-template>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="col-md-2 search-filter-col" *ngIf="useLocationFilter">
+      <label>ตำแหน่งปลายทาง</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-select
+          [(ngModel)]="filter.toLocations"
+          multiple
+          [compareWith]="compareLocationFilter"
+          placeholder="ทั้งหมด"
+          panelClass="location-filter-panel"
+          (openedChange)="!$event && (toLocationSearch = '')"
+        >
+          <mat-select-trigger>
+            <ng-container *ngTemplateOutlet="multiTrigger; context: { $implicit: locationsFilterLabels(filter.toLocations) }"></ng-container>
+          </mat-select-trigger>
+          <div class="location-filter-search" (keydown)="$event.stopPropagation()">
+            <div class="location-filter-search-box">
+              <mat-icon>search</mat-icon>
+              <input
+                type="text"
+                placeholder="ค้นหา location / ประเภท"
+                [(ngModel)]="toLocationSearch"
+                (click)="$event.stopPropagation()"
+              />
+            </div>
+          </div>
+          <mat-option
+            *ngFor="let option of filteredLocationOptions(toLocationSearch)"
+            [value]="toLocationFilter(option)"
+            [class.location-option-group]="option.location_key === null"
+            [class.location-option-item]="option.location_key !== null"
+          >
+            <ng-container *ngIf="option.location_key === null; else itemLabel">
+              <mat-icon class="location-option-icon">{{ locationTypeIcon(option.location_type) }}</mat-icon>
+              <span class="location-option-group-name">{{ option.type_name }}</span>
+              <span class="location-option-all">ทั้งหมด</span>
+            </ng-container>
+            <ng-template #itemLabel>{{ option.label }}</ng-template>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Status -->
+    <div class="col-md-2 search-filter-col">
+      <label>สถานะ</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <!-- <mat-label>สถานะ</mat-label> -->
+        <mat-select
+          [(ngModel)]="filter.jobStatuses"
+          multiple
+          placeholder="ทั้งหมด"
+          panelClass="filter-multi-panel"
+        >
+          <mat-select-trigger>
+            <ng-container *ngTemplateOutlet="multiTrigger; context: { $implicit: jobStatusLabels() }"></ng-container>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{ filter.jobStatuses?.length ? 'เลือก ' + filter.jobStatuses?.length + ' รายการ' : 'ทั้งหมด' }}</span>
+            <button
+              type="button"
+              class="filter-multi-clear"
+              *ngIf="filter.jobStatuses?.length"
+              (click)="filter.jobStatuses = []"
+            >
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let option of _optionJobStatus" [value]="option.id">
+            <span [ngClass]="'filter-status-dot ' + jobStatusClass(option.id)"></span>
+            <span class="filter-option-name">{{ option.name_th || option.name }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Search Button -->
+    <div class="col-md-auto search-filter-col search-filter-action-col">
+      <!-- <label>&nbsp;</label> -->
+      <div class="search-button-group">
+        <button class="clear-button" (click)="resetFilter(); onClickSearch()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button class="search-button" (click)="onClickSearch()">
+          <mat-icon>search</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Job List Container -->
+<div class="job-section">
+  <div class="job-header" data-tour="list-filters">
+    <!-- Job Header -->
+    <div class="job-header-left">
+      <strong>รายการใบงาน</strong>
+      <span class="job-count-badge">{{ totalCount }} งาน</span>
+
+      <div class="job-type-pills" *ngIf="showJobTypeFilter">
+        <div
+          class="job-type-pill"
+          [class.active]="!filter.jobTypes?.length"
+          (click)="onSelectJobType(0)"
+        >
+          ทั้งหมด
+        </div>
+        <div
+          class="job-type-pill"
+          *ngFor="let option of jobTypeOptions"
+          [class.active]="isJobTypeSelected(option.id)"
+          (click)="onSelectJobType(option.id)"
+        >
+          {{ option.name }}
+        </div>
+      </div>
+    </div>
+
+    <div class="job-header-right">
+      <!-- Sort -- picking an option searches right away. -->
+      <button
+        type="button"
+        class="header-filter"
+        [class.active]="!!sortValue"
+        [matMenuTriggerFor]="sortMenu"
+        #sortTrigger="matMenuTrigger"
+        [class.open]="sortTrigger.menuOpen"
+        [title]="sortLabel"
+      >
+        <mat-icon class="header-filter-icon">swap_vert</mat-icon>
+        <span class="header-filter-label">เรียงตาม</span>
+        <span class="header-filter-value">{{ sortLabel }}</span>
+        <mat-icon class="header-filter-caret">expand_more</mat-icon>
+      </button>
+
+      <mat-menu #sortMenu="matMenu" xPosition="before" class="product-cc-menu">
+        <div class="product-cc-menu-title">เรียงตาม</div>
+        <button
+          mat-menu-item
+          class="product-cc-menu-item"
+          *ngFor="let option of sortOptions"
+          [class.selected]="sortValue === option.value"
+          (click)="onSelectSort(option.value)"
+        >
+          <span>{{ option.label }}</span>
+          <mat-icon *ngIf="sortValue === option.value">check</mat-icon>
+        </button>
+      </mat-menu>
+
+      <!-- Product CC (tr_job_main.product_cc) -- multi-select: items toggle while the
+           menu stays open; the search runs on close if the picks changed. -->
+      <ng-container *ngIf="useProductCcFilter">
+      <button
+        type="button"
+        class="header-filter"
+        [class.active]="!!filter.productCcs?.length"
+        [matMenuTriggerFor]="productCcMenu"
+        #productCcTrigger="matMenuTrigger"
+        [class.open]="productCcTrigger.menuOpen"
+        (menuOpened)="onProductCcMenuOpened()"
+        (menuClosed)="onProductCcMenuClosed()"
+        [title]="filter.productCcs?.length ? filter.productCcs!.join(', ') : 'ทั้งหมด'"
+      >
+        <mat-icon class="header-filter-icon">category</mat-icon>
+        <span class="header-filter-label">Product CC</span>
+        <span class="header-filter-value">{{
+          filter.productCcs?.length ? filter.productCcs!.join(', ') : 'ทั้งหมด'
+        }}</span>
+        <mat-icon class="header-filter-caret">expand_more</mat-icon>
+      </button>
+
+      <mat-menu #productCcMenu="matMenu" xPosition="before" class="product-cc-menu">
+        <div class="product-cc-menu-title">Product CC</div>
+        <button
+          mat-menu-item
+          class="product-cc-menu-item"
+          [class.selected]="!filter.productCcs?.length"
+          (click)="$event.stopPropagation(); clearProductCcs()"
+        >
+          <span>ทั้งหมด</span>
+          <mat-icon *ngIf="!filter.productCcs?.length">check</mat-icon>
+        </button>
+        <button
+          mat-menu-item
+          class="product-cc-menu-item"
+          *ngFor="let option of _productCcOptions"
+          [class.selected]="isProductCcSelected(option?.cc_code)"
+          (click)="$event.stopPropagation(); toggleProductCc(option?.cc_code)"
+        >
+          <span>{{ option?.cc_code }}</span>
+          <mat-icon *ngIf="isProductCcSelected(option?.cc_code)">check</mat-icon>
+        </button>
+      </mat-menu>
+      </ng-container>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!_isLoading; else jobListLoading">
+    <div class="job-list-container" *ngIf="_jobData && _jobData.length > 0; else noJobData">
+      <!-- Wrapper so the "source changed" strip can sit under the card
+           without becoming one of the card's own flex columns. -->
+      <div class="job-list-entry" *ngFor="let job of _jobData">
+      <div
+        class="job-list-card"
+        [ngClass]="{
+          'job-from-excel': isJobFromExcel(job.id),
+          'has-source-changed': !!getTotalPalletSourceChanged(job.id) || !!jobQtyShortfall(job),
+        }"
+      >
+        <div
+          class="job-icon"
+          [ngClass]="{
+            'job-icon-inbound': job?.type_topic === 'Inbound',
+            'job-icon-outbound': job?.type_topic === 'Outbound',
+          }"
+        >
+          <div class="text-topic-inbound" *ngIf="job?.type_topic === 'Inbound'">
+            {{ job?.type_short_name }}
+          </div>
+          <div class="text-topic-outbound" *ngIf="job?.type_topic === 'Outbound'">
+            {{ job?.type_short_name }}
+          </div>
+        </div>
+
+        <div class="system-info" data-tour="job-card-info">
+          <div class="system-header">
+            <div class="data-no">
+              <div class="system-no">{{ job?.system_no }}</div>
+              <div class="wms_no" *ngIf="job?.wms_no || getWmsPlusStatus(job.id)">
+                <ng-container *ngIf="getWmsPlusStatus(job.id) as wmsPlusStatus; else plainWmsNo">
+                  <div
+                    class="wms-plus-status"
+                    [class.success]="wmsPlusStatus.is_success === 'Y'"
+                    [class.failed]="wmsPlusStatus.is_success !== 'Y'"
+                    title="ดูรายละเอียด WMS+ log"
+                    data-bs-toggle="modal"
+                    data-bs-target="#wmsPlusDetailModal"
+                    (click)="openWmsPlusDetail(job)"
+                  >
+                    {{ job?.wms_no || wmsPlusStatus?.mode }}
+                    <mat-icon>{{
+                      wmsPlusStatus.is_success === 'Y' ? 'check_circle' : 'error'
+                    }}</mat-icon>
+                  </div>
+                  <ng-container *hasPermission="'wms.resend'">
+                  <button
+                    type="button"
+                    class="wms-plus-resend-button"
+                    *ngIf="wmsPlusStatus.is_success !== 'Y'"
+                    [disabled]="isResendingWmsPlus(job.id)"
+                    title="ส่งข้อมูลไปยัง WMS+ ซ้ำ"
+                    (click)="resendWmsPlus(job.id)"
+                  >
+                    <mat-icon [class.spin]="isResendingWmsPlus(job.id)">refresh</mat-icon>
+                  </button>
+                  </ng-container>
+                </ng-container>
+                <ng-template #plainWmsNo>
+                  <div class="wms-plus-status neutral">{{ job?.wms_no }}</div>
+                </ng-template>
+                <a
+                  class="job-document-link"
+                  *ngIf="jobDocumentUrl(job) as documentUrl"
+                  [href]="documentUrl"
+                  target="_blank"
+                  rel="noopener"
+                  title="เปิดเอกสารในหน้าต่างใหม่"
+                  aria-label="เปิดเอกสารในหน้าต่างใหม่"
+                >
+                  <mat-icon>description</mat-icon>
+                </a>
+              </div>
+            </div>
+            <div class="date">
+              {{ (parseJobDate(job?.create_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }}
+            </div>
+          </div>
+
+          <div class="badge">
+            <div [ngClass]="'status ' + jobStatusClass(job?.status_id)">
+              {{ job?.status_name }}
+            </div>
+            <!-- <div class="status step" *ngIf="job?.is_multi_fl === 'N'">1 Step</div> -->
+            <div class="status step" *ngIf="job?.is_multi_fl === 'Y'">2 Step</div>
+            <div class="status is-urgent" *ngIf="job?.is_urgent === 'Y'">ด่วน</div>
+            <!-- Advance-order job finished but its WMS+ interface not sent yet
+                 (sent from job-detail's WMS button). -->
+            <div
+              class="status is-wms-pending"
+              *ngIf="
+                job?.is_advance_order === 'Y' &&
+                job?.status_id === 5 &&
+                getWmsPlusStatus(job.id)?.is_success !== 'Y'
+              "
+            >
+              ยังไม่ส่ง WMS
+            </div>
+          </div>
+        </div>
+
+        <div class="grade-lot-progress" data-tour="job-card-progress">
+          <div class="document-job">
+            <span class="document-job-segments">
+              <span class="document-job-grade">{{ jobItem(job.id)?.[0]?.grade || '-' }}</span>
+              <span class="document-job-tag" *ngIf="jobItem(job.id)?.[0]?.lot_no">{{ jobItem(job.id)?.[0]?.lot_no }}</span>
+              <span class="document-job-tag document-job-qty">
+                {{ (jobItem(job.id)?.[0]?.qty | number: '1.0-0') || 0 }} kg
+              </span>
+            </span>
+            <!-- <ng-template #locationLots>
+              <ng-container *ngIf="lotLocations(jobItem(job.id)?.[0]).length === 1">{{
+                lotLocations(jobItem(job.id)?.[0])[0].lotNo || '-'
+              }}</ng-container>
+              <ng-container *ngIf="lotLocations(jobItem(job.id)?.[0]).length > 1">
+                <ng-container *ngFor="let lot of lotLocations(jobItem(job.id)?.[0]); let lastItem = last">
+                  <span class="lot-location-item">
+                    <span class="lot-location-label">LOT</span>
+                    <span class="lot-location-code">{{ lot.lotNo }}</span>
+                    <span class="lot-location-qty">{{ lot.qty | number: '1.0-0' }}</span>
+                  </span>
+                  <span *ngIf="!lastItem"></span>
+                </ng-container>
+              </ng-container>
+            </ng-template> -->
+            <button
+              type="button"
+              class="job-items-more-button"
+              *ngIf="job.items.length > 1"
+              data-bs-toggle="modal"
+              data-bs-target="#jobItemsModal"
+              (click)="selectJobItems(job)"
+            >
+              + อีก {{ job.items.length - 1 }} รายการ
+            </button>
+          </div>
+
+          <div class="pallet-progress">
+            <div class="pallet-text">
+              {{ (job?.complete_qty | number: '1.0-0') || 0 }}/{{ (job?.total_qty | number: '1.0-0') || 0 }} {{ movementUnit(job) || 'kg' }}
+            </div>
+
+            <!-- Blue = taken at GET so far, green on top = put away (complete_qty). -->
+            <div
+              class="progress-wrapper progress-wrapper--stacked"
+              matTooltipClass="tooltip-nowrap"
+              [matTooltip]="'รับเข้า ' + (receiveQty(job) | number: '1.0-0') + ' ' + (movementUnit(job) || 'kg') + ' · จัดเก็บ ' + ((job?.complete_qty || 0) | number: '1.0-0') + ' ' + (movementUnit(job) || 'kg')"
+              matTooltipPosition="above"
+            >
+              <div class="progress-bar progress-bar--receive" [style.width.%]="receivePercent(job)"></div>
+              <div
+                class="progress-bar"
+                [style.width.%]="((job?.complete_qty || 0) / (job?.total_qty || 1)) * 100"
+              ></div>
+            </div>
+
+            <div class="percent">
+              {{ ((job?.complete_qty || 0) / (job?.total_qty || 1)) * 100 | number: '1.0-0' }}%
+            </div>
+          </div>
+
+          <div class="start-end-datetime">
+            {{ (parseJobDate(job?.start_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }} -
+            {{ formatDateEnd(job?.start_datetime, job?.end_datetime) }} <span>|</span>
+            {{ formatDuration(job?.start_datetime, job?.end_datetime) }}
+          </div>
+        </div>
+
+        <div class="location" data-tour="job-card-location">
+          <div class="get-location">
+            <div class="get-header">
+              <span style="color: #14a318"><strong>GET</strong></span>
+              <div class="cc-info" *ngIf="isFromLocation(job.id)">
+                <span class="cc-code" *ngIf="job.from_location_cc_code">{{
+                  job.from_location_cc_code
+                }}</span>
+                <span class="cc-desc" *ngIf="job.from_location_cc_desc">{{
+                  job.from_location_cc_desc
+                }}</span>
+              </div>
+            </div>
+
+            <div class="location-detail">
+              <img src="assets/images/location.png" alt="location-icon" />
+              <span>{{ srcLocation(job.id) }}</span>
+              <button
+                type="button"
+                class="location-more-button"
+                *ngIf="srcLocations(job.id).length > 1"
+                data-bs-toggle="modal"
+                data-bs-target="#sourceLocationsModal"
+                (click)="selectJobItems(job)"
+              >
+                + อีก {{ srcLocations(job.id).length - 1 }} รายการ
+              </button>
+            </div>
+          </div>
+
+          <div class="arrow">→</div>
+
+          <div class="put-location">
+            <div class="put-header">
+              <span style="color: #1d4ed8"><strong>PUT</strong></span>
+              <div class="cc-info" *ngIf="isToLocation(job.id)">
+                <span class="cc-code" *ngIf="job.to_location_cc_code">{{
+                  job.to_location_cc_code
+                }}</span>
+                <span class="cc-desc" *ngIf="job.to_location_cc_desc">{{
+                  job.to_location_cc_desc
+                }}</span>
+              </div>
+            </div>
+            <div class="location-detail">
+              <img src="assets/images/location.png" alt="location-icon" />
+              <span>{{ destLocation(job.id) }}</span>
+              <button
+                type="button"
+                class="location-more-button"
+                *ngIf="destLocations(job.id).length > 1"
+                data-bs-toggle="modal"
+                data-bs-target="#destinationLocationsModal"
+                (click)="selectJobItems(job)"
+              >
+                + อีก {{ destLocations(job.id).length - 1 }} รายการ
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="job-card-actions" data-tour="job-card-inspect">
+          <div class="product-tags" *ngIf="jobProductCc(job) || jobProductType(job)">
+            <span class="product-tag product-tag--cc" *ngIf="jobProductCc(job)" [title]="jobProductCc(job)">
+              <b>CC {{ jobProductCc(job) }}</b>
+            </span>
+            <span class="product-tag product-tag--type" *ngIf="jobProductType(job)" [title]="jobProductType(job)">
+              <b>{{ jobProductType(job) }}</b>
+            </span>
+          </div>
+          <button class="inspect-button" (click)="goToJobDetail(job.id)">
+            รายละเอียด
+            <svg class="inspect-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M9 6l6 6-6 6"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div
+        class="source-changed-strip"
+        data-tour="source-changed"
+        *ngIf="getTotalPalletSourceChanged(job.id) as sourceChanged"
+        [title]="totalPalletSourceChangedTitle(sourceChanged)"
+      >
+        <mat-icon>warning</mat-icon>
+        <span class="source-changed-strip-title">
+          ข้อมูลต้นทางเปลี่ยนหลัง approve — กดบันทึกเพื่อคำนวณจำนวนพาเลทใหม่
+        </span>
+        <span class="source-changed-strip-items">{{ totalPalletSourceChangedSummary(sourceChanged) }}</span>
+      </div>
+      <!-- Finished but moved qty short of WMS+ qty -> finish the rest in WMS+ -->
+      <div class="qty-shortfall-strip" *ngIf="jobQtyShortfall(job) as shortfall">
+        <mat-icon>error_outline</mat-icon>
+        <span class="qty-shortfall-strip-title">
+          <ng-container *ngIf="wmsPlusDoneModes(job.id) as doneModes"
+            ><ng-container *ngIf="doneModes.length"
+              >ตอนนี้ QTrack ได้ทำ {{ doneModes.join(', ') }} ให้แล้ว · </ng-container
+            ><ng-container *ngIf="!doneModes.length && job.is_advance_order === 'Y'"
+              >งานสั่งล่วงหน้า QTrack ยังไม่ได้ส่ง Interface ไป WMS+ · </ng-container
+            ></ng-container
+          >จำนวนที่ขนย้ายจริงไม่ครบตาม WMS+
+        </span>
+        <span class="qty-shortfall-strip-items">
+          ขนย้ายจริง {{ shortfall.actual | number: '1.0-0' }} / {{ shortfall.qty | number: '1.0-0' }} {{ shortfall.unit }}
+          (ขาด {{ shortfall.qty - shortfall.actual | number: '1.0-0' }} {{ shortfall.unit }})
+        </span>
+      </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <div
+    class="modal fade"
+    id="jobItemsModal"
+    tabindex="-1"
+    aria-labelledby="jobItemsModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered job-items-modal-dialog">
+      <div class="modal-content job-items-modal-content">
+        <div class="modal-header job-items-modal-header">
+          <div>
+            <div class="system-eyebrow">{{ selectedJob?.system_no || '-' }}</div>
+            <h5 class="modal-title" id="jobItemsModalLabel">รายการสินค้าในใบงาน</h5>
+          </div>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body job-items-modal-body">
+          <div class="job-items-modal-summary">
+            <img src="assets/images/box.png" alt="box-icon" />
+            <span>{{ selectedJob?.items?.length || 0 }} รายการ</span>
+            <!-- <span>{{ selectedJob?.movement_unit || 'kg' }}</span> -->
+          </div>
+          <table
+            class="job-items-table"
+            *ngIf="selectedJob?.items?.length; else noSelectedJobItems"
+          >
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>เกรด</th>
+                <th>ล็อต</th>
+                <th>จำนวนตาม WMS+</th>
+                <th>จำนวนขนย้ายจริง</th>
+                <th>พาเลทเสร็จ/ทั้งหมด</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of selectedJob!.items; let index = index">
+                <td class="job-item-index">{{ index + 1 }}</td>
+                <td class="job-item-grade">{{ item.grade || '-' }}</td>
+                <td class="job-item-lot">{{ itemLotDisplay(item) }}</td>
+                <td class="job-item-qty">
+                  {{ item.qty || 0 | number: '1.0-0' }}
+                  {{ item.qty_unit || selectedJob!.movement_unit || 'kg' }}
+                </td>
+                <td class="job-item-actual-qty">
+                  {{ itemActualQty(item) | number: '1.0-0' }}
+                  {{ item.qty_unit || 'kg' }}
+                </td>
+                <td class="job-item-pallet">
+                  {{ item.complete_qty || 0 | number: '1.0-0' }}/{{ item.total_qty || 0 | number: '1.0-0' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <ng-template #noSelectedJobItems>
+            <div class="job-items-empty-state">
+              <div class="app-empty-state-icon app-empty-state-icon--sm">
+                <mat-icon>inventory_2</mat-icon>
+              </div>
+              No item data available.
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="sourceLocationsModal"
+    tabindex="-1"
+    aria-labelledby="sourceLocationsModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered location-list-modal-dialog">
+      <div class="modal-content location-list-modal-content source-location-modal">
+        <div class="modal-header location-list-modal-header">
+          <div>
+            <div class="system-eyebrow">{{ selectedJob?.system_no || '-' }}</div>
+            <h5 class="modal-title" id="sourceLocationsModalLabel">ตำแหน่งต้นทาง</h5>
+          </div>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body location-list-modal-body">
+          <div class="location-list-summary">
+            {{ srcLocations(selectedJob?.id ?? 0).length }} locations
+          </div>
+          <ol class="source-location-list">
+            <li *ngFor="let location of srcLocations(selectedJob?.id ?? 0); let index = index">
+              <span class="location-list-index">{{ index + 1 }}</span>
+              <span class="location-list-name">{{ location }}</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="destinationLocationsModal"
+    tabindex="-1"
+    aria-labelledby="destinationLocationsModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered location-list-modal-dialog">
+      <div class="modal-content location-list-modal-content destination-location-modal">
+        <div class="modal-header location-list-modal-header">
+          <div>
+            <div class="system-eyebrow">{{ selectedJob?.system_no || '-' }}</div>
+            <h5 class="modal-title" id="destinationLocationsModalLabel">ตำแหน่งปลายทาง</h5>
+          </div>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body location-list-modal-body">
+          <div class="location-list-summary">
+            {{ destLocations(selectedJob?.id ?? 0).length }} locations
+          </div>
+          <ol class="source-location-list">
+            <li *ngFor="let location of destLocations(selectedJob?.id ?? 0); let index = index">
+              <span class="location-list-index">{{ index + 1 }}</span>
+              <span class="location-list-name">{{ location }}</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #jobListLoading>
+    <div class="job-list-container job-list-loading">
+      <div class="job-list-skeleton-card" *ngFor="let row of skeletonRows">
+        <div class="skeleton skeleton-job-icon"></div>
+
+        <div class="skeleton-group skeleton-system-info">
+          <div class="skeleton skeleton-line skeleton-line-lg"></div>
+          <div class="skeleton skeleton-line skeleton-line-sm"></div>
+          <!-- <div class="skeleton skeleton-pill"></div> -->
+        </div>
+
+        <div class="skeleton-group skeleton-grade-lot-progress">
+          <div class="skeleton skeleton-line skeleton-line-md"></div>
+          <div class="skeleton skeleton-progress"></div>
+          <div class="skeleton skeleton-line skeleton-line-xs"></div>
+        </div>
+
+        <div class="skeleton-group skeleton-location-group">
+          <div class="skeleton skeleton-location-box"></div>
+          <div class="skeleton skeleton-arrow"></div>
+          <div class="skeleton skeleton-location-box"></div>
+        </div>
+
+        <div class="skeleton skeleton-button"></div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Pagination -->
+  <div class="job-pagination" data-tour="pagination" *ngIf="!_isLoading && _jobData && _jobData.length > 0">
+    <mat-paginator
+      [length]="totalCount"
+      [pageIndex]="(filter.page ?? 1) - 1"
+      [pageSize]="filter.pageSize ?? 25"
+      [pageSizeOptions]="[25, 50, 75, 100]"
+      [showFirstLastButtons]="true"
+      (page)="onPageEvent($event)"
+    >
+    </mat-paginator>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="mapDoConfirmModal"
+  tabindex="-1"
+  aria-labelledby="mapDoConfirmModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg map-do-confirm-dialog">
+    <div class="modal-content map-do-confirm-content">
+      <div class="upload-modal-header">
+        <div class="upload-modal-title-group">
+          <span class="upload-modal-eyebrow">MAP DO SHIPMENT</span>
+          <span class="upload-modal-title-text" id="mapDoConfirmModalLabel">ยืนยันการจับคู่ Excel DDO กับ Shipment</span>
+        </div>
+        <button type="button" class="upload-modal-close" aria-label="Close" (click)="cancelMapDoConfirm()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modal-body map-do-confirm-body">
+        <div class="map-do-confirm-list" *ngIf="mapDoData.length > 0; else noPendingMapDoItems">
+          <div class="map-do-confirm-item" *ngFor="let item of mapDoData; trackBy: trackByMapDoItem">
+            <!-- Grade / Lot differ between the two sides: warn before saving. -->
+            <div class="map-do-confirm-warning" *ngIf="mapDoMismatches(item).length">
+              <mat-icon>warning_amber</mat-icon>
+              <span>{{ mapDoMismatches(item).join(' และ ') }} ไม่ตรงกัน กรุณาตรวจสอบก่อนบันทึก</span>
+            </div>
+
+            <!-- Side-by-side comparison: Excel DDO (from) -> Shipment (to). -->
+            <table class="map-do-confirm-table">
+              <colgroup>
+                <col class="col-label" />
+                <col />
+                <col class="col-arrow" />
+                <col />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th class="is-excel">
+                    <mat-icon>description</mat-icon>
+                    Excel DDO
+                  </th>
+                  <th></th>
+                  <th class="is-shipment">
+                    <mat-icon>local_shipping</mat-icon>
+                    Shipment
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="map-do-confirm-label">เลขที่</td>
+                  <td class="map-do-confirm-main">{{ item.excelData.ddo }}</td>
+                  <td class="map-do-confirm-arrow"><mat-icon>arrow_forward</mat-icon></td>
+                  <td class="map-do-confirm-main">{{ item.doData.shipmentno }}</td>
+                </tr>
+                <tr>
+                  <td class="map-do-confirm-label">DO</td>
+                  <td class="map-do-confirm-muted">-</td>
+                  <td></td>
+                  <td>{{ item.doData.deliveryno || '-' }}</td>
+                </tr>
+                <tr [class.is-mismatch]="isMapDoGradeMismatch(item)">
+                  <td class="map-do-confirm-label">Grade</td>
+                  <td>{{ item.excelData.grade || '-' }}</td>
+                  <td class="map-do-confirm-arrow">
+                    <mat-icon *ngIf="isMapDoGradeMismatch(item)">error_outline</mat-icon>
+                  </td>
+                  <td>{{ item.doData.fpdgradecode || '-' }}</td>
+                </tr>
+                <tr [class.is-mismatch]="isMapDoLotMismatch(item)">
+                  <td class="map-do-confirm-label">Lot</td>
+                  <td>{{ item.excelData.lot || '-' }}</td>
+                  <td class="map-do-confirm-arrow">
+                    <mat-icon *ngIf="isMapDoLotMismatch(item)">error_outline</mat-icon>
+                  </td>
+                  <td>{{ item.doData.pdlotno || '-' }}</td>
+                </tr>
+                <tr>
+                  <td class="map-do-confirm-label">Qty</td>
+                  <td class="map-do-confirm-num">{{ item.excelData.qty | number: '1.0-2' }}</td>
+                  <td></td>
+                  <td class="map-do-confirm-num">
+                    {{ item.doData.qty | number: '1.0-2' }} <span class="map-do-confirm-unit">{{ item.doData.unit }}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="map-do-confirm-label">วันที่</td>
+                  <td>
+                    {{ (parseJobDate(item.excelData.loading_date) | date: 'dd/MM/yyyy') || '-' }}
+                    <span class="map-do-confirm-unit">Loading</span>
+                  </td>
+                  <td></td>
+                  <td>
+                    {{ (parseJobDate(item.doData.deliverydate) | date: 'dd/MM/yyyy') || '-' }}
+                    <span class="map-do-confirm-unit">Delivery</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <ng-template #noPendingMapDoItems>
+          <div class="map-do-confirm-empty">
+            <div class="app-empty-state-icon app-empty-state-icon--sm">
+              <mat-icon>playlist_add_check</mat-icon>
+            </div>
+            ยังไม่มีรายการจับคู่ให้บันทึก
+          </div>
+        </ng-template>
+      </div>
+      <div class="upload-modal-footer">
+        <button
+          type="button"
+          class="btn modal-btn-cancel map-do-confirm-cancel"
+          (click)="cancelMapDoConfirm()"
+        >
+          ยกเลิก
+        </button>
+        <button *hasPermission="'job.map_do'"
+          type="button"
+          class="btn modal-btn-save map-do-confirm-submit"
+          [disabled]="mapDoData.length === 0 || _isSavingMapDo"
+          (click)="confirmMapDo()"
+        >
+          <span *ngIf="!_isSavingMapDo">บันทึกการจับคู่</span>
+          <span *ngIf="_isSavingMapDo">กำลังบันทึก...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #noJobData>
+  <div class="no-job-data">
+    <app-empty-state
+      variant="job"
+      title="ไม่พบข้อมูลใบงาน"
+      message="ลองปรับเงื่อนไขการค้นหาใหม่อีกครั้ง"
+    ></app-empty-state>
+  </div>
+</ng-template>
+
+<!-- Upload Shipment Modal -->
+<div
+  class="modal fade"
+  id="uploadShipmentModal"
+  tabindex="-1"
+  aria-labelledby="uploadShipmentModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl upload-modal-dialog">
+    <div class="modal-content upload-modal-content">
+      <div class="upload-modal-header">
+        <div class="upload-modal-title-group">
+          <span class="upload-modal-eyebrow">EXCEL IMPORT</span>
+          <span class="upload-modal-title-text" id="uploadShipmentModalLabel"
+            >Upload Shipment Plan</span
+          >
+        </div>
+        <button type="button" class="upload-modal-close" data-bs-dismiss="modal" aria-label="Close">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Mirrors job-special-list.html's upload-method-row -- two cards
+             ("เพิ่มด้วยตนเอง" / "อัปโหลดไฟล์ Excel") so adding a row by hand
+             and importing from Excel read as distinct, equally-available
+             choices, instead of Excel being the only way in. -->
+        <div class="upload-method-row">
+          <div class="upload-method-card">
+            <div class="upload-method-icon upload-method-icon-manual">
+              <mat-icon>edit_note</mat-icon>
+            </div>
+            <div class="upload-method-body">
+              <div class="upload-method-title">เพิ่มด้วยตนเอง</div>
+              <div class="upload-method-desc">เพิ่มแถวว่างแล้วกรอกข้อมูลเอง</div>
+            </div>
+            <button type="button" class="add-row-button" (click)="addUploadRow()">+ Add Row</button>
+          </div>
+
+          <div class="upload-method-divider"><span>หรือ</span></div>
+
+          <div class="upload-method-card">
+            <div class="upload-method-icon upload-method-icon-excel">
+              <mat-icon>upload_file</mat-icon>
+            </div>
+            <div class="upload-method-body">
+              <div class="upload-method-title">อัปโหลดไฟล์ Excel</div>
+              <div class="upload-method-desc" *ngIf="!_uploadFileName">รองรับไฟล์ .xlsx, .xls</div>
+              <div class="upload-file-info" *ngIf="_uploadFileName">
+                <mat-icon class="upload-file-icon">description</mat-icon>
+                <span class="upload-file-name">{{ _uploadFileName }}</span>
+              </div>
+            </div>
+            <label class="upload-file-label">
+              <mat-icon>upload</mat-icon>
+              เลือกไฟล์
+              <input
+                type="file"
+                class="upload-file-input"
+                accept=".xlsx,.xls"
+                (change)="onFileSelected($event)"
+              />
+            </label>
+          </div>
+        </div>
+
+        <!-- Mirrors job-special-list.html's upload-summary-row -- stat boxes
+             for the totals that matter for a shipment import (row/DDO count,
+             Qty, Truck.L), instead of just the row count. -->
+        <div class="upload-summary-row" *ngIf="_uploadRows.length > 0">
+          <div class="upload-stat-box">
+            <div class="upload-stat-value">{{ _uploadRows.length }}</div>
+            <div class="upload-stat-label">DDO</div>
+          </div>
+          <div class="upload-stat-box">
+            <div class="upload-stat-value">{{ totalUploadQty() | number: '1.0-2' }}</div>
+            <div class="upload-stat-label">Qty</div>
+          </div>
+          <div class="upload-stat-box">
+            <div class="upload-stat-value">{{ totalUploadTruckL() | number: '1.2-2' }}</div>
+            <div class="upload-stat-label">Truck.L</div>
+          </div>
+        </div>
+
+        <div class="upload-table-wrapper" *ngIf="_uploadRows.length > 0; else noUploadData">
+          <table class="upload-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th class="upload-col-fixed30">DDO</th>
+                <th class="upload-col-fixed30">Loading Date</th>
+                <th class="upload-col-fixed30">PO Status</th>
+                <th class="upload-col-fixed30">Status</th>
+                <th>Grade</th>
+                <th>Lot</th>
+                <th>Qty</th>
+                <th>Seq</th>
+                <th>Truck.L</th>
+                <th class="upload-col-fixed30">On Pallet</th>
+                <th>Godown</th>
+                <th>Agent</th>
+                <th>Truck</th>
+                <th>Owner</th>
+                <th>Shipping Instruction</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of _uploadRows; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td class="upload-col-fixed30">
+                  <input
+                    [(ngModel)]="row.ddo"
+                    [name]="'ddo' + i"
+                    [attr.size]="inputSize(row.ddo, 40, 40)"
+                  />
+                </td>
+                <td class="upload-date-cell">
+                  <mat-form-field
+                    appearance="outline"
+                    class="upload-date-field"
+                    subscriptSizing="dynamic"
+                  >
+                    <input
+                      matInput
+                      [matDatepicker]="rowLoadingDatePicker"
+                      [(ngModel)]="row.loadingDate"
+                      [name]="'loadingDate' + i"
+                      placeholder="วว/ดด/ปปปป"
+                      readonly
+                      (click)="rowLoadingDatePicker.open()"
+                    />
+                    <mat-datepicker-toggle
+                      matIconSuffix
+                      [for]="rowLoadingDatePicker"
+                    ></mat-datepicker-toggle>
+                    <mat-datepicker #rowLoadingDatePicker></mat-datepicker>
+                  </mat-form-field>
+                </td>
+                <td class="upload-col-fixed30">
+                  <select [(ngModel)]="row.poStatus" [name]="'poStatus' + i">
+                    <option value="">-</option>
+                    <option *ngFor="let opt of poStatusOptions" [value]="opt">{{ opt }}</option>
+                  </select>
+                </td>
+                <td class="upload-col-fixed30">
+                  <select [(ngModel)]="row.status" [name]="'status' + i">
+                    <option value="">-</option>
+                    <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+                  </select>
+                </td>
+                <td>
+                  <input
+                    [(ngModel)]="row.grade"
+                    [name]="'grade' + i"
+                    [attr.size]="inputSize(row.grade, 30, 60)"
+                  />
+                </td>
+                <td>
+                  <input
+                    *ngIf="!rowHasLot(row)"
+                    [(ngModel)]="row.lot"
+                    [name]="'lot' + i"
+                    [attr.size]="inputSize(row.lot, 30, 60)"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="row.qty"
+                    [name]="'qty' + i"
+                    [attr.size]="inputSize(row.qty, 4, 10)"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="row.seq"
+                    [name]="'seq' + i"
+                    [attr.size]="inputSize(row.seq, 2, 4)"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    inputmode="decimal"
+                    [(ngModel)]="row.truckLText"
+                    [name]="'truckL' + i"
+                    [attr.size]="inputSize(row.truckLText, 4, 10)"
+                    (blur)="formatTruckL(row)"
+                  />
+                </td>
+                <td class="upload-col-fixed30">
+                  <select [(ngModel)]="row.onPallet" [name]="'onPallet' + i">
+                    <option *ngFor="let opt of onPalletOptions" [value]="opt">{{ opt }}</option>
+                  </select>
+                </td>
+                <td>
+                  <input
+                    [(ngModel)]="row.godown"
+                    [name]="'godown' + i"
+                    [attr.size]="inputSize(row.godown, 30, 60)"
+                  />
+                </td>
+                <td>
+                  <input
+                    [(ngModel)]="row.agent"
+                    [name]="'agent' + i"
+                    [attr.size]="inputSize(row.agent, 30, 60)"
+                  />
+                </td>
+                <td>
+                  <input
+                    [(ngModel)]="row.truck"
+                    [name]="'truck' + i"
+                    [attr.size]="inputSize(row.truck, 30, 60)"
+                  />
+                </td>
+                <td>
+                  <input
+                    [(ngModel)]="row.owner"
+                    [name]="'owner' + i"
+                    [attr.size]="inputSize(row.owner, 30, 60)"
+                  />
+                </td>
+                <td>
+                  <input
+                    [(ngModel)]="row.shippingInstruction"
+                    [name]="'shippingInstruction' + i"
+                    [attr.size]="inputSize(row.shippingInstruction, 30, 60)"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="upload-row-delete-button"
+                    (click)="removeUploadRow(i)"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #noUploadData>
+          <div class="upload-empty-state">
+            <mat-icon>cloud_upload</mat-icon>
+            <p>เลือกไฟล์ Excel เพื่อแสดงข้อมูล</p>
+          </div>
+        </ng-template>
+      </div>
+      <div class="upload-modal-footer">
+        <button type="button" class="modal-btn-cancel" data-bs-dismiss="modal">ยกเลิก</button>
+        <button *hasPermission="'job.import_shipment'"
+          type="button"
+          class="modal-btn-save"
+          [disabled]="_uploadRows.length === 0 || _isUploading"
+          (click)="onSubmitUploadShipment()"
+        >
+          บันทึก
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Shipment List Modal -- also hosts the 3 shipment actions (Map DO
+     Shipment / Map DO Special / Create Picking), switched via
+     _shipmentActionTab and the tab bar below. -->
+<div
+  class="modal fade"
+  id="shipmentListModal"
+  tabindex="-1"
+  aria-labelledby="shipmentListModalLabel"
+  aria-hidden="true"
+>
+  <div
+    class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable shipment-list-modal-dialog"
+  >
+    <div class="modal-content">
+      <div class="upload-modal-header">
+        <div class="upload-modal-title-group">
+          <span class="upload-modal-eyebrow">Q Track shipment</span>
+          <span class="upload-modal-title-text" id="shipmentListModalLabel">รายการงานขาย</span>
+        </div>
+        <button type="button" class="upload-modal-close" data-bs-dismiss="modal" aria-label="Close">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Persistent split layout -- the shipment list on the left is
+             ALWAYS visible (never swapped out for a different "page").
+             Clicking one of a row's 3 action buttons (or the row itself,
+             for whichever action is already active) just fills in the
+             right side immediately via selectShipmentAction, which
+             re-seeds the right dataset for that shipment + action. -->
+        <div class="shipment-map-layout">
+          <div class="shipment-map-left">
+            <!-- Shipment filters (GET job/shipment, filtered server-side --
+                 status/loading date need sql/98). -->
+            <div class="shipment-search-bar shipment-filter">
+              <div class="shipment-filter-field">
+                <label>Shipment No</label>
+                <input
+                  class="shipment-search-input"
+                  [(ngModel)]="_shipmentFilter.shipmentNo"
+                  (keyup.enter)="onClickSearchShipment()"
+                  placeholder="พิมพ์ Shipment No"
+                />
+              </div>
+              <div class="shipment-filter-field">
+                <label>Delivery No</label>
+                <input
+                  class="shipment-search-input"
+                  [(ngModel)]="_shipmentFilter.deliveryNo"
+                  (keyup.enter)="onClickSearchShipment()"
+                  placeholder="พิมพ์ Delivery No"
+                />
+              </div>
+              <div class="shipment-filter-field shipment-filter-date">
+                <label>Loading Date</label>
+                <!-- One date-range picker (same as the page's main filter);
+                     searches once the end date is picked. -->
+                <!-- Plain frame instead of mat-form-field so it is exactly
+                     the same box as the other 42px inputs. -->
+                <div class="shipment-filter-daterange" (click)="shipmentLoadingPicker.open()">
+                  <mat-icon class="shipment-filter-daterange-icon">calendar_today</mat-icon>
+                  <mat-date-range-input [rangePicker]="shipmentLoadingPicker">
+                    <input
+                      matStartDate
+                      [(ngModel)]="_shipmentFilter.loadingFrom"
+                      placeholder="วันที่เริ่มต้น"
+                      readonly
+                    />
+                    <input
+                      matEndDate
+                      [(ngModel)]="_shipmentFilter.loadingTo"
+                      (dateChange)="onClickSearchShipment()"
+                      placeholder="สิ้นสุด"
+                      readonly
+                    />
+                  </mat-date-range-input>
+                  <mat-date-range-picker #shipmentLoadingPicker></mat-date-range-picker>
+                </div>
+              </div>
+              <div class="shipment-filter-field shipment-filter-status">
+                <label>Status</label>
+                <!-- Multi-select (same panel as the page's main filters);
+                     searches when the panel closes. -->
+                <mat-select
+                  class="shipment-search-input shipment-filter-select"
+                  [(ngModel)]="_shipmentFilter.statusIds"
+                  multiple
+                  placeholder="ทั้งหมด"
+                  panelClass="filter-multi-panel shipment-status-panel"
+                  (openedChange)="!$event && onClickSearchShipment()"
+                >
+                  <mat-select-trigger>
+                    <ng-container
+                      *ngTemplateOutlet="multiTrigger; context: { $implicit: shipmentStatusLabels() }"
+                    ></ng-container>
+                  </mat-select-trigger>
+                  <div class="filter-multi-header" (click)="$event.stopPropagation()">
+                    <span class="filter-multi-count">{{
+                      _shipmentFilter.statusIds?.length
+                        ? 'เลือก ' + _shipmentFilter.statusIds?.length + ' รายการ'
+                        : 'ทั้งหมด'
+                    }}</span>
+                    <button
+                      type="button"
+                      class="filter-multi-clear"
+                      *ngIf="_shipmentFilter.statusIds?.length"
+                      (click)="_shipmentFilter.statusIds = []"
+                    >
+                      ล้าง
+                    </button>
+                  </div>
+                  <mat-option *ngFor="let s of shipmentStatusOptions" [value]="s.id">
+                    <span class="filter-option-name">{{ s.name }}</span>
+                  </mat-option>
+                </mat-select>
+              </div>
+              <div class="shipment-filter-actions">
+                <button
+                  type="button"
+                  class="clear-button shipment-search-button"
+                  [disabled]="!hasShipmentFilter()"
+                  title="ล้างตัวกรอง"
+                  (click)="onClearShipmentFilter()"
+                >
+                  <img src="assets/images/clear.png" alt="clear-icon" />
+                </button>
+                <button
+                  type="button"
+                  class="search-button shipment-search-button"
+                  title="ค้นหา"
+                  (click)="onClickSearchShipment()"
+                >
+                  <mat-icon>search</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <ng-container *ngIf="!_isLoadingShipment; else shipmentListLoading">
+              <div
+                class="shipment-map-left-list shipment-table-wrap"
+                *ngIf="_shipmentData && _shipmentData.length > 0; else noShipmentData"
+              >
+                <!-- job/shipment returns one row per delivery line -- the
+                     same shipmentno can repeat with a different
+                     deliveryno/grade/qty each time, so each shipmentno gets
+                     its own header row and its delivery lines sit under it;
+                     each delivery line is still what actually gets picked
+                     for an action. -->
+                <table class="shipment-table shipment-table-left">
+                  <colgroup>
+                    <col class="col-check" />
+                    <col class="col-shipment" />
+                    <col class="col-do" />
+                    <col class="col-grade" />
+                    <col class="col-qty" />
+                    <col />
+                    <col class="col-explain" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="shipment-table-check"></th>
+                      <th>Shipment</th>
+                      <th>DO</th>
+                      <th>Grade</th>
+                      <th class="shipment-table-num">Qty</th>
+                      <th>Status</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    class="shipment-table-group"
+                    *ngFor="let group of groupedShipmentData; trackBy: trackByShipmentGroup"
+                  >
+                    <ng-container *ngFor="let row of group.rows; let first = first; trackBy: trackByShipment">
+                      <tr
+                        class="shipment-table-row"
+                        [class.active]="isSameShipment(row, _selectedShipment)"
+                        [class.expanded]="isShipmentExpanded(row)"
+                        (click)="selectShipmentAction(row, currentOrDefaultTab())"
+                      >
+                        <td class="shipment-table-check">
+                          <mat-icon>{{
+                            isSameShipment(row, _selectedShipment)
+                              ? 'radio_button_checked'
+                              : 'radio_button_unchecked'
+                          }}</mat-icon>
+                        </td>
+                        <!-- Shipment No only on a group's first DO row, so the
+                             DOs of one shipment read as one block. -->
+                        <td class="shipment-table-shipment">{{ first ? group.shipmentno : '' }}</td>
+                        <td class="shipment-table-main">{{ row.deliveryno || '-' }}</td>
+                        <td>{{ row.fpdgradecode || '-' }}</td>
+                        <td class="shipment-table-num">
+                          <span class="shipment-table-main">{{ (row.qty | number: '1.0-2') || 0 }}</span>
+                          <span class="shipment-table-unit">{{ row.unit }}</span>
+                        </td>
+                        <td>
+                          <!-- Dot + text instead of a pill -- every row has a
+                               status, so pills made the column too loud. -->
+                          <span class="shipment-table-status" [ngClass]="shipmentStatusClass(row)">{{
+                            row.current_status || row.status || 'No Status'
+                          }}</span>
+                        </td>
+                        <td class="shipment-table-explain">
+                          <!-- Explain: opens a detail row under this DO (CC/WH,
+                               lot, dates, pallets, remark) without selecting it. -->
+                          <button
+                            type="button"
+                            class="shipment-explain-button"
+                            [class.open]="isShipmentExpanded(row)"
+                            [title]="isShipmentExpanded(row) ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียด'"
+                            (click)="$event.stopPropagation(); toggleShipmentExpanded(row)"
+                          >
+                            <mat-icon>expand_more</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="shipment-table-detail" *ngIf="isShipmentExpanded(row)">
+                        <td colspan="7">
+                          <div class="shipment-detail-grid">
+                            <div class="shipment-detail-item">
+                              <span class="shipment-detail-label">CC Code</span>
+                              <span class="shipment-detail-value">{{ row.cccode || '-' }}</span>
+                            </div>
+                            <div class="shipment-detail-item">
+                              <span class="shipment-detail-label">WH Code</span>
+                              <span class="shipment-detail-value">{{ row.whcode || '-' }}</span>
+                            </div>
+                            <div class="shipment-detail-item">
+                              <span class="shipment-detail-label">Lot</span>
+                              <span class="shipment-detail-value">{{ row.pdlotno || '-' }}</span>
+                            </div>
+                            <div class="shipment-detail-item">
+                              <span class="shipment-detail-label">พาเลท</span>
+                              <span class="shipment-detail-value">{{ row.total_pallet || '-' }}</span>
+                            </div>
+                            <div class="shipment-detail-item">
+                              <span class="shipment-detail-label">Delivery Date</span>
+                              <span class="shipment-detail-value">{{
+                                (parseJobDate(row.deliverydate) | date: 'dd/MM/yyyy') || '-'
+                              }}</span>
+                            </div>
+                            <div class="shipment-detail-item">
+                              <span class="shipment-detail-label">Loading</span>
+                              <span class="shipment-detail-value">{{
+                                (parseJobDate(row.loading_datetime) | date: 'dd/MM/yyyy HH:mm') || '-'
+                              }}</span>
+                            </div>
+                            <div class="shipment-detail-item">
+                              <span class="shipment-detail-label">Truck Check-in</span>
+                              <span class="shipment-detail-value">{{
+                                (parseJobDate(row.truck_checkin_datetime) | date: 'dd/MM/yyyy HH:mm') || '-'
+                              }}</span>
+                            </div>
+                            <div class="shipment-detail-item">
+                              <span class="shipment-detail-label">Weight In / Out</span>
+                              <span class="shipment-detail-value"
+                                >{{ (parseJobDate(row.weight_in_datetime) | date: 'HH:mm') || '-' }} /
+                                {{ (parseJobDate(row.weight_out_datetime) | date: 'HH:mm') || '-' }}</span
+                              >
+                            </div>
+                            <div class="shipment-detail-item shipment-detail-remark">
+                              <span class="shipment-detail-label">Remark</span>
+                              <span class="shipment-detail-value">{{ row.remark || '-' }}</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+
+              <ng-template #noShipmentData>
+                <div class="no-job-data">
+                  <div class="no-job-data-icon">
+                    <mat-icon>local_shipping</mat-icon>
+                  </div>
+                  <h5>ไม่พบข้อมูลรายการขาย</h5>
+                  <p>ลองปรับเงื่อนไขการค้นหาใหม่อีกครั้ง</p>
+                </div>
+              </ng-template>
+            </ng-container>
+
+            <!-- Loading skeleton -- same table shape (header + rows) as the
+                 shipment list, so the layout does not jump when data lands. -->
+            <ng-template #shipmentListLoading>
+              <div class="shipment-map-left-list shipment-table-wrap">
+                <table class="shipment-table shipment-table-left">
+                  <colgroup>
+                    <col class="col-check" />
+                    <col class="col-shipment" />
+                    <col class="col-do" />
+                    <col class="col-grade" />
+                    <col class="col-qty" />
+                    <col />
+                    <col class="col-explain" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="shipment-table-check"></th>
+                      <th>Shipment</th>
+                      <th>DO</th>
+                      <th>Grade</th>
+                      <th class="shipment-table-num">Qty</th>
+                      <th>Status</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="shipment-table-row shipment-table-skeleton" *ngFor="let row of shipmentSkeletonRows">
+                      <td class="shipment-table-check"><div class="skeleton skeleton-cell-circle"></div></td>
+                      <td><div class="skeleton skeleton-cell" style="width: 80%"></div></td>
+                      <td><div class="skeleton skeleton-cell" style="width: 85%"></div></td>
+                      <td><div class="skeleton skeleton-cell" style="width: 65%"></div></td>
+                      <td><div class="skeleton skeleton-cell skeleton-cell-end" style="width: 70%"></div></td>
+                      <td><div class="skeleton skeleton-cell" style="width: 75%"></div></td>
+                      <td class="shipment-table-explain"><div class="skeleton skeleton-cell-button"></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+
+            <div
+              class="job-pagination"
+              *ngIf="_isLoadingShipment || (_shipmentData && _shipmentData.length > 0)"
+            >
+              <!-- Stays while loading (disabled) so the layout keeps its footer. -->
+              <mat-paginator
+                [disabled]="_isLoadingShipment"
+                [length]="_shipmentTotalCount"
+                [pageIndex]="(_shipmentFilter.page ?? 1) - 1"
+                [pageSize]="_shipmentFilter.pageSize ?? 10"
+                [pageSizeOptions]="[10, 25, 50]"
+                [showFirstLastButtons]="true"
+                (page)="onShipmentPageEvent($event)"
+              >
+              </mat-paginator>
+            </div>
+
+            <div class="shipment-source-note">
+              <mat-icon>info</mat-icon>
+              รายการขายจะดึงข้อมูลมาจากระบบ iLogistic
+            </div>
+          </div>
+
+          <div class="shipment-map-right">
+            <!-- Nothing picked on the left yet: what to do + the 3 actions
+                 that open once a DO is picked. -->
+            <div class="shipment-map-placeholder" *ngIf="_shipmentActionTab === 'list'">
+              <div class="shipment-placeholder-icon">
+                <mat-icon>{{ _isLoadingShipment ? 'hourglass_top' : 'ads_click' }}</mat-icon>
+              </div>
+              <h5>{{ _isLoadingShipment ? 'กำลังโหลดรายการขาย...' : 'เลือก DO ทางด้านซ้ายเพื่อเริ่มทำงาน' }}</h5>
+              <p>คลิกแถวในตาราง Shipment แล้วเลือกงานที่ต้องการทำกับ DO นั้น</p>
+
+              <div class="shipment-placeholder-actions">
+                <div class="shipment-placeholder-action">
+                  <div class="shipment-placeholder-action-icon is-blue"><mat-icon>compare_arrows</mat-icon></div>
+                  <span class="shipment-placeholder-action-title">Map DO Shipment</span>
+                  <span class="shipment-placeholder-action-desc">จับคู่ Excel DDO กับ DO</span>
+                </div>
+                <div class="shipment-placeholder-action">
+                  <div class="shipment-placeholder-action-icon is-purple"><mat-icon>link</mat-icon></div>
+                  <span class="shipment-placeholder-action-title">Map DO Special</span>
+                  <span class="shipment-placeholder-action-desc">จับคู่ item ของ Special Job กับ DO</span>
+                </div>
+                <div class="shipment-placeholder-action">
+                  <div class="shipment-placeholder-action-icon is-green"><mat-icon>add_task</mat-icon></div>
+                  <span class="shipment-placeholder-action-title">สร้างงาน Picking</span>
+                  <span class="shipment-placeholder-action-desc">สร้างงานแล้วไประบุตำแหน่งที่ Job Detail</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="shipment-map-right-body" [hidden]="_shipmentActionTab === 'list'">
+              <div class="shipment-action-tabs" *ngIf="_selectedShipment">
+                <button *hasPermission="'job.map_do'"
+                  type="button"
+                  class="shipment-action-tab"
+                  [class.active]="_shipmentActionTab === 'mapDo'"
+                  (click)="selectShipmentAction(_selectedShipment!, 'mapDo')"
+                >
+                  <mat-icon>compare_arrows</mat-icon>
+                  Map DO Shipment
+                </button>
+                <button *hasPermission="'job.map_do'"
+                  type="button"
+                  class="shipment-action-tab"
+                  [class.active]="_shipmentActionTab === 'mapSpecial'"
+                  (click)="selectShipmentAction(_selectedShipment!, 'mapSpecial')"
+                >
+                  <mat-icon>link</mat-icon>
+                  Map DO Special
+                </button>
+                <button
+                  type="button"
+                  class="shipment-action-tab"
+                  [class.active]="_shipmentActionTab === 'picking'"
+                  (click)="selectShipmentAction(_selectedShipment!, 'picking')"
+                >
+                  <mat-icon>add_task</mat-icon>
+                  สร้างงาน Picking
+                </button>
+              </div>
+
+              <!-- Map DO Shipment tab content -- the shipment is already
+                   fixed (picked from the sidebar), so there's nothing left
+                   to browse on that side; this is now a single-list picker
+                   (styled like the Map DO Special tab below) of Excel DDO
+                   rows, each pairing straight to the shipment already
+                   selected from the sidebar on click (see onSelectExcelDo)
+                   -- matched against SearchStatus on the backend, so no
+                   local DO record needs to exist first. -->
+              <div
+                class="shipment-tab-panel"
+                *ngIf="_selectedShipment && _shipmentActionTab === 'mapDo'"
+              >
+                <!-- Header: what to do + which shipment / DO is being mapped
+                     + how many Excel DDO rows can be picked. -->
+                <div class="map-do-header">
+                  <div class="map-do-header-text">
+                    <span class="map-do-header-title">เลือก Excel DDO ที่ต้องการจับคู่</span>
+                    <span class="map-do-header-sub">จับคู่กับ Shipment ที่เลือกทางด้านซ้าย</span>
+                  </div>
+                  <div class="map-do-header-target">
+                    <span class="map-do-header-chip">
+                      <mat-icon>local_shipping</mat-icon>{{ _selectedShipment.shipmentno || '-' }}
+                    </span>
+                    <span class="map-do-header-chip">DO {{ _selectedShipment.deliveryno || '-' }}</span>
+                    <span class="map-do-header-count">{{ _excelDoCandidates.length }} รายการ</span>
+                  </div>
+                </div>
+
+                <!-- Excel DDO filters, sent to the backend (do-from-excel) by the
+                     search button or Enter in the text box. -->
+                <div class="shipment-search-bar map-do-filter">
+                  <div class="shipment-filter-field">
+                    <label>ค้นหา</label>
+                    <input
+                      class="shipment-search-input"
+                      [(ngModel)]="_excelDoFilter.text"
+                      (keyup.enter)="applyExcelDoFilter()"
+                      placeholder="DDO, Lot, Agent, Godown"
+                      title="ค้นหาจาก DDO, Lot, Agent, Godown, Remark"
+                    />
+                  </div>
+                  <div class="shipment-filter-field">
+                    <label>Grade</label>
+                    <mat-select
+                      class="shipment-search-input shipment-filter-select"
+                      [(ngModel)]="_excelDoFilter.grades"
+                      multiple
+                      placeholder="ทั้งหมด"
+                      panelClass="filter-multi-panel shipment-status-panel"
+                    >
+                      <mat-select-trigger>
+                        <ng-container
+                          *ngTemplateOutlet="multiTrigger; context: { $implicit: _excelDoFilter.grades }"
+                        ></ng-container>
+                      </mat-select-trigger>
+                      <div class="filter-multi-header" (click)="$event.stopPropagation()">
+                        <span class="filter-multi-count">{{
+                          _excelDoFilter.grades.length ? 'เลือก ' + _excelDoFilter.grades.length + ' รายการ' : 'ทั้งหมด'
+                        }}</span>
+                        <button
+                          type="button"
+                          class="filter-multi-clear"
+                          *ngIf="_excelDoFilter.grades.length"
+                          (click)="_excelDoFilter.grades = []"
+                        >
+                          ล้าง
+                        </button>
+                      </div>
+                      <mat-option *ngFor="let g of _excelDoGradeOptions" [value]="g">
+                        <span class="filter-option-name">{{ g }}</span>
+                      </mat-option>
+                    </mat-select>
+                  </div>
+                  <div class="shipment-filter-field">
+                    <label>Loading Date</label>
+                    <div class="shipment-filter-daterange" (click)="excelDoLoadingPicker.open()">
+                      <mat-icon class="shipment-filter-daterange-icon">calendar_today</mat-icon>
+                      <mat-date-range-input [rangePicker]="excelDoLoadingPicker">
+                        <input
+                          matStartDate
+                          [(ngModel)]="_excelDoFilter.loadingFrom"
+                          placeholder="วันที่เริ่มต้น"
+                          readonly
+                        />
+                        <input matEndDate [(ngModel)]="_excelDoFilter.loadingTo" placeholder="สิ้นสุด" readonly />
+                      </mat-date-range-input>
+                      <mat-date-range-picker #excelDoLoadingPicker></mat-date-range-picker>
+                    </div>
+                  </div>
+                  <div class="shipment-filter-actions">
+                    <button
+                      type="button"
+                      class="clear-button shipment-search-button"
+                      [disabled]="!hasExcelDoFilter()"
+                      title="ล้างตัวกรอง"
+                      (click)="clearExcelDoFilter()"
+                    >
+                      <img src="assets/images/clear.png" alt="clear-icon" />
+                    </button>
+                    <button
+                      type="button"
+                      class="search-button shipment-search-button"
+                      title="ค้นหา"
+                      [disabled]="_isLoadingExcelDo"
+                      (click)="applyExcelDoFilter()"
+                    >
+                      <mat-icon>search</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="map-do-special-list shipment-table-wrap shipment-table-fill">
+                  <table class="shipment-table shipment-table-special shipment-table-fit">
+                    <colgroup>
+                      <col class="col-check" />
+                      <col class="col-ddo" />
+                      <col class="col-grade" />
+                      <col class="col-lot" />
+                      <col class="col-date" />
+                      <col class="col-qty" />
+                      <col />
+                      <col class="col-godown" />
+                      <col class="col-explain" />
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <th class="shipment-table-check"></th>
+                        <th>DDO</th>
+                        <th>Grade</th>
+                        <th>Lot</th>
+                        <th>Loading Date</th>
+                        <th class="shipment-table-num">Qty</th>
+                        <th>Agent</th>
+                        <th>Godown</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Loading skeleton rows (same columns). -->
+                      <tr class="shipment-table-row shipment-table-skeleton" *ngFor="let row of _isLoadingExcelDo ? skeletonRows : []">
+                        <td class="shipment-table-check"><div class="skeleton skeleton-cell-circle"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 80%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 60%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 50%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 70%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 55%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 85%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 80%"></div></td>
+                        <td class="shipment-table-explain"><div class="skeleton skeleton-cell-button"></div></td>
+                      </tr>
+                      <tr class="shipment-table-empty" *ngIf="!_isLoadingExcelDo && _excelDoCandidates.length === 0">
+                        <td colspan="9">ไม่พบรายการที่ตรงกับตัวกรอง</td>
+                      </tr>
+                      <ng-container *ngFor="let item of _isLoadingExcelDo ? [] : _excelDoCandidates; trackBy: trackByExcelId">
+                        <tr
+                          class="shipment-table-row"
+                          [class.active]="_selectedExcelDo === item.id"
+                          [class.expanded]="isExcelDoExpanded(item.id)"
+                          (click)="onSelectExcelDo(item.id)"
+                        >
+                          <td class="shipment-table-check">
+                            <mat-icon>{{
+                              _selectedExcelDo === item.id
+                                ? 'radio_button_checked'
+                                : 'radio_button_unchecked'
+                            }}</mat-icon>
+                          </td>
+                          <td class="shipment-table-main">{{ item.ddo }}</td>
+                          <td>{{ item.grade || '-' }}</td>
+                          <td>{{ item.lot || '-' }}</td>
+                          <td>{{ (parseJobDate(item.loading_date) | date: 'dd/MM/yyyy') || '-' }}</td>
+                          <td class="shipment-table-num shipment-table-main">{{ item.qty }}</td>
+                          <td class="shipment-table-agent" [title]="item.agent || ''">{{ item.agent || '-' }}</td>
+                          <td class="shipment-table-godown" [title]="item.go_down || ''">
+                            {{ item.go_down || '-' }}
+                          </td>
+                          <td class="shipment-table-explain">
+                            <!-- Explain: opens the DDO's detail row (same as the
+                                 shipment table on the left) without selecting it. -->
+                            <button
+                              type="button"
+                              class="shipment-explain-button"
+                              [class.open]="isExcelDoExpanded(item.id)"
+                              [title]="isExcelDoExpanded(item.id) ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียด'"
+                              (click)="$event.stopPropagation(); toggleExcelDoExpanded(item.id)"
+                            >
+                              <mat-icon>expand_more</mat-icon>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr class="shipment-table-detail" *ngIf="isExcelDoExpanded(item.id)">
+                          <td colspan="9">
+                            <div class="shipment-detail-grid">
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">PO Status</span>
+                                <span class="shipment-detail-value">{{ item.po_status || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">CC Code</span>
+                                <span class="shipment-detail-value">{{ item.cc_code || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">WH Code</span>
+                                <span class="shipment-detail-value">{{ item.wh_code || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">Seq</span>
+                                <span class="shipment-detail-value">{{ item.seq }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">On Pallet</span>
+                                <span class="shipment-detail-value">{{ item.on_pallet || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">Truck.L</span>
+                                <span class="shipment-detail-value">{{
+                                  item.truck_l != null ? (item.truck_l | number: '1.2-2') : '-'
+                                }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">Truck</span>
+                                <span class="shipment-detail-value">{{ item.truck || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">Owner</span>
+                                <span class="shipment-detail-value">{{ item.owner || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item shipment-detail-wide">
+                                <span class="shipment-detail-label">Agent</span>
+                                <span class="shipment-detail-value">{{ item.agent || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item shipment-detail-wide">
+                                <span class="shipment-detail-label">Godown</span>
+                                <span class="shipment-detail-value">{{ item.go_down || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item shipment-detail-remark">
+                                <span class="shipment-detail-label">Remark</span>
+                                <span class="shipment-detail-value">{{ item.shipping_instruction || '-' }}</span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Map DO Special tab content -->
+              <div
+                class="shipment-tab-panel"
+                *ngIf="_selectedShipment && _shipmentActionTab === 'mapSpecial'"
+              >
+                <!-- Header: what to do + which shipment / DO is being mapped
+                     + how many Special Job items were loaded. -->
+                <div class="map-do-header">
+                  <div class="map-do-header-text">
+                    <span class="map-do-header-title">เลือก Special Job ที่ต้องการจับคู่</span>
+                    <span class="map-do-header-sub">จับคู่ item ของ Special Job กับ Shipment ที่เลือกทางด้านซ้าย</span>
+                  </div>
+                  <div class="map-do-header-target">
+                    <span class="map-do-header-chip">
+                      <mat-icon>local_shipping</mat-icon>{{ _selectedShipment.shipmentno || '-' }}
+                    </span>
+                    <span class="map-do-header-chip">DO {{ _selectedShipment.deliveryno || '-' }}</span>
+                    <span class="map-do-header-count">{{ _specialRows.length }} รายการ</span>
+                  </div>
+                </div>
+
+                <!-- Special Job filters, sent to the backend (GET job/special:
+                     docNo / grades / dateFrom / dateTo) by the search button
+                     or Enter in the text box. -->
+                <div class="shipment-search-bar map-do-filter">
+                  <div class="shipment-filter-field">
+                    <label>เลขที่เอกสาร</label>
+                    <input
+                      class="shipment-search-input"
+                      [(ngModel)]="_specialFilter.docNo"
+                      (keyup.enter)="applySpecialFilter()"
+                      placeholder="พิมพ์เลขที่เอกสาร"
+                    />
+                  </div>
+                  <div class="shipment-filter-field">
+                    <label>Grade</label>
+                    <mat-select
+                      class="shipment-search-input shipment-filter-select"
+                      [(ngModel)]="_specialFilter.grades"
+                      multiple
+                      placeholder="ทั้งหมด"
+                      panelClass="filter-multi-panel shipment-status-panel"
+                    >
+                      <mat-select-trigger>
+                        <ng-container
+                          *ngTemplateOutlet="multiTrigger; context: { $implicit: _specialFilter.grades }"
+                        ></ng-container>
+                      </mat-select-trigger>
+                      <div class="filter-multi-header" (click)="$event.stopPropagation()">
+                        <span class="filter-multi-count">{{
+                          _specialFilter.grades.length ? 'เลือก ' + _specialFilter.grades.length + ' รายการ' : 'ทั้งหมด'
+                        }}</span>
+                        <button
+                          type="button"
+                          class="filter-multi-clear"
+                          *ngIf="_specialFilter.grades.length"
+                          (click)="_specialFilter.grades = []"
+                        >
+                          ล้าง
+                        </button>
+                      </div>
+                      <mat-option *ngFor="let g of _specialGradeOptions" [value]="g">
+                        <span class="filter-option-name">{{ g }}</span>
+                      </mat-option>
+                    </mat-select>
+                  </div>
+                  <div class="shipment-filter-field">
+                    <label>วันที่สร้าง</label>
+                    <div class="shipment-filter-daterange" (click)="specialDatePicker.open()">
+                      <mat-icon class="shipment-filter-daterange-icon">calendar_today</mat-icon>
+                      <mat-date-range-input [rangePicker]="specialDatePicker">
+                        <input matStartDate [(ngModel)]="_specialFilter.dateFrom" placeholder="วันที่เริ่มต้น" readonly />
+                        <input matEndDate [(ngModel)]="_specialFilter.dateTo" placeholder="สิ้นสุด" readonly />
+                      </mat-date-range-input>
+                      <mat-date-range-picker #specialDatePicker></mat-date-range-picker>
+                    </div>
+                  </div>
+                  <div class="shipment-filter-actions">
+                    <button
+                      type="button"
+                      class="clear-button shipment-search-button"
+                      [disabled]="!hasSpecialFilter()"
+                      title="ล้างตัวกรอง"
+                      (click)="clearSpecialFilter()"
+                    >
+                      <img src="assets/images/clear.png" alt="clear-icon" />
+                    </button>
+                    <button
+                      type="button"
+                      class="search-button shipment-search-button"
+                      title="ค้นหา"
+                      [disabled]="_isLoadingSpecial"
+                      (click)="applySpecialFilter()"
+                    >
+                      <mat-icon>search</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- One row per Special Job item (the shipment links to an item,
+                     see selectSpecialItem). Job info shows on the job's first
+                     item row; the rest is in the explain row. Items of a job
+                     with no Special Zone location yet are shown but disabled. -->
+                <div class="map-do-special-list shipment-table-wrap shipment-table-fill">
+                  <table class="shipment-table shipment-table-special shipment-table-fit">
+                    <colgroup>
+                      <col class="col-check" />
+                      <col class="col-docno" />
+                      <col class="col-grade" />
+                      <col class="col-splot" />
+                      <col />
+                      <col class="col-qty" />
+                      <col class="col-bag" />
+                      <col class="col-zone" />
+                      <col class="col-explain" />
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <th class="shipment-table-check"></th>
+                        <th>เลขที่เอกสาร</th>
+                        <th>Grade</th>
+                        <th>Lot</th>
+                        <th>พาเลท</th>
+                        <th class="shipment-table-num">Qty</th>
+                        <th class="shipment-table-num">Bag</th>
+                        <th>Zone</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Loading skeleton rows (same columns). -->
+                      <tr class="shipment-table-row shipment-table-skeleton" *ngFor="let row of _isLoadingSpecial ? skeletonRows : []">
+                        <td class="shipment-table-check"><div class="skeleton skeleton-cell-circle"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 80%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 60%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 70%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 50%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 55%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 45%"></div></td>
+                        <td><div class="skeleton skeleton-cell" style="width: 75%"></div></td>
+                        <td class="shipment-table-explain"><div class="skeleton skeleton-cell-button"></div></td>
+                      </tr>
+                      <tr class="shipment-table-empty" *ngIf="!_isLoadingSpecial && _specialRows.length === 0">
+                        <td colspan="9">ไม่พบรายการที่ตรงกับตัวกรอง</td>
+                      </tr>
+                      <ng-container *ngFor="let r of _specialRows; trackBy: trackBySpecialRow">
+                        <tr
+                          class="shipment-table-row"
+                          [class.active]="_selectedSpecialItemId === r.item.item_id"
+                          [class.expanded]="isSpecialExpanded(r.item.item_id)"
+                          [class.shipment-table-row-disabled]="!r.job.has_location"
+                          [title]="!r.job.has_location ? 'ยังไม่ได้กำหนด Location สำหรับงานนี้' : ''"
+                          (click)="r.job.has_location && selectSpecialItem(r.item.item_id)"
+                        >
+                          <td class="shipment-table-check">
+                            <mat-icon>{{
+                              _selectedSpecialItemId === r.item.item_id
+                                ? 'radio_button_checked'
+                                : 'radio_button_unchecked'
+                            }}</mat-icon>
+                          </td>
+                          <td class="shipment-table-shipment">
+                            {{ r.first ? r.job.doc_no || r.job.system_no || '-' : '' }}
+                          </td>
+                          <td class="shipment-table-main">{{ r.item.grade || '-' }}</td>
+                          <td [title]="specialItemLotNames(r.item)">{{ specialItemLotNames(r.item) }}</td>
+                          <td [title]="'#' + r.item.pallet_nos.join(', ')">
+                            {{ r.item.pallet_nos.length ? '#' + r.item.pallet_nos.join(', ') : '-' }}
+                          </td>
+                          <td class="shipment-table-num shipment-table-main">
+                            {{ (r.item.qty | number: '1.0-2') || 0 }}
+                          </td>
+                          <td class="shipment-table-num">{{ r.item.bag || '-' }}</td>
+                          <td class="shipment-table-godown" [title]="r.job.prepare_zone || ''">
+                            {{ r.job.prepare_zone || '-' }}
+                          </td>
+                          <td class="shipment-table-explain">
+                            <button
+                              type="button"
+                              class="shipment-explain-button"
+                              [class.open]="isSpecialExpanded(r.item.item_id)"
+                              [title]="isSpecialExpanded(r.item.item_id) ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียด'"
+                              (click)="$event.stopPropagation(); toggleSpecialExpanded(r.item.item_id)"
+                            >
+                              <mat-icon>expand_more</mat-icon>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr class="shipment-table-detail" *ngIf="isSpecialExpanded(r.item.item_id)">
+                          <td colspan="9">
+                            <div class="shipment-detail-grid">
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">สถานะงาน</span>
+                                <span class="shipment-detail-value">{{ r.job.status_name || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">วันที่งาน</span>
+                                <span class="shipment-detail-value">{{
+                                  (parseJobDate(r.job.job_date) | date: 'dd/MM/yyyy') || '-'
+                                }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">พาเลทเสร็จ</span>
+                                <span class="shipment-detail-value"
+                                  >{{ r.job.complete_pallet || 0 }}/{{ r.job.total_pallet || 0 }}</span
+                                >
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">การมาถึง</span>
+                                <span class="shipment-detail-value">{{
+                                  r.job.is_arrived ? 'Arrived' : r.job.is_arriving ? 'Arriving' : '-'
+                                }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">No.</span>
+                                <span class="shipment-detail-value">{{ r.job.no || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">Invoice</span>
+                                <span class="shipment-detail-value">{{ r.job.invoice || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">Size</span>
+                                <span class="shipment-detail-value">{{ r.job.pallet_size || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item">
+                                <span class="shipment-detail-label">Prep Status</span>
+                                <span class="shipment-detail-value">{{ r.job.prep_status || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item shipment-detail-wide">
+                                <span class="shipment-detail-label">Customer</span>
+                                <span class="shipment-detail-value">{{ r.job.customer || '-' }}</span>
+                              </div>
+                              <div class="shipment-detail-item shipment-detail-wide">
+                                <span class="shipment-detail-label">Lot</span>
+                                <span class="shipment-detail-value">{{ specialItemLots(r.item) }}</span>
+                              </div>
+                              <div class="shipment-detail-item shipment-detail-remark">
+                                <span class="shipment-detail-label">Remark</span>
+                                <span class="shipment-detail-value">{{ r.job.remark || '-' }}</span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Create Picking tab content -->
+              <div
+                class="shipment-tab-panel"
+                *ngIf="_selectedShipment && _shipmentActionTab === 'picking'"
+              >
+                <!-- Create Picking only creates the job here; locations,
+                     forklift and approval are done in job-detail (same as any
+                     other job), which the footer button opens right after. -->
+                <div class="picking-item-card">
+                  <div class="picking-item-header">
+                    <div class="picking-item-icon"><mat-icon>inventory_2</mat-icon></div>
+                    <div class="picking-item-text">
+                      <span class="picking-item-do">DO {{ _selectedShipment.deliveryno || '-' }}</span>
+                      <span class="picking-pill picking-pill--grade" *ngIf="_selectedShipment.fpdgradecode">{{
+                        _selectedShipment.fpdgradecode
+                      }}</span>
+                      <span class="picking-pill picking-pill--lot" *ngIf="_selectedShipment.pdlotno">{{
+                        _selectedShipment.pdlotno
+                      }}</span>
+                      <span class="picking-pill picking-pill--qty"
+                        >{{ (_selectedShipment.qty | number: '1.0-2') || 0 }} {{ _selectedShipment.unit }}</span
+                      >
+                    </div>
+                  </div>
+
+                  <div class="picking-summary-grid">
+                    <div class="shipment-detail-item">
+                      <span class="shipment-detail-label">Shipment No</span>
+                      <span class="shipment-detail-value">{{ _selectedShipment.shipmentno || '-' }}</span>
+                    </div>
+                    <div class="shipment-detail-item">
+                      <span class="shipment-detail-label">Warehouse</span>
+                      <span class="shipment-detail-value">{{ pickingWarehouseCode }}</span>
+                    </div>
+                    <div class="shipment-detail-item">
+                      <span class="shipment-detail-label">CC Code</span>
+                      <span class="shipment-detail-value">{{ _selectedShipment.cccode || '-' }}</span>
+                    </div>
+                    <div class="shipment-detail-item">
+                      <span class="shipment-detail-label">Delivery Date</span>
+                      <span class="shipment-detail-value">{{
+                        (parseJobDate(_selectedShipment.deliverydate) | date: 'dd/MM/yyyy') || '-'
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- What happens after "สร้างงาน" -->
+                <div class="picking-flow">
+                  <div class="picking-flow-step picking-flow-step--here">
+                    <span class="picking-flow-no">1</span>
+                    <div class="picking-flow-text">
+                      <span class="picking-flow-title">สร้างงาน Picking</span>
+                      <span class="picking-flow-sub">จาก DO นี้ (หน้านี้)</span>
+                    </div>
+                  </div>
+                  <mat-icon class="picking-flow-arrow">arrow_forward</mat-icon>
+                  <div class="picking-flow-step">
+                    <span class="picking-flow-no">2</span>
+                    <div class="picking-flow-text">
+                      <span class="picking-flow-title">ระบุตำแหน่ง &amp; โฟร์คลิฟท์</span>
+                      <span class="picking-flow-sub">GET / PUT ที่หน้า Job Detail</span>
+                    </div>
+                  </div>
+                  <mat-icon class="picking-flow-arrow">arrow_forward</mat-icon>
+                  <div class="picking-flow-step">
+                    <span class="picking-flow-no">3</span>
+                    <div class="picking-flow-text">
+                      <span class="picking-flow-title">อนุมัติงาน</span>
+                      <span class="picking-flow-sub">ที่หน้า Job Detail</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="shipment-source-note">
+                  <mat-icon>info</mat-icon>
+                  กด "สร้างงาน &amp; ไปหน้า Job Detail" ระบบจะสร้างงานแล้วเปิดหน้า Job Detail ให้ระบุตำแหน่งและอนุมัติต่อ
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No DO picked yet (e.g. while the list loads): same footer, save
+           disabled, so the modal does not jump when an action opens. -->
+      <div class="modal-footer" *ngIf="_shipmentActionTab === 'list'">
+        <button type="button" class="btn modal-btn-cancel" (click)="onCancelShipmentAction()">
+          ยกเลิก
+        </button>
+        <button type="button" class="btn modal-btn-save" disabled>บันทึก</button>
+      </div>
+
+      <div class="modal-footer" *ngIf="_shipmentActionTab === 'mapDo'">
+        <button type="button" class="btn modal-btn-cancel" (click)="onCancelShipmentAction()">
+          ยกเลิก
+        </button>
+        <button *hasPermission="'job.map_do'"
+          type="button"
+          class="btn modal-btn-save"
+          [disabled]="_excelDoCandidates.length === 0 || !isMapping || _isSavingMapDo"
+          (click)="onSubmitMapDo()"
+        >
+          <span *ngIf="!_isSavingMapDo">บันทึก</span>
+          <span *ngIf="_isSavingMapDo">กำลังบันทึก...</span>
+        </button>
+      </div>
+      <div class="modal-footer" *ngIf="_shipmentActionTab === 'mapSpecial'">
+        <button type="button" class="btn modal-btn-cancel" (click)="onCancelShipmentAction()">
+          ยกเลิก
+        </button>
+        <button *hasPermission="'job.map_do'"
+          type="button"
+          class="btn modal-btn-save"
+          [disabled]="!_selectedSpecialItemId || _isSavingMapDoSpecial"
+          (click)="confirmMapDoSpecial()"
+        >
+          <span *ngIf="!_isSavingMapDoSpecial">บันทึก</span>
+          <span *ngIf="_isSavingMapDoSpecial">กำลังบันทึก...</span>
+        </button>
+      </div>
+      <div class="modal-footer" *ngIf="_shipmentActionTab === 'picking'">
+        <button type="button" class="btn modal-btn-cancel" (click)="onCancelShipmentAction()">
+          ยกเลิก
+        </button>
+        <button
+          type="button"
+          class="btn modal-btn-save"
+          [disabled]="!canSubmitCreatePicking() || _isSavingCreatePicking"
+          (click)="confirmCreatePicking()"
+        >
+          <span *ngIf="!_isSavingCreatePicking" class="picking-submit-label"
+            >สร้างงาน &amp; ไปหน้า Job Detail <mat-icon>open_in_new</mat-icon></span
+          >
+          <span *ngIf="_isSavingCreatePicking">กำลังสร้าง...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WMS+ Interface Log Detail -->
+<div class="modal fade" id="wmsPlusDetailModal" tabindex="-1" aria-labelledby="wmsPlusDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content wms-plus-detail-content">
+      <div class="modal-header wms-plus-detail-header">
+        <div>
+          <div class="system-eyebrow">{{ _wmsPlusDetailJob?.system_no || '-' }}</div>
+          <h5 class="modal-title" id="wmsPlusDetailModalLabel">รายละเอียดการส่งข้อมูล</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div
+        class="wms-plus-detail-tabs"
+        *ngIf="(_wmsPlusDetailLogs?.length ?? 0) > 1"
+      >
+        <button
+          type="button"
+          class="wms-plus-detail-tab"
+          *ngFor="let log of _wmsPlusDetailLogs; let i = index"
+          [class.success]="log.is_success === 'Y'"
+          [class.failed]="log.is_success !== 'Y'"
+          [class.active]="_wmsPlusDetailPage === i + 1"
+          (click)="_wmsPlusDetailPage = i + 1"
+        ></button>
+      </div>
+      <div class="modal-body" *ngIf="_wmsPlusDetailLogs?.length; else noWmsPlusLogs">
+        <div class="wms-plus-detail-entry" *ngFor="let wmsPlusDetailStatus of pagedWmsPlusDetailLogs">
+          <div class="wms-plus-detail-entry-header">
+            <span
+              class="wms-plus-detail-entry-badge"
+              [class.success]="wmsPlusDetailStatus.is_success === 'Y'"
+              [class.failed]="wmsPlusDetailStatus.is_success !== 'Y'"
+            >
+              <mat-icon>{{
+                wmsPlusDetailStatus.is_success === 'Y' ? 'check_circle' : 'error'
+              }}</mat-icon>
+              {{ wmsPlusDetailStatus.is_success === 'Y' ? 'Success' : 'Failed' }}
+            </span>
+            <span class="wms-plus-detail-entry-mode">{{ wmsPlusDetailStatus.mode || '-' }}</span>
+            <span class="wms-plus-detail-entry-time">{{ (wmsPlusDetailStatus.create_datetime | date:'dd/MM/yyyy HH:mm:ss') || '-' }}</span>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              Method
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusDetailStatus.method)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ wmsPlusDetailStatus.method || '-' }}</pre>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              Route
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusDetailStatus.route)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ wmsPlusDetailStatus.route || '-' }}</pre>
+          </div>
+          <div class="wms-plus-detail-row wms-plus-detail-row-payload">
+            <span class="wms-plus-detail-label">
+              Payload
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusDetailStatus.param)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ formatJsonPayload(wmsPlusDetailStatus.param) }}</pre>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              Message
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusDetailStatus.message)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ formatWmsMessage(wmsPlusDetailStatus.message) }}</pre>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              Time
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusDetailStatus.create_datetime)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ wmsPlusDetailStatus.create_datetime || '-' }}</pre>
+          </div>
+        </div>
+      </div>
+      <ng-template #noWmsPlusLogs>
+        <div class="modal-body">
+          <div class="wms-plus-detail-empty">ไม่พบข้อมูลการส่ง</div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

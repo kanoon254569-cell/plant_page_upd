@@ -1,0 +1,84 @@
+<button
+  type="button"
+  class="page-help-button"
+  data-tour="page-help"
+  *ngIf="content"
+  matTooltip="วิธีใช้หน้านี้"
+  matTooltipPosition="below"
+  aria-label="วิธีใช้หน้านี้"
+  (click)="start()"
+>
+  <mat-icon>help_outline</mat-icon>
+</button>
+
+<div #tourRoot class="page-help-tour-root">
+  <ng-container *ngIf="active && current as step">
+    <!-- Blocks clicks on the page while the tour is open. -->
+    <div class="page-help-blocker" [class.dim]="!spotlight"></div>
+
+    <div
+      class="page-help-spotlight"
+      *ngIf="spotlight"
+      [style.top.px]="spotlight.top"
+      [style.left.px]="spotlight.left"
+      [style.width.px]="spotlight.width"
+      [style.height.px]="spotlight.height"
+    ></div>
+
+    <div
+      #popover
+      class="page-help-popover"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="step.title"
+      [style.top.px]="popoverPos.top"
+      [style.left.px]="popoverPos.left"
+    >
+      <div class="page-help-popover-header">
+        <span class="page-help-counter">ขั้นตอน {{ index + 1 }} / {{ steps.length }}</span>
+        <button type="button" class="page-help-close" aria-label="ปิด" (click)="end()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="page-help-popover-title">
+        <div class="page-help-popover-icon">
+          <mat-icon>{{ step.icon }}</mat-icon>
+        </div>
+        <span>{{ step.title }}</span>
+      </div>
+
+      <ul class="page-help-text">
+        <li *ngFor="let line of step.text">{{ line }}</li>
+      </ul>
+
+      <div class="page-help-order" *ngIf="step.orderedList as list">
+        <div class="page-help-order-title">{{ list.title }}</div>
+        <ol>
+          <li *ngFor="let item of list.items">{{ item }}</li>
+        </ol>
+      </div>
+
+      <div class="page-help-note" *ngIf="step.note">
+        <mat-icon>info</mat-icon>
+        <span>{{ step.note }}</span>
+      </div>
+
+      <div class="page-help-popover-footer">
+        <div class="page-help-dots">
+          <span
+            class="page-help-dot"
+            *ngFor="let s of steps; let i = index"
+            [class.active]="i === index"
+          ></span>
+        </div>
+        <button type="button" class="page-help-prev" *ngIf="index > 0" (click)="prev()">
+          ย้อนกลับ
+        </button>
+        <button type="button" class="page-help-next" (click)="next()">
+          {{ isLast ? 'เสร็จสิ้น' : 'ถัดไป' }}
+        </button>
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,126 @@
+<div
+  class="modal fade"
+  id="plantLocationModal"
+  tabindex="-1"
+  aria-labelledby="plantLocationModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="location-modal-header">
+        <div class="location-modal-title-group">
+          <span class="location-modal-eyebrow">ตำแหน่งในโรงงาน</span>
+          <div class="location-modal-title-row">
+            <span class="location-modal-title-text" id="plantLocationModalLabel">{{ title }}</span>
+            <span class="location-modal-item-tag" *ngIf="headerGrade">
+              <span class="location-modal-item-tag-label">เกรด:</span> {{ headerGrade }}
+            </span>
+            <span class="location-modal-item-tag" *ngIf="headerLotNo">
+              <span class="location-modal-item-tag-label">ล็อต:</span> {{ headerLotNo }}
+            </span>
+          </div>
+        </div>
+        <button type="button" class="location-modal-close" aria-label="ปิด" (click)="onClose()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <form [formGroup]="searchForm" class="row">
+            <div class="row m-0 p-0">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md-9">
+                <mat-label>ตำแหน่ง</mat-label>
+                <input matInput formControlName="ccCode" placeholder="ค้นหาตำแหน่ง" />
+              </mat-form-field>
+
+              <div class="col-md-3">
+                <button
+                  type="button"
+                  class="clear-button"
+                  (click)="onResetSearch()"
+                  [disabled]="searchForm.controls.ccCode.disabled"
+                  [ngClass]="searchForm.controls.ccCode.disabled ? 'disabled' : ''"
+                >
+                  <img src="assets/images/clear.png" alt="clear-icon" />
+                  ล้าง
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="select-src-location-content" *ngIf="currentSrcLocations.length > 0">
+          <div
+            class="select-src-location-item"
+            [ngClass]="location?.value?.isChecked ? 'checked' : ''"
+            *ngFor="let location of currentSrcLocations"
+            (click)="onToggleCheckLocation(location)"
+          >
+            <div
+              class="select-src-location-item-left"
+              [ngClass]="
+                (location?.value?.isChecked ? 'cursor-default' : '')
+              "
+            >
+              <div class="select-src-location-icon">
+                <img src="assets/images/location.png" alt="location-icon" />
+              </div>
+              <div class="select-src-location-details">
+                <div class="select-src-location-name">
+                  <span>{{ location.value.locationName }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="select-src-location-item-right" *ngIf="location.value.isChecked">
+              <button
+                type="button"
+                class="delete-checked-location-button"
+                *ngIf="canModifySrcLocation"
+                (click)="onUncheckLocation(location, $event)"
+              >
+                <img src="assets/images/remove.png" alt="remove-icon" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="no-data-select-src-location" *ngIf="currentSrcLocations.length === 0">
+          <div class="app-empty-state-icon app-empty-state-icon--sm">
+            <mat-icon>place</mat-icon>
+          </div>
+          <div>ไม่พบตำแหน่งต้นทาง</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" data-bs-dismiss="modal" (click)="onSave()">บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="srcLocationConfirmModal"
+  tabindex="-1"
+  aria-hidden="true"
+  data-bs-backdrop="static"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content confirm-modal-content">
+      <div class="confirm-icon">
+        <img src="assets/images/location.png" alt="location" />
+      </div>
+      <h5 class="confirm-title">บันทึกการเปลี่ยนแปลง?</h5>
+      <p class="confirm-body">ต้องการบันทึกการเปลี่ยนแปลงหรือไม่?</p>
+      <div class="confirm-footer">
+        <button class="confirm-btn confirm-btn-save" (click)="onSave()" data-bs-dismiss="modal">
+          บันทึก
+        </button>
+        <button class="confirm-btn confirm-btn-cancel" (click)="onCancel()" data-bs-dismiss="modal">
+          ยกเลิก
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

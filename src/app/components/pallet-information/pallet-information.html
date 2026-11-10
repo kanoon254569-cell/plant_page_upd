@@ -1,0 +1,461 @@
+﻿<!-- Page Name -->
+<div class="header-section">
+  <div class="header-left">
+    <button type="button" class="back-button" title="ย้อนกลับ" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-section-title">
+      <div class="header-section-icon">
+        <mat-icon>inventory_2</mat-icon>
+      </div>
+      <span>Pallet Information</span>
+    </div>
+  </div>
+</div>
+
+<!-- Pallet Info Card -->
+<!-- is-loading: no router state yet -> values become shimmer bars until the bag list fills the card -->
+<div class="pi-card" [class.is-loading]="isBagListLoading && !_palletCardData.length">
+  <div class="pi-card__icon">
+    <img src="assets/images/pallet.png" alt="pallet" />
+  </div>
+
+  <div class="pi-card__fields">
+    <!-- Pallet Number (headline) -->
+    <div class="pi-hero">
+      <span class="pi-field__label">Pallet Number</span>
+      <span class="pi-hero__value">{{ _palletCardData[0]?.palletNumber || '-' }}</span>
+    </div>
+
+    <div class="pi-grid">
+      <div class="pi-tile">
+        <span class="pi-field__label">Grade</span>
+        <span class="pi-field__value">{{ _palletCardData[0]?.grade || '-' }}</span>
+      </div>
+      <div class="pi-tile">
+        <span class="pi-field__label">Lot</span>
+        <span class="pi-field__value">{{ _palletCardData[0]?.lot || '-' }}</span>
+      </div>
+      <div class="pi-tile">
+        <span class="pi-field__label">Package Ratio</span>
+        <span class="pi-field__value" *ngIf="_palletCardData[0]?.unitRatio != null; else noRatio">
+          {{ _palletCardData[0]?.unitRatio | number: '1.0-2' }}<span class="pi-unit">kg</span>
+          <span class="pi-sub" *ngIf="_palletCardData[0]?.unitPallet != null">
+            × {{ _palletCardData[0]?.unitPallet | number }} ถุง
+          </span>
+        </span>
+        <ng-template #noRatio><span class="pi-field__value">-</span></ng-template>
+      </div>
+      <div class="pi-tile pi-tile--highlight">
+        <span class="pi-field__label">QTY</span>
+        <span class="pi-field__value pi-field__value--highlight" *ngIf="_palletCardData[0]?.qty; else noQty">
+          {{ _palletCardData[0]?.qty | number: '1.0-2' }}<span class="pi-unit">kg</span>
+        </span>
+        <ng-template #noQty><span class="pi-field__value">-</span></ng-template>
+      </div>
+      <div class="pi-tile">
+        <span class="pi-field__label">Location</span>
+        <span class="pi-field__value">
+          <span class="badge-chip badge-chip--blue" *ngIf="_palletCardData[0]?.palletLocation; else noLocation">
+            <mat-icon>location_on</mat-icon>
+            {{ _palletCardData[0]?.palletLocation }}
+          </span>
+          <ng-template #noLocation>-</ng-template>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bag List / Pallet History -->
+<div class="display-table">
+  <div class="display-table-header">
+    <div class="pi-tabs">
+      <button type="button" class="pi-tab" [class.active]="activeTab === 'bags'" (click)="selectTab('bags')">
+        <mat-icon>shopping_bag</mat-icon>
+        Bag List
+        <span class="table-count">{{ _totalCount }}</span>
+      </button>
+      <button type="button" class="pi-tab" [class.active]="activeTab === 'history'" (click)="selectTab('history')">
+        <mat-icon>history</mat-icon>
+        Pallet History
+        <span class="table-count" *ngIf="historyLoaded">{{ _historyTotalCount }}</span>
+      </button>
+    </div>
+    <button
+      type="button"
+      class="pi-missing-bag__btn"
+      *ngIf="activeTab === 'bags' && !isBagListLoading && missingBagQrs.length > 0"
+      [disabled]="isCreatingMissingBags"
+      (click)="onClickCreateAllMissingBags()"
+    >
+      <mat-icon [class.pi-spin]="isCreatingMissingBags">{{ isCreatingMissingBags ? 'autorenew' : 'playlist_add' }}</mat-icon>
+      {{ isCreatingMissingBags ? 'กำลังเพิ่มข้อมูล...' : 'เพิ่มข้อมูลถุงที่ขาดทั้งหมด (' + missingBagQrs.length + ')' }}
+    </button>
+  </div>
+
+  <!-- ===== Pallet History ===== -->
+  <ng-container *ngIf="activeTab === 'history'">
+    <div class="display-table-content">
+      <div class="ph-container" *ngIf="_historyData.length > 0; else historyEmpty">
+        <!-- Summary -->
+        <div class="ph-summary">
+          <div class="ph-summary__item">
+            <mat-icon>work_history</mat-icon>
+            <span class="ph-summary__label">Jobs</span>
+            <span class="ph-summary__value">{{ historyJobCount | number }}</span>
+          </div>
+          <div class="ph-summary__item">
+            <mat-icon>timeline</mat-icon>
+            <span class="ph-summary__label">ขั้นตอน</span>
+            <span class="ph-summary__value">{{ _historyTotalCount | number }}</span>
+          </div>
+          <div class="ph-summary__item">
+            <mat-icon>flag</mat-icon>
+            <span class="ph-summary__label">เคลื่อนย้ายครั้งแรก</span>
+            <span class="ph-summary__value">{{ historyFirstDatetime | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="ph-summary__item">
+            <mat-icon>update</mat-icon>
+            <span class="ph-summary__label">ล่าสุด</span>
+            <span class="ph-summary__value">{{ historyLastDatetime | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+        <!-- One section per day, one row per step (newest first) -->
+        <section class="ph-day" *ngFor="let day of _historyDays; let firstDay = first">
+          <div class="ph-day__header">
+            <mat-icon>event</mat-icon>
+            {{ day.date | date: 'EEE dd/MM/yyyy' }}
+            <span class="ph-day__count">{{ day.items.length }} ขั้นตอน</span>
+          </div>
+
+          <div
+            class="ph-row"
+            *ngFor="let item of day.items; let last = last; let firstItem = first"
+            [ngClass]="'ph-row--p' + item.process_id"
+            [class.ph-row--latest]="firstDay && firstItem"
+          >
+            <!-- Time -->
+            <div class="ph-time">{{ item.event_datetime | date: 'HH:mm:ss' }}</div>
+
+            <!-- Rail -->
+            <div class="ph-rail">
+              <span class="ph-dot">
+                <mat-icon>{{ (item.process_id != null ? processIcon[item.process_id] : null) ?? 'radio_button_checked' }}</mat-icon>
+              </span>
+              <span class="ph-line" *ngIf="!last"></span>
+            </div>
+
+            <!-- Step card -->
+            <div class="ph-card">
+              <!-- Step: process -> location -->
+              <div class="ph-card__main">
+                <span class="ph-process">{{ item.process_name || '-' }}</span>
+                <mat-icon class="ph-arrow">arrow_forward</mat-icon>
+                <span class="badge-chip badge-chip--loc" [ngClass]="'badge-chip--loc-' + item.location_type_code">
+                  <mat-icon>{{ locationTypeIcon[item.location_type_code ?? ''] ?? 'place' }}</mat-icon>
+                  {{ item.location_type || '-' }}
+                </span>
+                <span class="ph-location" [title]="item.location_name ?? ''">{{ item.location_name || '-' }}</span>
+                <span class="ph-card__badges">
+                  <span class="ph-status" [ngClass]="'ph-status--s' + item.job_status_id" *ngIf="item.job_status_name">
+                    {{ item.job_status_name }}
+                  </span>
+                  <span class="ph-latest" *ngIf="firstDay && firstItem">ล่าสุด</span>
+                </span>
+              </div>
+
+              <!-- Job / operator / forklift -->
+              <div class="ph-info">
+                <div class="ph-info__col ph-info__col--job" *ngIf="item.job_main_id">
+                  <span class="ph-info__label">
+                    <span class="ph-job-type">
+                      <mat-icon>{{ jobTypeIcon[item.job_type_short_name ?? ''] ?? 'work_outline' }}</mat-icon>
+                      {{ item.job_type_short_name || 'JOB' }}
+                    </span>
+                    {{ item.job_type_name || 'Job' }}
+                  </span>
+                  <span class="ph-info__value ph-system-no" [title]="'System No. ' + (item.system_no ?? '-')">
+                    {{ item.system_no || '-' }}
+                  </span>
+                  <span class="ph-info__sub">
+                    <ng-container *ngIf="item.wms_no">WMS {{ item.wms_no }} · </ng-container>Job #{{ item.job_main_id }}
+                  </span>
+                </div>
+
+                <div class="ph-info__col">
+                  <span class="ph-info__label"><mat-icon>person</mat-icon> ผู้ดำเนินการ</span>
+                  <span class="ph-info__value" [title]="historyUserDisplayName(item) ?? ''">{{ historyUserDisplayName(item) || '-' }}</span>
+                  <span class="ph-info__sub" *ngIf="item.create_user_name">รหัส {{ item.create_user_name }}</span>
+                </div>
+
+                <div class="ph-info__col">
+                  <span class="ph-info__label"><mat-icon>forklift</mat-icon> Forklift</span>
+                  <span class="ph-info__value">{{ item.forklift_name || '-' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <ng-template #historyEmpty>
+        <div class="empty-state empty-state--history">
+          <app-empty-state
+            variant="table"
+            [title]="historyLoading ? 'กำลังโหลด...' : 'ไม่พบประวัติ'"
+            [message]="historyLoading ? '' : 'พาเลทนี้ยังไม่มีการเคลื่อนย้าย'"
+          ></app-empty-state>
+        </div>
+      </ng-template>
+    </div>
+  </ng-container>
+
+  <!-- ===== Bag List ===== -->
+  <ng-container *ngIf="activeTab === 'bags'">
+  <div class="display-table-content">
+    <!-- Skeleton while process/bag loads: same columns and widths as the real table -->
+    <div class="table-container p-0" *ngIf="isBagListLoading" aria-hidden="true">
+      <table class="w-100 skel-table">
+        <thead>
+          <tr>
+            <th class="mat-column-no">Bag No.</th>
+            <th class="mat-column-bagNumber">Bag Number</th>
+            <th class="mat-column-costCenter">Cost Center</th>
+            <th class="mat-column-runningNo">Bag Running / Ton No.</th>
+            <th class="mat-column-mode">Mode</th>
+            <th class="mat-column-grade">Grade</th>
+            <th class="mat-column-lot">Lot</th>
+            <th class="mat-column-createDateTime">Created Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of skeletonRows">
+            <td><span class="pi-skel" style="width: 32px; height: 26px; margin: 0 auto"></span></td>
+            <td><span class="pi-skel" style="width: 75%"></span></td>
+            <td><span class="pi-skel" style="width: 44px"></span></td>
+            <td><span class="pi-skel" style="width: 80px; height: 26px"></span></td>
+            <td><span class="pi-skel" style="width: 56px; height: 24px; border-radius: 999px"></span></td>
+            <td><span class="pi-skel" style="width: 60px"></span></td>
+            <td><span class="pi-skel" style="width: 84px"></span></td>
+            <td>
+              <span class="pi-skel" style="width: 78px"></span>
+              <span class="pi-skel" style="width: 48px; height: 10px; margin-top: 6px"></span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="table-container mat-elevation-z8 p-0"
+      *ngIf="!isBagListLoading && _bagListTableData && _bagListTableData.length > 0"
+      style="box-shadow: none !important"
+    >
+      <table mat-table [dataSource]="_bagListTableData" class="w-100">
+
+        <!-- Bag No. (position on the pallet, tr_bag.bag_no) -->
+        <ng-container matColumnDef="no">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">Bag No.</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="bag-no" *ngIf="row.no != null; else noBagNo">{{ row.no }}</span>
+            <ng-template #noBagNo>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Bag Number -->
+        <ng-container matColumnDef="bagNumber">
+          <th mat-header-cell *matHeaderCellDef>Bag Number</th>
+          <td mat-cell *matCellDef="let row" [title]="row.bagNumber">
+            <span class="bag-qr" *ngIf="row.bagNumber && !row.isMissing; else noBagNumber">
+              <span class="bag-qr__text">{{ row.bagNumber }}</span>
+              <button
+                type="button"
+                class="bag-qr__copy"
+                [class.copied]="copiedBagNumber === row.bagNumber"
+                [title]="copiedBagNumber === row.bagNumber ? 'คัดลอกแล้ว' : 'คัดลอก'"
+                (click)="copyBagNumber(row.bagNumber)"
+              >
+                <mat-icon>{{ copiedBagNumber === row.bagNumber ? 'check' : 'content_copy' }}</mat-icon>
+              </button>
+            </span>
+            <ng-template #noBagNumber>
+              <span class="pi-missing-bag" *ngIf="row.isMissing; else noBagValue">
+                <span class="pi-missing-bag__qr">{{ row.bagNumber }}</span>
+                <span class="pi-missing-bag__label">ไม่มีข้อมูล</span>
+                <button type="button" class="pi-missing-bag__btn" [disabled]="isCreatingMissingBags" (click)="onClickCreateMissingBag(row)">
+                  <mat-icon [class.pi-spin]="creatingMissingQrs.has(row.bagNumber)">{{ creatingMissingQrs.has(row.bagNumber) ? 'autorenew' : 'add_circle' }}</mat-icon>
+                  {{ creatingMissingQrs.has(row.bagNumber) ? 'กำลังเพิ่มข้อมูล...' : 'เพิ่มข้อมูล' }}
+                </button>
+              </span>
+              <ng-template #noBagValue>-</ng-template>
+            </ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Cost Center -->
+        <ng-container matColumnDef="costCenter">
+          <th mat-header-cell *matHeaderCellDef>Cost Center</th>
+          <td mat-cell *matCellDef="let row">{{ row.costCenter || '-' }}</td>
+        </ng-container>
+
+        <!-- Bag Running (from QR) / Ton No. (tr_bag.ton_no) -->
+        <ng-container matColumnDef="runningNo">
+          <th mat-header-cell *matHeaderCellDef>Bag Running / Ton No.</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="run-ton">
+              <span class="run-ton__run">{{ row.bagRunning ?? '-' }}</span>
+              <span class="run-ton__sep">/</span>
+              <span class="run-ton__ton">{{ row.tonNo ?? '-' }}</span>
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Grade -->
+        <ng-container matColumnDef="grade">
+          <th mat-header-cell *matHeaderCellDef>Grade</th>
+          <td mat-cell *matCellDef="let row">{{ row.grade || '-' }}</td>
+        </ng-container>
+
+        <!-- Lot -->
+        <ng-container matColumnDef="lot">
+          <th mat-header-cell *matHeaderCellDef>Lot</th>
+          <td mat-cell *matCellDef="let row">{{ row.lot || '-' }}</td>
+        </ng-container>
+
+                <!-- Mode (tr_bag.mode_id) -->
+        <ng-container matColumnDef="mode">
+          <th mat-header-cell *matHeaderCellDef>Mode</th>
+          <td mat-cell *matCellDef="let row">
+            <span
+              class="mode-chip"
+              [ngClass]="'mode-chip--' + row.modeId"
+              *ngIf="row.modeId != null; else noMode"
+            >{{ bagModeLabels[row.modeId] ?? row.modeId }}</span>
+            <ng-template #noMode>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Create Date Time -->
+        <ng-container matColumnDef="createDateTime">
+          <th mat-header-cell *matHeaderCellDef>Created Date</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="last-update-cell" *ngIf="row.createDateTime && row.createDateTime !== '-'; else noDate">
+              <span class="last-update-date">{{ row.createDateTime | date: 'dd/MM/yyyy' }}</span>
+              <span class="last-update-time">{{ row.createDateTime | date: 'HH:mm:ss' }}</span>
+            </div>
+            <ng-template #noDate>-</ng-template>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          [class.pi-row--missing]="row.isMissing"
+          [class.pi-row--manual-added]="row.isManualAdded"
+          [title]="row.isManualAdded ? 'ถุงที่สร้างเอง (เพิ่มข้อมูลด้วยมือ)' : ''"
+        ></tr>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isBagListLoading && (!_bagListTableData || _bagListTableData.length === 0)">
+      <app-empty-state variant="table" title="ไม่พบข้อมูล" message="กรุณาลองเปลี่ยนเงื่อนไขการค้นหา"></app-empty-state>
+    </div>
+  </div>
+
+  <mat-paginator
+    [length]="_totalCount"
+    [pageIndex]="page - 1"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[25, 50, 75, 100]"
+    [showFirstLastButtons]="true"
+    (page)="onPageEvent($event)"
+  >
+  </mat-paginator>
+  </ng-container>
+</div>
+
+<!-- Add Bag Modal -->
+<div class="ul-modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+  <div class="ul-modal" (click)="$event.stopPropagation()">
+    <div class="ul-modal__header">
+      <div class="ul-modal__title">
+        <span class="material-icons">add_circle</span>
+        เพิ่มถุงใหม่
+      </div>
+      <button class="ul-modal__close" (click)="closeAddModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="ul-modal__body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="ul-label">Grade</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="addBagForm.grade" />
+        </div>
+        <div class="col-md-6">
+          <label class="ul-label">Lot</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="addBagForm.lot" />
+        </div>
+        <div class="col-md-6">
+          <label class="ul-label">Running Number</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="addBagForm.runningNumber" />
+        </div>
+        <div class="col-md-6">
+          <label class="ul-label">Qty</label>
+          <input type="number" class="form-control form-control-sm" [(ngModel)]="addBagForm.qty" />
+        </div>
+      </div>
+    </div>
+    <div class="ul-modal__footer">
+      <button class="btn modal-btn-cancel" (click)="closeAddModal()">ยกเลิก</button>
+      <button class="btn modal-btn-save" (click)="onSubmitAddBag()">
+        บันทึก
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Bag Modal -->
+<div class="ul-modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="ul-modal" (click)="$event.stopPropagation()">
+    <div class="ul-modal__header">
+      <div class="ul-modal__title">
+        <span class="material-icons">edit</span>
+        แก้ไขถุง: {{ _selectedEditItem.bagNumber }}
+      </div>
+      <button class="ul-modal__close" (click)="closeEditModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="ul-modal__body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="ul-label">Grade</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="_selectedEditItem.grade" />
+        </div>
+        <div class="col-md-6">
+          <label class="ul-label">Lot</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="_selectedEditItem.lot" />
+        </div>
+        <div class="col-md-6">
+          <label class="ul-label">Running Number</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="_selectedEditItem.runningNumber" />
+        </div>
+        <div class="col-md-6">
+          <label class="ul-label">Qty</label>
+          <input type="number" class="form-control form-control-sm" [(ngModel)]="_selectedEditItem.qty" />
+        </div>
+      </div>
+    </div>
+    <div class="ul-modal__footer">
+      <button class="btn modal-btn-cancel" (click)="closeEditModal()">ยกเลิก</button>
+      <button class="btn modal-btn-save" (click)="onClickSave()">
+        บันทึกการเปลี่ยนแปลง
+      </button>
+    </div>
+  </div>
+</div>

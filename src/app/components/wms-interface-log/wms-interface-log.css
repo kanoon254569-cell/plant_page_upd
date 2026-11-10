@@ -1,0 +1,886 @@
+/* Layout, filter, table and badge-chip styles come from transaction-log.css. */
+
+/* Summary cards -- same 16px side margin and card look as .search-filter /
+   .display-table so the three blocks line up. */
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 0 16px;
+}
+
+.summary-card {
+  --accent: #1d4ed8;
+  --accent-bg: #eff6ff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--accent);
+}
+
+.summary-card--success {
+  --accent: #16a34a;
+  --accent-bg: #f0fdf4;
+}
+
+.summary-card--info {
+  --accent: #1d4ed8;
+  --accent-bg: #eff6ff;
+}
+
+.summary-card--error {
+  --accent: #dc2626;
+  --accent-bg: #fef2f2;
+}
+
+.summary-card--pending {
+  --accent: #b45309;
+  --accent-bg: #fffbeb;
+}
+
+.summary-icon {
+  flex: 0 0 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.summary-icon mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Label left, value right on one line keeps each card ~48px tall.
+   The longer explanation sits in the card's title tooltip. */
+.summary-body {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary-value {
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.summary-value small {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Table cells */
+.route-text {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.qr-count-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Narrow message column, one line with "..." -- slip / grade / lot already
+   have their own columns; the full text is in the hover title and the
+   detail modal. */
+.mat-column-message {
+  width: 260px;
+  max-width: 260px;
+}
+
+.message-text {
+  display: block;
+  max-width: 260px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: #334155;
+}
+
+.message-text--error {
+  color: #b91c1c;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-chip--success {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.status-chip--error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.status-chip--pending {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+/* ---------- Log table ---------- */
+
+/* Fit the whole page in one screen: the table scrolls inside and the
+   paginator stays visible. 590px = top bar + page title + search filter +
+   summary cards + list header + paginator + margins above/below. */
+.table-container {
+  height: calc(100vh - 530px);
+  min-height: 240px;
+  padding: 0 12px;
+}
+
+/* Empty / error state takes the table's place at the same height --
+   transaction-log.css gives it min-height: 510px, which pushed the
+   paginator below the screen. */
+.empty-state {
+  height: calc(100vh - 530px);
+  min-height: 240px;
+}
+
+.log-table td.mat-mdc-cell {
+  padding: 6px 12px;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.log-table th.mat-mdc-header-cell {
+  padding: 8px 12px;
+}
+
+.log-table tr.mat-mdc-row {
+  height: auto;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.muted {
+  color: #94a3b8 !important;
+}
+
+.cell-main {
+  font-weight: 600;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-sub {
+  font-size: 11.5px;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.qr-pill {
+  display: inline-block;
+  min-width: 44px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.mat-column-expand {
+  width: 32px;
+  padding-right: 0 !important;
+}
+
+.expand-icon {
+  color: #94a3b8;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.log-row {
+  cursor: pointer;
+}
+
+.log-row:hover .expand-icon {
+  color: #1d4ed8;
+}
+
+.log-row--error td.mat-mdc-cell:first-child {
+  box-shadow: inset 3px 0 0 #dc2626;
+}
+
+.table-container tr.log-row--open {
+  background-color: #eff6ff !important;
+}
+
+/* ---------- Detail modal (same overlay pattern as pallet-information's ul-modal) ---------- */
+
+.wil-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 16px;
+  animation: wil-fade-in 0.15s ease;
+}
+
+@keyframes wil-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.wil-modal {
+  width: 1040px;
+  max-width: 100%;
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
+  overflow: hidden;
+  animation: wil-slide-up 0.18s ease;
+}
+
+@keyframes wil-slide-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Header: same look as the Plant Location modal (select-bg-plant-location
+   .location-modal-*): white, blue eyebrow, title with grey pill tags. */
+.wil-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.wil-modal__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wil-modal__eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1d4ed8;
+}
+
+.wil-modal__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.wil-modal__title-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.wil-modal__tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.wil-modal__tag-label {
+  font-weight: 500;
+  color: #64748b;
+}
+
+.wil-modal__tag--success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.wil-modal__tag--error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.wil-modal__tag--pending {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.wil-modal__close {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wil-modal__close mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.wil-modal__close:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.wil-modal__body {
+  padding: 18px 20px 8px;
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+.wil-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.footer-button {
+  padding: 8px 22px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.footer-button:hover {
+  background: #f1f5f9;
+}
+
+/* ---------- Modal content ---------- */
+
+/* Info strip: equal cells split by dividers */
+.call-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.call-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  min-width: 0;
+}
+
+.call-cell + .call-cell {
+  border-left: 1px solid #e2e8f0;
+}
+
+.call-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.call-label mat-icon {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  color: #1d4ed8;
+}
+
+.call-value {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.call-value small {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.call-value--big {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.call-value--muted {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .call-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .call-cell + .call-cell {
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+  }
+}
+
+.detail-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.detail-alert mat-icon {
+  flex: 0 0 20px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.detail-alert--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.detail-alert--warn {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+/* Tabs */
+.wil-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.wil-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.wil-tabs button mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.wil-tabs button:hover {
+  color: #1e293b;
+}
+
+.wil-tabs button.active {
+  color: #1d4ed8;
+  border-bottom-color: #1d4ed8;
+}
+
+.tab-count {
+  min-width: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.wil-tabs button.active .tab-count {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.tab-panel {
+  padding: 14px 0 12px;
+}
+
+.tab-empty {
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* Pallet table */
+.mini-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.wil-modal .mini-table th,
+.wil-modal .mini-table td {
+  padding: 8px 14px;
+  border-bottom: 1px solid #eef1f5;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.wil-modal .mini-table thead th {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.wil-modal .mini-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+.wil-modal .mini-table tfoot td {
+  background: #f8fafc;
+  border-bottom: none;
+  color: #334155;
+}
+
+.wil-modal .mini-table .text-right {
+  text-align: right;
+}
+
+.mono {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 12.5px;
+  color: #334155;
+}
+
+.pallet-no {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-weight: 700;
+  font-size: 12.5px;
+}
+
+.col-fill {
+  width: 220px;
+}
+
+.fill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Same colours as Pallet Adjustment's pa-pallet-card__progress-fill:
+   amber while the pallet is not full, green once it has all 40 bags. */
+.fill-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.fill-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #f59e0b;
+  transition: width 0.3s ease;
+}
+
+.fill-bar span.fill-full {
+  background: #22c55e;
+}
+
+.fill-text {
+  min-width: 46px;
+  font-size: 12px;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.fill-text strong {
+  color: #1e293b;
+  font-size: 13px;
+}
+
+.note {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.note--ok {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.note--part {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.note--warn {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+/* QR tab */
+.qr-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.qr-group {
+  display: flex;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.qr-group-head {
+  flex: 0 0 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* align-content/items: flex-start -- with a single line of chips (P89,
+   P94) flex stretched each chip to the full height of the pallet label
+   beside it, so they looked like tall empty boxes. */
+.qr-grid {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.qr-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  text-align: center;
+  color: #334155;
+  cursor: default;
+}
+
+.qr-chip:hover {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.qr-chip--resent {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #b45309;
+}
+
+/* JSON tab */
+/* Request and Response side by side, same width and same fixed height
+   (see .raw-box pre). */
+.raw-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .raw-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.raw-box {
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #1e293b;
+}
+
+.raw-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: #1e293b;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.copy-button {
+  display: flex;
+  border: none;
+  background: none;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  color: #ffffff;
+}
+
+.copy-button mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Wrap long values (e.g. RETURN_MESSAGE) instead of a horizontal
+   scrollbar; dark scrollbar to match the box. */
+.raw-box pre {
+  margin: 0;
+  padding: 10px 12px;
+  height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  scrollbar-width: thin;
+  scrollbar-color: #475569 transparent;
+}
+
+.raw-box pre::-webkit-scrollbar {
+  width: 8px;
+}
+
+.raw-box pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.raw-box pre::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: #475569;
+}

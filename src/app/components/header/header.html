@@ -1,0 +1,44 @@
+<nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <ul class="navbar-nav">
+
+      <!-- Toggle Sidebar Button -->
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" data-enable-remember="true" href="#" role="button"
+          ><i class="fas fa-bars"></i
+        ></a>
+      </li>
+
+      <!-- Project Name -->
+      <li class="nav-item d-none d-sm-inline-block">
+        <a class="nav-link"><b>IRPC - Q Track Boardman </b></a>
+      </li>
+    </ul>
+    
+    <ul class="navbar-nav ml-auto">
+      <!-- <li class="nav-item d-none d-sm-inline-block">
+          <a style="color: #fff;" class="nav-link">
+            <i class="material-symbols-outlined">calendar_month</i>
+            {{ _clock | date: 'dd/MM/yyyy HH:mm:ss' }}</a>
+        </li> -->
+    
+      <!-- <li class="nav-item d-none d-sm-inline-block">
+        <a style="color: #fff;" class="nav-link"> 
+          <i class="material-symbols-outlined">person
+          </i> {{ this._userName }}</a>
+      </li> -->
+  
+      <!-- <li class="nav-item">
+        <a class="nav-link" data-widget="fullscreen" role="button">
+          <i class="fas fa-expand-arrows-alt"></i>
+        </a>
+      </li> -->
+      <li class="nav-item">
+        <!-- Logout Button -->
+        <button type="button" (click)="onClickLogout()" class="logout-button">
+          <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+          <span>ออกจากระบบ</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+  

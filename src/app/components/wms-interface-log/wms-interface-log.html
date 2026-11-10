@@ -1,0 +1,561 @@
+<!-- Page Name -->
+<div class="header-section">
+  <div class="header-section-icon">
+    <mat-icon>sync_alt</mat-icon>
+  </div>
+  <span>WMS Interface Log</span>
+</div>
+
+<!-- Search Filter -->
+<div class="search-filter">
+  <div class="search-filter-header">Search Filter</div>
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+      <!-- Date range (same control as job-list) -->
+      <div class="search-filter-field">
+        <label>Date :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-date-range-input [rangePicker]="rangePicker">
+            <input
+              matStartDate
+              [(ngModel)]="dateFrom"
+              placeholder="วันที่เริ่มต้น"
+              readonly
+              (click)="rangePicker.open()"
+            />
+            <input
+              matEndDate
+              [(ngModel)]="dateTo"
+              placeholder="สิ้นสุด"
+              readonly
+              (click)="rangePicker.open()"
+            />
+          </mat-date-range-input>
+          <mat-datepicker-toggle matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
+          <mat-date-range-picker #rangePicker></mat-date-range-picker>
+        </mat-form-field>
+      </div>
+
+      <!-- Mode -->
+      <div class="search-filter-field">
+        <label>Mode :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.mode">
+            <mat-option *ngFor="let o of optionsMode" [value]="o.value">{{ o.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Keyword (transfer slip no., QR text, error message) -->
+      <div class="search-filter-field">
+        <label>Transfer Slip / QR :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            [(ngModel)]="filter.keyword"
+            placeholder="พิมพ์หมายเลขใบงาน"
+            (keyup.enter)="onClickSearch()"
+          />
+        </mat-form-field>
+      </div>
+
+      <!-- Status -->
+      <div class="search-filter-field">
+        <label>Status :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.status">
+            <mat-option *ngFor="let o of optionsStatus" [value]="o.value">{{ o.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="Clear" (click)="resetFilter()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button type="button" class="search-button" title="Search" (click)="onClickSearch()">
+          <img src="assets/images/search.png" alt="search-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Summary (whole filter result, not just this page). 1 QR = 1 bag. -->
+<div class="summary-row">
+  <div class="summary-card summary-card--success" title="นับ 1 QR = 1 ถุง จากรอบที่สำเร็จ">
+    <div class="summary-icon"><mat-icon>inventory_2</mat-icon></div>
+    <div class="summary-body">
+      <span class="summary-label">ถุงที่ WMS รับสำเร็จ</span>
+      <span class="summary-value" *ngIf="!isLoading; else summaryValueSkel">{{ summary.success_qr | number }} <small>ถุง</small></span>
+    </div>
+  </div>
+
+  <div class="summary-card summary-card--info" [title]="'สำเร็จ ' + summary.success_round + ' รอบ'">
+    <div class="summary-icon"><mat-icon>sync_alt</mat-icon></div>
+    <div class="summary-body">
+      <span class="summary-label">รอบที่ส่งทั้งหมด</span>
+      <span class="summary-value" *ngIf="!isLoading; else summaryValueSkel">{{ summary.total_round | number }} <small>รอบ</small></span>
+    </div>
+  </div>
+
+  <div class="summary-card summary-card--error" title="ถุงจะถูกส่งซ้ำรอบถัดไป ไม่นับเป็นยอด">
+    <div class="summary-icon"><mat-icon>error_outline</mat-icon></div>
+    <div class="summary-body">
+      <span class="summary-label">รอบที่ Error</span>
+      <span class="summary-value" *ngIf="!isLoading; else summaryValueSkel">{{ summary.error_round | number }} <small>รอบ</small></span>
+    </div>
+  </div>
+
+  <div class="summary-card summary-card--pending" title="ส่งแล้วแต่ยังไม่ได้ response">
+    <div class="summary-icon"><mat-icon>hourglass_empty</mat-icon></div>
+    <div class="summary-body">
+      <span class="summary-label">รอ WMS ตอบ</span>
+      <span class="summary-value" *ngIf="!isLoading; else summaryValueSkel">{{ summary.pending_round | number }} <small>รอบ</small></span>
+    </div>
+  </div>
+</div>
+
+<!-- Summary number placeholder while the log list loads -->
+<ng-template #summaryValueSkel>
+  <span class="adm-skel" style="width: 90px; height: 24px; margin-top: 4px" aria-hidden="true"></span>
+</ng-template>
+
+<!-- Display Table -->
+<div class="display-table">
+  <div class="display-table-header">
+    <div>
+      WMS Interface Log List
+      <span class="table-count">{{ totalCount }} Records</span>
+    </div>
+  </div>
+
+  <div class="display-table-content">
+    <!-- Skeleton while the log list loads: same columns as the real table -->
+    <div class="table-container p-0" *ngIf="isLoading" aria-hidden="true">
+      <table class="adm-skel-table log-table" skeletonWidthsTo="wms-interface-log">
+        <thead>
+          <tr>
+            <th class="mat-column-expand"></th>
+            <th class="mat-column-no text-center">#</th>
+            <th class="mat-column-sentDate">Sent</th>
+            <th class="mat-column-mode">Mode</th>
+            <th class="mat-column-trTranNo">Transfer Slip</th>
+            <th class="mat-column-gradeLot">Grade / Lot</th>
+            <th class="mat-column-pallet">Pallet</th>
+            <th class="mat-column-qrCount text-right">ถุง (QR)</th>
+            <th class="mat-column-qty text-right">QTY</th>
+            <th class="mat-column-status">Status</th>
+            <th class="mat-column-message">WMS Message</th>
+            <th class="mat-column-duration text-right">Duration</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of skeletonRows">
+            <td><span class="adm-skel adm-skel--center" style="width: 18px; height: 18px"></span></td>
+            <td><span class="adm-skel adm-skel--center" style="width: 18px"></span></td>
+            <td>
+              <span class="adm-skel" style="width: 60px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 70px"></span>
+            </td>
+            <td>
+              <span class="adm-skel adm-skel--pill" style="width: 64px; height: 22px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 36px"></span>
+            </td>
+            <td>
+              <span class="adm-skel" style="width: 90px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 44px"></span>
+            </td>
+            <td>
+              <span class="adm-skel" style="width: 80px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 60px"></span>
+            </td>
+            <td>
+              <span class="adm-skel" style="width: 70px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 48px"></span>
+            </td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 40px; height: 22px; margin-left: auto"></span></td>
+            <td>
+              <span class="adm-skel" style="width: 60px; margin-left: auto"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 24px; margin-left: auto"></span>
+            </td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 76px; height: 22px"></span></td>
+            <td><span class="adm-skel" style="width: 80%"></span></td>
+            <td>
+              <span class="adm-skel" style="width: 44px; margin-left: auto"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 52px; margin-left: auto"></span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-container p-0" *ngIf="!isLoading && logList && logList.length > 0">
+      <table mat-table [dataSource]="logList" class="w-100 log-table" skeletonWidthsFrom="wms-interface-log">
+        <!-- View detail (whole row also opens the modal) -->
+        <ng-container matColumnDef="expand">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row">
+            <mat-icon class="expand-icon" title="ดูรายละเอียด">visibility</mat-icon>
+          </td>
+        </ng-container>
+
+        <!-- No -->
+        <ng-container matColumnDef="no">
+          <th mat-header-cell *matHeaderCellDef class="text-center">#</th>
+          <td mat-cell *matCellDef="let row; let i = index" class="text-center muted">
+            {{ ((filter.page ?? 1) - 1) * (filter.pageSize ?? 25) + i + 1 }}
+          </td>
+        </ng-container>
+
+        <!-- Sent (create_datetime) -->
+        <ng-container matColumnDef="sentDate">
+          <th mat-header-cell *matHeaderCellDef>Sent</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="cell-main">{{ parseJobDate(row.create_datetime) | date: 'HH:mm:ss' }}</div>
+            <div class="cell-sub">{{ parseJobDate(row.create_datetime) | date: 'dd/MM/yyyy' }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Mode -->
+        <ng-container matColumnDef="mode">
+          <th mat-header-cell *matHeaderCellDef>Mode</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="badge-chip badge-chip--blue">{{ row.mode }}</span>
+            <div class="cell-sub">#{{ row.id }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Transfer Slip -->
+        <ng-container matColumnDef="trTranNo">
+          <th mat-header-cell *matHeaderCellDef>Transfer Slip</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="cell-main">{{ row.tr_tran_no || '-' }}</div>
+            <div class="cell-sub" *ngIf="row.wh_code">WH {{ row.wh_code }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Grade / Lot -->
+        <ng-container matColumnDef="gradeLot">
+          <th mat-header-cell *matHeaderCellDef>Grade / Lot</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="cell-main">{{ row.grade_list || '-' }}</div>
+            <div class="cell-sub">{{ row.lot_list || '' }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Pallet -->
+        <ng-container matColumnDef="pallet">
+          <th mat-header-cell *matHeaderCellDef>Pallet</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="cell-main">{{ palletRange(row) }}</div>
+            <div class="cell-sub" *ngIf="row.pallet_count">{{ row.pallet_count }} pallet</div>
+          </td>
+        </ng-container>
+
+        <!-- QR Count -->
+        <ng-container matColumnDef="qrCount">
+          <th mat-header-cell *matHeaderCellDef class="text-right">ถุง (QR)</th>
+          <td mat-cell *matCellDef="let row" class="text-right">
+            <span class="qr-pill">{{ row.qr_count | number }}</span>
+          </td>
+        </ng-container>
+
+        <!-- QTY -->
+        <ng-container matColumnDef="qty">
+          <th mat-header-cell *matHeaderCellDef class="text-right">QTY</th>
+          <td mat-cell *matCellDef="let row" class="text-right">
+            <div class="cell-main">{{ row.total_qty !== null ? (row.total_qty | number) : '-' }}</div>
+            <div class="cell-sub">{{ row.unit || '' }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Status -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span [ngClass]="statusClass(row.result_status)">
+              <span class="status-dot"></span>
+              {{ row.status_code || 'Pending' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Message -->
+        <ng-container matColumnDef="message">
+          <th mat-header-cell *matHeaderCellDef>WMS Message</th>
+          <td mat-cell *matCellDef="let row">
+            <span
+              class="message-text"
+              [class.message-text--error]="row.result_status === 'error'"
+              [title]="row.return_message || ''"
+              >{{ row.return_message || '-' }}</span
+            >
+          </td>
+        </ng-container>
+
+        <!-- Duration -->
+        <ng-container matColumnDef="duration">
+          <th mat-header-cell *matHeaderCellDef class="text-right">Duration</th>
+          <td mat-cell *matCellDef="let row" class="text-right">
+            <div class="cell-main">{{ formatDuration(row.duration_ms) }}</div>
+            <div class="cell-sub" *ngIf="row.execute_datetime">
+              ตอบ {{ parseJobDate(row.execute_datetime) | date: 'HH:mm:ss' }}
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          class="log-row"
+          [class.log-row--open]="selectedRow?.id === row.id"
+          [class.log-row--error]="row.result_status === 'error'"
+          (click)="openDetail(row)"
+        ></tr>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && (!logList || logList.length === 0) && !loadError">
+      <app-empty-state variant="table" title="ไม่พบข้อมูล" message="กรุณาลองเปลี่ยนเงื่อนไขการค้นหา"></app-empty-state>
+    </div>
+    <div class="empty-state" *ngIf="!isLoading && loadError">
+      <app-empty-state variant="table" title="โหลดข้อมูลไม่สำเร็จ" [message]="loadError"></app-empty-state>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator
+    [length]="totalCount"
+    [pageSize]="filter.pageSize ?? 25"
+    [pageSizeOptions]="[25, 50, 75, 100]"
+    [showFirstLastButtons]="true"
+    (page)="onPageEvent($event)"
+  ></mat-paginator>
+</div>
+
+<!-- Log detail modal -->
+<div class="wil-modal-overlay" *ngIf="selectedRow as row" (click)="closeDetail()">
+  <div class="wil-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <!-- Header -->
+    <!-- Same header style as the Plant Location modal (select-bg-plant-location) -->
+    <div class="wil-modal__header">
+      <div class="wil-modal__title-group">
+        <span class="wil-modal__eyebrow">WMS Interface · {{ row.mode }} · Log #{{ row.id }}</span>
+        <div class="wil-modal__title-row">
+          <span class="wil-modal__title-text">{{ row.tr_tran_no || 'WMS Interface Log' }}</span>
+          <span class="wil-modal__tag" [ngClass]="'wil-modal__tag--' + row.result_status">
+            <span class="wil-modal__tag-label">Status:</span> {{ row.status_code || 'Pending' }}
+          </span>
+          <span class="wil-modal__tag" *ngIf="row.wh_code">
+            <span class="wil-modal__tag-label">WH:</span> {{ row.wh_code }}
+          </span>
+          <span class="wil-modal__tag" *ngIf="row.grade_list">
+            <span class="wil-modal__tag-label">Grade:</span> {{ row.grade_list }}
+          </span>
+          <span class="wil-modal__tag" *ngIf="row.lot_list">
+            <span class="wil-modal__tag-label">Lot:</span> {{ row.lot_list }}
+          </span>
+        </div>
+      </div>
+      <button type="button" class="wil-modal__close" aria-label="Close" title="ปิด (Esc)" (click)="closeDetail()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="wil-modal__body">
+      <!-- Skeleton while the detail loads: info strip + tabs + pallet table -->
+      <div *ngIf="detailLoadingId !== null" aria-hidden="true">
+        <div class="call-strip">
+          <div class="call-cell" *ngFor="let c of skeletonDetailCells">
+            <span class="adm-skel" style="width: 70px; height: 10px"></span>
+            <span class="adm-skel" style="width: 90px; height: 18px; margin-top: 8px"></span>
+          </div>
+        </div>
+        <div class="wil-tabs">
+          <span class="adm-skel" style="width: 120px; height: 20px; margin: 10px 12px 10px 0" *ngFor="let t of skeletonDetailTabs"></span>
+        </div>
+        <div class="tab-panel">
+          <table class="mini-table">
+            <tbody>
+              <tr *ngFor="let r of skeletonDetailRows">
+                <td><span class="adm-skel" style="width: 48px"></span></td>
+                <td><span class="adm-skel" style="width: 70px"></span></td>
+                <td class="col-fill"><span class="adm-skel" style="width: 60%"></span></td>
+                <td><span class="adm-skel" style="width: 60px; margin-left: auto"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="detail-alert detail-alert--error" *ngIf="detailError && detailLoadingId === null">
+        <mat-icon>cloud_off</mat-icon>
+        <span>{{ detailError }}</span>
+      </div>
+
+      <ng-container *ngIf="expandedDetail as d">
+        <ng-container *ngIf="d.data[0] as h">
+          <!-- One info strip. Status / WH / Grade / Lot are already in the
+               header tags, so they are not repeated here or in the tables.
+               Not named "timeline" -- AdminLTE's .timeline::before draws a
+               vertical line down the left edge. -->
+          <div class="call-strip">
+            <div class="call-cell">
+              <span class="call-label"><mat-icon>inventory_2</mat-icon> จำนวนถุง</span>
+              <span class="call-value call-value--big">{{ d.qr_list.length | number }} <small>ถุง · {{ d.pallets.length }} pallet</small></span>
+            </div>
+            <div class="call-cell">
+              <span class="call-label"><mat-icon>scale</mat-icon> QTY รวม</span>
+              <span class="call-value call-value--big">{{ row.total_qty | number }} <small>{{ row.unit }}</small></span>
+            </div>
+            <div class="call-cell">
+              <span class="call-label"><mat-icon>upload</mat-icon> ส่งไป WMS</span>
+              <span class="call-value">{{ parseJobDate(h.create_datetime) | date: 'dd/MM/yyyy HH:mm:ss' }}</span>
+            </div>
+            <div class="call-cell">
+              <span class="call-label"><mat-icon>download</mat-icon> WMS ตอบกลับ</span>
+              <span class="call-value" *ngIf="h.execute_datetime; else noAnswer">
+                {{ parseJobDate(h.execute_datetime) | date: 'HH:mm:ss' }}
+                <small>({{ formatDuration(h.duration_ms) }})</small>
+              </span>
+              <ng-template #noAnswer>
+                <span class="call-value call-value--muted" title="log นี้บันทึกก่อนเริ่มเก็บเวลาที่ WMS ตอบ">ไม่มีข้อมูล</span>
+              </ng-template>
+            </div>
+            <div class="call-cell">
+              <span class="call-label"><mat-icon>label</mat-icon> RC Type</span>
+              <span class="call-value">{{ h.rc_type || '-' }}</span>
+            </div>
+          </div>
+
+          <!-- Alerts -->
+          <div class="detail-alert detail-alert--error" *ngIf="h.result_status === 'error' && h.return_message">
+            <mat-icon>error_outline</mat-icon>
+            <div>
+              <strong>WMS ปฏิเสธรอบนี้</strong>
+              <div>{{ h.return_message }}</div>
+            </div>
+          </div>
+          <div class="detail-alert detail-alert--warn" *ngIf="resentCount(d) > 0">
+            <mat-icon>content_copy</mat-icon>
+            <span>มี {{ resentCount(d) }} ถุงในรอบนี้ที่ WMS เคยรับสำเร็จแล้วในรอบก่อน (ส่งซ้ำ)</span>
+          </div>
+          <div class="detail-alert detail-alert--warn" *ngIf="missingTotal(d) > 0">
+            <mat-icon>warning_amber</mat-icon>
+            <span>มีเลขถุงขาดในช่วงที่ส่ง รวม {{ missingTotal(d) }} ถุง</span>
+          </div>
+
+          <!-- Tabs (counts are in the strip above) -->
+          <div class="wil-tabs">
+            <button type="button" [class.active]="activeTab === 'pallet'" (click)="activeTab = 'pallet'">
+              <mat-icon>view_module</mat-icon> แยกตาม Pallet
+            </button>
+            <button type="button" [class.active]="activeTab === 'qr'" (click)="activeTab = 'qr'">
+              <mat-icon>qr_code_2</mat-icon> QR ที่ส่ง
+            </button>
+            <button type="button" [class.active]="activeTab === 'json'" (click)="activeTab = 'json'">
+              <mat-icon>code</mat-icon> Request / Response
+            </button>
+          </div>
+
+          <!-- Pallet tab. Grade/Lot column only when the round mixes grades
+               or lots; otherwise it is the same value as the header tags. -->
+          <div class="tab-panel" *ngIf="activeTab === 'pallet'">
+            <table class="mini-table" *ngIf="d.pallets.length; else noQr">
+              <thead>
+                <tr>
+                  <th>Pallet</th>
+                  <th *ngIf="mixedGradeLot(d)">Grade / Lot</th>
+                  <th>ถุงที่</th>
+                  <th class="col-fill">จำนวนถุง</th>
+                  <th class="text-right">QTY</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of d.pallets">
+                  <td><span class="pallet-no">P{{ p.pallet_no }}</span></td>
+                  <td *ngIf="mixedGradeLot(d)">
+                    <div class="cell-main">{{ p.grade || '-' }}</div>
+                    <div class="cell-sub">{{ p.lot || '' }}</div>
+                  </td>
+                  <td class="mono">
+                    {{ p.bag_from }} – {{ p.bag_to }}
+                    <span class="note note--warn" *ngIf="p.missing_bag">ขาด {{ p.missing_bag }}</span>
+                  </td>
+                  <td class="col-fill">
+                    <div class="fill">
+                      <div class="fill-bar">
+                        <span [style.width.%]="palletFill(p)" [class.fill-full]="p.qr_count >= bagsPerPallet"></span>
+                      </div>
+                      <span class="fill-text"><strong>{{ p.qr_count }}</strong>/{{ bagsPerPallet }}</span>
+                    </div>
+                  </td>
+                  <td class="text-right">{{ p.total_qty | number }} <span class="cell-sub">{{ p.unit }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- QR tab: one line per pallet, bag numbers only -->
+          <div class="tab-panel" *ngIf="activeTab === 'qr'">
+            <div class="qr-legend">
+              เลขในกล่อง = เลขถุงใน pallet · เอาเมาส์ชี้เพื่อดู QR เต็ม
+              <span class="qr-chip qr-chip--resent">00</span> = ส่งซ้ำ (WMS เคยรับแล้ว)
+            </div>
+            <div class="qr-group" *ngFor="let g of qrGroups(d)">
+              <div class="qr-group-head">
+                <span class="pallet-no">P{{ g.pallet_no }}</span>
+                <span class="cell-sub">{{ g.items.length }} ถุง</span>
+              </div>
+              <div class="qr-grid">
+                <span
+                  *ngFor="let q of g.items"
+                  class="qr-chip"
+                  [class.qr-chip--resent]="q.sent_before_id"
+                  [title]="q.qr_text + (q.sent_before_id ? ' (รับแล้วใน log #' + q.sent_before_id + ')' : '')"
+                  >{{ q.bag_no ?? '?' }}</span
+                >
+              </div>
+            </div>
+            <ng-container *ngIf="!d.qr_list.length"><ng-container *ngTemplateOutlet="noQr"></ng-container></ng-container>
+          </div>
+
+          <!-- JSON tab -->
+          <div class="tab-panel" *ngIf="activeTab === 'json'">
+            <div class="raw-grid">
+              <div class="raw-box">
+                <div class="raw-head">
+                  Request
+                  <button type="button" class="copy-button" title="Copy" (click)="copyText(h.param)">
+                    <mat-icon>content_copy</mat-icon>
+                  </button>
+                </div>
+                <pre>{{ prettyJson(h.param) }}</pre>
+              </div>
+              <div class="raw-box">
+                <div class="raw-head">
+                  Response
+                  <button type="button" class="copy-button" title="Copy" (click)="copyText(h.message)">
+                    <mat-icon>content_copy</mat-icon>
+                  </button>
+                </div>
+                <pre>{{ prettyJson(h.message) }}</pre>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noQr>
+            <div class="tab-empty">รอบนี้ไม่มี QR ใน request</div>
+          </ng-template>
+        </ng-container>
+      </ng-container>
+    </div>
+
+    <div class="wil-modal__footer">
+      <button type="button" class="footer-button" (click)="closeDetail()">ปิด</button>
+    </div>
+  </div>
+</div>

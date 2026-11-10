@@ -1,0 +1,124 @@
+<div
+  class="modal fade"
+  id="plantLocationModal"
+  tabindex="-1"
+  aria-labelledby="plantLocationModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="location-modal-header">
+        <div class="location-modal-title-group">
+          <span class="location-modal-eyebrow">Plant Location</span>
+          <div class="location-modal-title-row">
+            <span class="location-modal-title-text" id="plantLocationModalLabel">{{ title }}</span>
+            <span class="location-modal-item-tag" *ngIf="headerGrade">
+              <span class="location-modal-item-tag-label">Grade:</span> {{ headerGrade }}
+            </span>
+            <span class="location-modal-item-tag" *ngIf="headerLotNo">
+              <span class="location-modal-item-tag-label">Lot:</span> {{ headerLotNo }}
+            </span>
+          </div>
+        </div>
+        <button type="button" class="location-modal-close" aria-label="Close" (click)="onClose()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <form [formGroup]="searchForm" class="row">
+            <div class="row m-0 p-0">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md-9">
+                <mat-label>Location</mat-label>
+                <input matInput formControlName="ccCode" placeholder="Search Location" />
+              </mat-form-field>
+
+              <div class="col-md-3">
+                <button
+                  type="button"
+                  class="clear-button"
+                  (click)="onResetSearch()"
+                  [disabled]="searchForm.controls.ccCode.disabled"
+                  [ngClass]="searchForm.controls.ccCode.disabled ? 'disabled' : ''"
+                >
+                  <img src="assets/images/clear.png" alt="clear-icon" />
+                  Clear
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="select-src-location-content" *ngIf="currentSrcLocations.length > 0">
+          <div
+            class="select-src-location-item"
+            [ngClass]="{
+              checked: location?.value?.isChecked,
+              'cursor-default': location?.value?.isChecked,
+            }"
+            *ngFor="let location of currentSrcLocations"
+            (click)="onToggleCheckLocation(location)"
+          >
+            <div class="select-src-location-item-left">
+              <div class="select-src-location-icon">
+                <img src="assets/images/location.png" alt="location-icon" />
+              </div>
+              <div class="select-src-location-details">
+                <div class="select-src-location-name">
+                  <span>{{locationCcCode}} ({{ location.value.locationName }})</span>
+                </div>
+              </div>
+            </div>
+            <div class="select-src-location-item-right">
+              <button
+                type="button"
+                class="delete-checked-location-button"
+                *ngIf="location.value.isChecked && canModifyLocation"
+                (click)="onUncheckLocation(location, $event)"
+              >
+                <img src="assets/images/remove.png" alt="remove-icon" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="no-data-select-src-location" *ngIf="currentSrcLocations.length === 0">
+          <div class="app-empty-state-icon app-empty-state-icon--sm">
+            <mat-icon>place</mat-icon>
+          </div>
+          <div>No source location available</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" data-bs-dismiss="modal" (click)="onSave()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="srcLocationConfirmModal"
+  tabindex="-1"
+  aria-hidden="true"
+  data-bs-backdrop="static"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content confirm-modal-content">
+      <div class="confirm-icon">
+        <img src="assets/images/location.png" alt="location" />
+      </div>
+      <h5 class="confirm-title">Save changes?</h5>
+      <p class="confirm-body">Do you want to save your changes?</p>
+      <div class="confirm-footer">
+        <button class="confirm-btn confirm-btn-save" (click)="onSave()" data-bs-dismiss="modal">
+          Save
+        </button>
+        <button class="confirm-btn confirm-btn-cancel" (click)="onCancel()" data-bs-dismiss="modal">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

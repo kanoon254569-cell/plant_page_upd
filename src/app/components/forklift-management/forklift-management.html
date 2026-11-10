@@ -1,0 +1,539 @@
+﻿<!-- Page Name -->
+<div class="header-section">
+  <div class="header-section-icon">
+    <mat-icon>precision_manufacturing</mat-icon>
+  </div>
+  <span>Forklift Management</span>
+</div>
+
+<!-- Search Filter -->
+<div class="search-filter">
+  <div class="search-filter-header">Search Filter</div>
+
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+      <!-- Forklift Name -->
+      <div class="search-filter-field">
+        <label>ชื่อโฟร์คลิฟท์ :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.forkliftName" placeholder="ค้นหาชื่อโฟร์คลิฟท์" />
+        </mat-form-field>
+      </div>
+
+      <!-- License Plate -->
+      <!-- <div class="search-filter-field">
+        <label>ทะเบียน :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.carrierName" placeholder="เช่น กข-1234" />
+        </mat-form-field>
+      </div> -->
+
+      <!-- Warehouse (Multi-Select) -->
+      <div class="search-filter-field">
+        <label>Warehouse :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.whCodes" multiple placeholder="ทั้งหมด">
+            <mat-select-trigger>
+              {{ (filter.whCodes?.length ?? 0) === 0 ? 'ทั้งหมด' : warehouseFilterTriggerText() }}
+            </mat-select-trigger>
+            <mat-option *ngFor="let option of optionWarehouse" [value]="option.wh_code">
+              {{ option.wh_name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Section (Multi-Select) -->
+      <div class="search-filter-field">
+        <label>Section :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.sectionIds" multiple placeholder="ทั้งหมด">
+            <mat-select-trigger>
+              {{ (filter.sectionIds?.length ?? 0) === 0 ? 'ทั้งหมด' : sectionFilterTriggerText() }}
+            </mat-select-trigger>
+            <mat-option *ngFor="let option of optionSection" [value]="option.id">
+              {{ option.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Status -->
+      <div class="search-filter-field">
+        <label>สถานะ :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.isActive">
+            <mat-option value="">ทั้งหมด</mat-option>
+            <mat-option value="Y">เปิดใช้งาน</mat-option>
+            <mat-option value="N">ปิดใช้งาน</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="Clear" (click)="resetFilter()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button type="button" class="search-button" title="Search" (click)="onClickSearch()">
+          <img src="assets/images/search.png" alt="search-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Display Table -->
+<div class="display-table">
+  <!-- Header -->
+  <div class="display-table-header">
+    <div>
+      Forklift List :
+      <span class="table-count">{{ totalCount }} Records</span>
+    </div>
+
+    <div class="table-header-actions">
+      <!-- Export Excel Button -->
+      <button *hasPermission="'data.export'"
+        type="button"
+        class="export-excel-button"
+        [disabled]="isExportingExcel || totalCount === 0"
+        (click)="exportToExcel()"
+      >
+        <mat-icon>{{ isExportingExcel ? 'hourglass_empty' : 'file_download' }}</mat-icon>
+        Export Excel
+      </button>
+
+      <!-- Print Selected QR Button (current page only, up to pageSize) -->
+      <button *hasPermission="'data.print_qr'"
+        type="button"
+        class="bulk-print-button"
+        [disabled]="selectedForkliftIds.size === 0"
+        (click)="printSelectedForklifts()"
+      >
+        <mat-icon>print</mat-icon>
+        Print Selected ({{ selectedForkliftIds.size }})
+      </button>
+
+      <button *hasPermission="'forklift.create'" type="button" class="add-forklift-button" (click)="openAddModal()">
+        <mat-icon>add</mat-icon>
+        Add Forklift
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="display-table-content">
+    <!-- Skeleton while the forklift list loads: same columns as the real table -->
+    <div class="table-container p-0" *ngIf="isLoading" aria-hidden="true">
+      <table class="adm-skel-table" skeletonWidthsTo="forklift-management">
+        <thead>
+          <tr>
+            <th class="mat-column-select"></th>
+            <th class="mat-column-no" style="text-align: center">#</th>
+            <th class="mat-column-forkliftName">ชื่อ Forklift</th>
+            <th class="mat-column-warehouse">Warehouse</th>
+            <th class="mat-column-section">Section</th>
+            <th class="mat-column-status">สถานะ</th>
+            <th class="mat-column-lastForkliftUsed">วันที่ใช้งานล่าสุด</th>
+            <th class="mat-column-lastEditForklift">วันที่แก้ไขล่าสุด</th>
+            <th class="mat-column-print" style="width: 80px; text-align: center">พิมพ์</th>
+            <th class="mat-column-edit" style="text-align: center">Edit</th>
+            <th class="mat-column-delete" style="text-align: center">Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of skeletonRows">
+            <td><span class="adm-skel adm-skel--box" style="width: 16px; height: 16px"></span></td>
+            <td><span class="adm-skel adm-skel--center" style="width: 18px"></span></td>
+            <td>
+              <span class="adm-skel" style="width: 110px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 70px"></span>
+            </td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 90px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 100px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 72px"></span></td>
+            <td>
+              <span class="adm-skel" style="width: 78px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 52px"></span>
+            </td>
+            <td>
+              <span class="adm-skel" style="width: 78px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 52px"></span>
+            </td>
+            <td><span class="adm-skel adm-skel--box adm-skel--center" style="width: 32px; height: 32px"></span></td>
+            <td><span class="adm-skel adm-skel--box adm-skel--center" style="width: 32px; height: 32px"></span></td>
+            <td><span class="adm-skel adm-skel--box adm-skel--center" style="width: 32px; height: 32px"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="table-container mat-elevation-z8 p-0"
+      *ngIf="!isLoading && _forkliftListTableData && _forkliftListTableData.length > 0"
+      style="box-shadow: none !important"
+    >
+      <table mat-table [dataSource]="_forkliftListTableData" class="w-100" skeletonWidthsFrom="forklift-management">
+
+        <!-- Select (for Print Selected) -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef>
+            <input
+              type="checkbox"
+              class="select-checkbox"
+              title="เลือกทั้งหน้า"
+              [checked]="isAllForkliftsSelected"
+              [indeterminate]="isSomeForkliftsSelected"
+              (change)="toggleAllForklifts($any($event.target).checked)"
+            />
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <input
+              type="checkbox"
+              class="select-checkbox"
+              [checked]="isForkliftSelected(row)"
+              (change)="toggleForkliftSelection(row, $any($event.target).checked)"
+            />
+          </td>
+        </ng-container>
+
+        <!-- No -->
+        <ng-container matColumnDef="no">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">#</th>
+          <td mat-cell *matCellDef="let row; let i = index">
+            {{ ((filter.page ?? 1) - 1) * (filter.pageSize ?? 25) + i + 1 }}
+          </td>
+        </ng-container>
+
+        <!-- Forklift Name -->
+        <ng-container matColumnDef="forkliftName">
+          <th mat-header-cell *matHeaderCellDef>ชื่อ Forklift</th>
+          <td mat-cell *matCellDef="let row">
+            <strong>{{ row.forkliftName }}</strong>
+          </td>
+        </ng-container>
+
+        <!-- Warehouse -->
+        <ng-container matColumnDef="warehouse">
+          <th mat-header-cell *matHeaderCellDef>Warehouse</th>
+          <td mat-cell *matCellDef="let row">
+            <div
+              class="section-chip-list"
+              *ngIf="warehouseList(row.warehouse) as whs; else noWh"
+              [matTooltip]="whs.join(', ')"
+              matTooltipPosition="above"
+            >
+              <ng-container *ngIf="whs.length > 0; else noWhText">
+                <span class="badge-chip badge-chip--blue warehouse-chip">
+                  <mat-icon>warehouse</mat-icon>
+                  <span class="warehouse-chip-text">{{ whs[0] }}</span>
+                </span>
+                <span class="badge-chip badge-chip--muted section-chip-more" *ngIf="whs.length > 1">
+                  +{{ whs.length - 1 }}
+                </span>
+              </ng-container>
+            </div>
+            <ng-template #noWh>-</ng-template>
+            <ng-template #noWhText>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Section -->
+        <ng-container matColumnDef="section">
+          <th mat-header-cell *matHeaderCellDef>Section</th>
+          <td mat-cell *matCellDef="let row">
+            <div
+              class="section-chip-list"
+              *ngIf="sectionNameList(row.sectionId) as names; else noSection"
+              [matTooltip]="names.join(', ')"
+              matTooltipPosition="above"
+            >
+              <ng-container *ngIf="names.length > 0; else noSectionText">
+                <span class="badge-chip badge-chip--violet section-chip">
+                  <mat-icon>category</mat-icon>
+                  <span class="warehouse-chip-text">{{ names[0] }}</span>
+                </span>
+                <span class="badge-chip badge-chip--muted section-chip-more" *ngIf="names.length > 1">
+                  +{{ names.length - 1 }}
+                </span>
+              </ng-container>
+            </div>
+            <ng-template #noSection>-</ng-template>
+            <ng-template #noSectionText>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Status -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>สถานะ</th>
+          <td mat-cell *matCellDef="let row" style="text-align:left">
+            <span class="fm-status-badge" [class.fm-status-badge--on]="row.statusActive === 'Y'">
+              {{ row.statusActive === 'Y' ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Last Forklift Used -->
+        <ng-container matColumnDef="lastForkliftUsed">
+          <th mat-header-cell *matHeaderCellDef>วันที่ใช้งานล่าสุด</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="last-update-cell" *ngIf="row.lastForkliftUsed && row.lastForkliftUsed !== '-'; else noDate1">
+              <span class="last-update-date">{{ row.lastForkliftUsed | date: 'dd/MM/yyyy' }}</span>
+              <span class="last-update-time">{{ row.lastForkliftUsed | date: 'HH:mm:ss' }}</span>
+            </div>
+            <ng-template #noDate1>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Last Edit Forklift -->
+        <ng-container matColumnDef="lastEditForklift">
+          <th mat-header-cell *matHeaderCellDef>วันที่แก้ไขล่าสุด</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="last-update-cell" *ngIf="row.lastEditForklift && row.lastEditForklift !== '-'; else noDate2">
+              <span class="last-update-date">{{ row.lastEditForklift | date: 'dd/MM/yyyy' }}</span>
+              <span class="last-update-time">{{ row.lastEditForklift | date: 'HH:mm:ss' }}</span>
+            </div>
+            <ng-template #noDate2>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Print -->
+        <ng-container matColumnDef="print">
+          <th mat-header-cell *matHeaderCellDef style="width: 80px; text-align:center;justify-content:center">พิมพ์</th>
+          <td mat-cell *matCellDef="let row" style="text-align:center">
+            <button *hasPermission="'data.print_qr'" type="button" class="print-button" (click)="printForklift(row)">
+              <mat-icon>print</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Edit -->
+        <ng-container matColumnDef="edit">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">Edit</th>
+          <td mat-cell *matCellDef="let u">
+            <button *hasPermission="'forklift.update'" type="button" class="edit-button" (click)="openEditModal(u)">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Delete -->
+        <ng-container matColumnDef="delete">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">Delete</th>
+          <td mat-cell *matCellDef="let u">
+            <button *hasPermission="'forklift.delete'" type="button" class="delete-button" (click)="onClickDelete(u)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && (!_forkliftListTableData || _forkliftListTableData.length === 0)">
+      <app-empty-state variant="table" title="ไม่พบข้อมูล" message="กรุณาลองเปลี่ยนเงื่อนไขการค้นหา"></app-empty-state>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator
+    [length]="totalCount"
+    [pageIndex]="(filter.page ?? 1) - 1"
+    [pageSize]="filter.pageSize ?? 25"
+    [pageSizeOptions]="[25, 50, 75, 100]"
+    [showFirstLastButtons]="true"
+    (page)="onPageEvent($event)"
+  >
+  </mat-paginator>
+</div>
+
+<!-- Add Forklift Modal -->
+<div class="ul-modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+  <div class="ul-modal ul-modal--lg" (click)="$event.stopPropagation()">
+    <div class="ul-modal__header">
+      <div class="ul-modal__title">
+        <span class="material-icons">add_circle</span>
+        เพิ่ม Forklift ใหม่
+      </div>
+      <button class="ul-modal__close" (click)="closeAddModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="ul-modal__body">
+      <div class="row g-3">
+        <div class="col-md-12">
+          <label class="ul-label">ชื่อ Forklift <span class="text-danger">*</span></label>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            [(ngModel)]="addForkliftForm.forkliftName"
+            placeholder="เช่น FL-001"
+          />
+        </div>
+        <!-- <div class="col-md-6">
+          <label class="ul-label">ทะเบียน</label>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            [(ngModel)]="addForkliftForm.licensePlate"
+            placeholder="เช่น กข-1234"
+          />
+        </div> -->
+        <div class="col-md-12">
+          <label class="ul-label">Section (เลือกได้หลายรายการ)</label>
+          <div class="fm-section-options">
+            <label class="fm-wh-option" *ngFor="let sec of optionSection">
+              <input
+                type="checkbox"
+                [checked]="addForkliftForm.sections.includes(sec.id)"
+                (change)="toggleWhCode(addForkliftForm.sections, sec.id, $any($event.target).checked)"
+              />
+              <span>{{ sec.name }}</span>
+            </label>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <label class="ul-label">Warehouse (เลือกได้หลายรายการ)</label>
+          <div class="fm-wh-checklist">
+            <label class="fm-wh-option fm-wh-option--all" *ngIf="optionWarehouse.length > 0">
+              <input
+                type="checkbox"
+                [checked]="isAllWhSelected(addForkliftForm.whCodes)"
+                [indeterminate]="addForkliftForm.whCodes.length > 0 && !isAllWhSelected(addForkliftForm.whCodes)"
+                (change)="toggleAllWh(addForkliftForm.whCodes, $any($event.target).checked)"
+              />
+              <span>เลือกทั้งหมด</span>
+            </label>
+            <label class="fm-wh-option" *ngFor="let wh of optionWarehouse">
+              <input
+                type="checkbox"
+                [checked]="addForkliftForm.whCodes.includes(wh.wh_code)"
+                (change)="toggleWhCode(addForkliftForm.whCodes, wh.wh_code, $any($event.target).checked)"
+              />
+              <span>{{ wh.wh_name }}</span>
+            </label>
+            <div class="fm-wh-empty" *ngIf="optionWarehouse.length === 0">ไม่พบข้อมูล Warehouse</div>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <label class="ul-label">สถานะ</label>
+          <select class="form-control form-control-sm" [(ngModel)]="addForkliftForm.isActive">
+            <option value="Y">เปิดใช้งาน</option>
+            <option value="N">ปิดใช้งาน</option>
+          </select>
+        </div>
+        <div class="col-md-12">
+          <label class="ul-label">หมายเหตุ</label>
+          <textarea
+            class="form-control form-control-sm remark-textarea"
+            rows="2"
+            [(ngModel)]="addForkliftForm.remark"
+            placeholder="ระบุหมายเหตุ"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="ul-modal__footer">
+      <button class="btn modal-btn-cancel" (click)="closeAddModal()">ยกเลิก</button>
+      <button class="btn modal-btn-save" (click)="onSubmitAddForklift()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Forklift Modal -->
+<div class="ul-modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="ul-modal ul-modal--lg" (click)="$event.stopPropagation()">
+    <div class="ul-modal__header">
+      <div class="ul-modal__title">
+        <span class="material-icons">edit</span>
+        แก้ไข Forklift: {{ _selectedEditItem.forkliftName }}
+      </div>
+      <button class="ul-modal__close" (click)="closeEditModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="ul-modal__body">
+      <div class="row g-3">
+        <div class="col-md-12">
+          <label class="ul-label">ชื่อ Forklift <span class="text-danger">*</span></label>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            [(ngModel)]="_selectedEditItem.forkliftName"
+          />
+        </div>
+        <!-- <div class="col-md-6">
+          <label class="ul-label">ทะเบียน</label>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            [(ngModel)]="_selectedEditItem.licensePlate"
+          />
+        </div> -->
+        <div class="col-md-12">
+          <label class="ul-label">Section (เลือกได้หลายรายการ)</label>
+          <div class="fm-section-options">
+            <label class="fm-wh-option" *ngFor="let sec of optionSection">
+              <input
+                type="checkbox"
+                [checked]="_selectedEditItem.sections.includes(sec.id)"
+                (change)="toggleWhCode(_selectedEditItem.sections, sec.id, $any($event.target).checked)"
+              />
+              <span>{{ sec.name }}</span>
+            </label>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <label class="ul-label">Warehouse (เลือกได้หลายรายการ)</label>
+          <div class="fm-wh-checklist">
+            <label class="fm-wh-option fm-wh-option--all" *ngIf="optionWarehouse.length > 0">
+              <input
+                type="checkbox"
+                [checked]="isAllWhSelected(_selectedEditItem.whCodes)"
+                [indeterminate]="_selectedEditItem.whCodes.length > 0 && !isAllWhSelected(_selectedEditItem.whCodes)"
+                (change)="toggleAllWh(_selectedEditItem.whCodes, $any($event.target).checked)"
+              />
+              <span>เลือกทั้งหมด</span>
+            </label>
+            <label class="fm-wh-option" *ngFor="let wh of optionWarehouse">
+              <input
+                type="checkbox"
+                [checked]="_selectedEditItem.whCodes.includes(wh.wh_code)"
+                (change)="toggleWhCode(_selectedEditItem.whCodes, wh.wh_code, $any($event.target).checked)"
+              />
+              <span>{{ wh.wh_name }}</span>
+            </label>
+            <div class="fm-wh-empty" *ngIf="optionWarehouse.length === 0">ไม่พบข้อมูล Warehouse</div>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <label class="ul-label">สถานะ</label>
+          <select class="form-control form-control-sm" [(ngModel)]="_selectedEditItem.isActive">
+            <option value="Y">เปิดใช้งาน</option>
+            <option value="N">ปิดใช้งาน</option>
+          </select>
+        </div>
+        <div class="col-md-12">
+          <label class="ul-label">หมายเหตุ</label>
+          <textarea
+            class="form-control form-control-sm remark-textarea"
+            rows="2"
+            [(ngModel)]="_selectedEditItem.remark"
+            placeholder="ระบุหมายเหตุ"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="ul-modal__footer">
+      <button class="btn modal-btn-cancel" (click)="closeEditModal()">ยกเลิก</button>
+      <button class="btn modal-btn-save" (click)="onClickSave()">บันทึกการเปลี่ยนแปลง</button>
+    </div>
+  </div>
+</div>
+
+<!-- Print QR Section -->
+<div id="print-forklift-area" #printForkliftArea></div>

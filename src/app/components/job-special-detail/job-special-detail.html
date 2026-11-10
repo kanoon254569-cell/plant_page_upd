@@ -1,0 +1,417 @@
+﻿<!-- Header -->
+<div class="header-section">
+  <div class="header-left">
+    <button class="back-button" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-section-icon">
+      <mat-icon>assignment</mat-icon>
+    </div>
+    <span>SPC01 - Job Special Detail</span>
+  </div>
+  <ng-container *hasPermission="'outbound.special_package'">
+  <button
+    class="save-button"
+    [disabled]="!canSave() || _isSaving"
+    (click)="onSave()"
+    *ngIf="!_isLoading && _job"
+  >
+    <mat-icon>save</mat-icon>
+    {{ _isSaving ? 'กำลังบันทึก...' : 'Save' }}
+  </button>
+  </ng-container>
+</div>
+
+<!-- Loading -->
+<div class="detail-loading" *ngIf="_isLoading">
+  <mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
+  <span>กำลังโหลด...</span>
+</div>
+
+<!-- Not found -->
+<div class="not-found-state" *ngIf="!_isLoading && !_job">
+  <mat-icon>search_off</mat-icon>
+  <p>ไม่พบข้อมูล Job</p>
+  <button class="back-button-plain" (click)="goBack()">กลับไปหน้ารายการ</button>
+</div>
+
+<!-- Content -->
+<ng-container *ngIf="!_isLoading && _job as job">
+  <!-- Job summary card -->
+  <div class="main-section">
+    <div class="job-title-card">
+      <div class="job-icon">
+        <span class="job-icon-text">SPC</span>
+      </div>
+      <div class="job-content-card">
+        <div class="job-info">
+          <div class="job-system-no">{{ job.docNo || '-' }}</div>
+          <div [ngClass]="'status-badge ' + replaceWhiteSpaceWithDash(job.statusName)">
+            {{ job.statusName || '-' }}
+          </div>
+        </div>
+        <div class="job-detail-meta">
+          <!-- <span>เลขที่เอกสาร : <strong>{{ job.docNo || '-' }}</strong></span> -->
+          <span>ลูกค้า : {{ job.customer || '-' }}</span>
+          <span> • วันที่ : {{ job.date || '-' }}</span>
+          <!-- <span *ngIf="job.seq"> • ลำดับ : {{ job.seq }}</span> -->
+        </div>
+      </div>
+      <div class="job-summary-stats">
+        <div class="stat-item">
+          <span class="stat-value">{{ job.pallets.length }}</span>
+          <span class="stat-label">Pallets</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-value">{{ totalBags() }}</span>
+          <span class="stat-label">Bags</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-value">{{ job.tonPerCart ?? '-' }}</span>
+          <span class="stat-label">ตัน</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-body">
+    <div class="arriving-lock-banner" *ngIf="job.isArriving">
+      <mat-icon>lock</mat-icon>
+      งานนี้อยู่ระหว่างนำเข้า (Arriving) จึงไม่สามารถแก้ไขข้อมูลได้
+    </div>
+
+    <!-- Top: Job Info -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <mat-icon>info_outline</mat-icon>
+        ข้อมูลใบงาน
+      </div>
+      <div class="detail-card-body">
+        <!-- Section 1: ข้อมูลพื้นฐาน -->
+        <div class="form-section">
+          <div class="form-section-label">ข้อมูลพื้นฐาน</div>
+          <div class="form-row">
+            <div class="form-field form-field-xs">
+              <label>JOB No</label>
+              <div class="jobno-display">{{ job.jobNo || '-' }}</div>
+            </div>
+            <div class="form-field form-field-xs">
+              <label>NO.</label>
+              <input [(ngModel)]="job.no" name="no" [disabled]="job.isArriving" />
+            </div>
+            <div class="form-field form-field-xl">
+              <label>วันที่ <span class="required-mark">*</span></label>
+              <mat-form-field
+                appearance="outline"
+                class="job-meta-date-field"
+                subscriptSizing="dynamic"
+                [class.field-invalid]="isBlank(job.date)"
+              >
+                <input
+                  matInput
+                  [matDatepicker]="datePicker"
+                  [ngModel]="job.dateObj"
+                  (dateChange)="onDateChange('date', $event.value)"
+                  name="date"
+                  placeholder="เลือกวันที่"
+                  readonly
+                  [disabled]="job.isArriving"
+                  (click)="datePicker.open()"
+                />
+                <mat-datepicker-toggle matIconSuffix [for]="datePicker" [disabled]="job.isArriving"></mat-datepicker-toggle>
+                <mat-datepicker #datePicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+            <div class="form-field form-field-lg">
+              <label>เลขที่เอกสาร <span class="required-mark">*</span></label>
+              <input
+                [(ngModel)]="job.docNo"
+                name="docNo"
+                placeholder="เช่น SPEC-20260001"
+                [class.field-invalid]="isBlank(job.docNo)"
+                [disabled]="job.isArriving"
+              />
+            </div>
+            <div class="form-field form-field-flex">
+              <label>ลูกค้า <span class="required-mark">*</span></label>
+              <input
+                [(ngModel)]="job.customer"
+                name="customer"
+                [class.field-invalid]="isBlank(job.customer)"
+                [disabled]="job.isArriving"
+              />
+            </div>
+            <div class="form-field form-field-sm">
+              <label>ลำดับ <span class="required-mark">*</span></label>
+              <input [(ngModel)]="job.seq" name="seq" [class.field-invalid]="isBlank(job.seq)" [disabled]="job.isArriving" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: รายละเอียดสินค้า -->
+        <div class="form-section">
+          <div class="form-section-label">รายละเอียดสินค้า</div>
+          <div class="form-row">
+            <div class="form-field form-field-xl">
+              <label>ขนาดพาเลท <span class="required-mark">*</span></label>
+              <input
+                [(ngModel)]="job.palletSize"
+                name="palletSize"
+                [class.field-invalid]="isBlank(job.palletSize)"
+                [disabled]="job.isArriving"
+              />
+            </div>
+            <div class="form-field form-field-xl">
+              <label>ล็อตของพาเลท</label>
+              <input
+                [disabled]="job.isArriving"
+              />
+            </div>
+            <div class="form-field form-field-xs">
+              <label>ตัน</label>
+              <input type="number" [(ngModel)]="job.tonPerCart" name="ton" [disabled]="job.isArriving" />
+            </div>
+            <div class="form-field form-field-xs">
+              <label>คัน</label>
+              <input type="number" [(ngModel)]="job.cartQty" name="cartQty" [disabled]="job.isArriving" />
+            </div>
+            <div class="form-field form-field-xs">
+              <label>Qty (kg) รวม</label>
+              <input [value]="totalQtyDisplay()" disabled />
+            </div>
+            <div class="form-field form-field-xl">
+              <label>ขายวันที่</label>
+              <mat-form-field
+                appearance="outline"
+                class="job-meta-date-field"
+                subscriptSizing="dynamic"
+              >
+                <input
+                  matInput
+                  [matDatepicker]="saleDatePicker"
+                  [ngModel]="job.saleDateObj"
+                  (dateChange)="onDateChange('saleDate', $event.value)"
+                  name="saleDate"
+                  placeholder="เลือกวันที่"
+                  readonly
+                  [disabled]="job.isArriving"
+                  (click)="saleDatePicker.open()"
+                />
+                <mat-datepicker-toggle matIconSuffix [for]="saleDatePicker" [disabled]="job.isArriving"></mat-datepicker-toggle>
+                <mat-datepicker #saleDatePicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+            <div class="form-field form-field-flex"></div>
+            <div class="form-checkboxes">
+              <label class="cb-label"
+                ><input type="checkbox" [(ngModel)]="job.arranged" name="arranged" [disabled]="job.isArriving" />
+                จัดเรียง</label
+              >
+              <label class="cb-label"
+                ><input type="checkbox" [(ngModel)]="job.wrapFilm" name="wrapFilm" [disabled]="job.isArriving" />
+                พันฟิล์ม</label
+              >
+              <label class="cb-label"
+                ><input type="checkbox" [(ngModel)]="job.taped" name="taped" [disabled]="job.isArriving" /> รัดเทป</label
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: ข้อมูลเพิ่มเติม -->
+        <div class="form-section">
+          <div class="form-section-label">ข้อมูลเพิ่มเติม</div>
+          <div class="form-row">
+            <div class="form-field form-field-xl">
+              <label>INVOICE</label>
+              <input [(ngModel)]="job.invoice" name="invoice" [disabled]="job.isArriving" />
+            </div>
+            <div class="form-field form-field-xl">
+              <label>ผู้สั่งงาน</label>
+              <input [(ngModel)]="job.orderedBy" name="orderedBy" [disabled]="job.isArriving" />
+            </div>
+            <div class="form-field form-field-flex">
+              <label>หมายเหตุ</label>
+              <input [(ngModel)]="job.remark" name="remark" [disabled]="job.isArriving" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field form-field-xl">
+              <label>สถานะการจัดทำสินค้า</label>
+              <input [(ngModel)]="job.prepStatus" name="prepStatus" [disabled]="job.isArriving" />
+            </div>
+            <div class="form-field form-field-flex">
+              <label>รายละเอียดที่ยังไม่เสร็จ</label>
+              <input [(ngModel)]="job.incompleteDetail" name="incompleteDetail" [disabled]="job.isArriving" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: ข้อมูลที่ต้องเบิกจาก WH -->
+        <div class="form-section form-section-last">
+          <div class="form-section-label">ข้อมูลที่ต้องเบิกจาก WH</div>
+          <table class="bag-table" *ngIf="whWithdrawalSummary().length > 0">
+            <thead>
+              <tr>
+                <th class="col-no">#</th>
+                <th class="col-grade">Grade</th>
+                <th class="col-lot">Lot</th>
+                <th class="col-qty">Qty (kg)</th>
+                <th class="col-bag">Bag</th>
+                <th class="col-actual">Qty Actual</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of whWithdrawalSummary(); let i = index">
+                <td class="col-no">{{ i + 1 }}</td>
+                <td class="col-grade">{{ row.grade || '-' }}</td>
+                <td class="col-lot">{{ row.lot || '-' }}</td>
+                <td class="col-qty">{{ row.qty | number: '1.0-2' }}</td>
+                <td class="col-bag">{{ row.bag }}</td>
+                <td class="col-actual">-</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="pallet-empty-state" *ngIf="whWithdrawalSummary().length === 0">
+            ยังไม่มีข้อมูลสำหรับเบิกจาก WH
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom: Pallet List -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <mat-icon>inventory_2</mat-icon>
+        Pallet List
+        <span class="pallet-count-badge"
+          >{{ job.pallets.length }} pallets · {{ totalBags() }} bags</span
+        >
+        <button *hasPermission="'data.print_qr'"
+          type="button"
+          class="print-button"
+          style="margin-left: auto"
+          [disabled]="job.pallets.length === 0"
+          (click)="printAllPallets()"
+        >
+          <mat-icon>print</mat-icon> Print All
+        </button>
+        <button type="button" class="add-button" [disabled]="job.isArriving" (click)="addPallet()">+ Add Pallet</button>
+      </div>
+      <div class="detail-card-body">
+        <div class="no-pallets-state" *ngIf="job.pallets.length === 0">
+          <mat-icon>inbox</mat-icon>
+          <p>ยังไม่มี Pallet กด + Add Pallet เพื่อเพิ่ม</p>
+        </div>
+
+        <div class="pallet-list-grid">
+          <div class="pallet-block" *ngFor="let pallet of job.pallets; let pIdx = index">
+            <div class="pallet-block-header">
+              <span>Pallet #{{ pIdx + 1 }}</span>
+              <div class="pallet-block-actions">
+                <button *hasPermission="'data.print_qr'"
+                  type="button"
+                  class="print-button"
+                  title="พิมพ์ QR Code"
+                  (click)="printPallet(pIdx)"
+                >
+                  <mat-icon>print</mat-icon> Print
+                </button>
+                <button type="button" class="duplicate-button" [disabled]="job.isArriving" (click)="duplicatePallet(pIdx)">
+                  <mat-icon>content_copy</mat-icon> Duplicate
+                </button>
+                <button type="button" class="add-button" [disabled]="job.isArriving" (click)="addBagItem(pIdx)">
+                  + Add Item
+                </button>
+                <button
+                  type="button"
+                  class="remove-pallet-button"
+                  title="Remove Pallet"
+                  [disabled]="job.isArriving"
+                  (click)="removePallet(pIdx)"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <table class="bag-table" *ngIf="pallet.bags.length > 0">
+              <thead>
+                <tr>
+                  <th class="col-no">#</th>
+                  <th class="col-grade">Grade <span class="required-mark">*</span></th>
+                  <th class="col-lot">Lot</th>
+                  <th class="col-qty">Qty (kg) <span class="required-mark">*</span></th>
+                  <th class="col-bag">Bag <span class="required-mark">*</span></th>
+                  <th class="col-action"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of pallet.bags; let iIdx = index">
+                  <td class="col-no">{{ iIdx + 1 }}</td>
+                  <td class="col-grade">
+                    <input
+                      [(ngModel)]="item.grade"
+                      [name]="'grade_' + pIdx + '_' + iIdx"
+                      class="table-cell-input"
+                      [class.field-invalid]="isBagGradeMissing(item)"
+                      [disabled]="job.isArriving"
+                    />
+                  </td>
+                  <td class="col-lot">
+                    <input
+                      [(ngModel)]="item.lot"
+                      [name]="'lot_' + pIdx + '_' + iIdx"
+                      class="table-cell-input"
+                      [disabled]="job.isArriving"
+                    />
+                  </td>
+                  <td class="col-qty">
+                    <input
+                      type="number"
+                      [(ngModel)]="item.qty"
+                      [name]="'qty_' + pIdx + '_' + iIdx"
+                      class="table-cell-input"
+                      [class.field-invalid]="isBagQtyMissing(item)"
+                      [disabled]="job.isArriving"
+                    />
+                  </td>
+                  <td class="col-bag">
+                    <input
+                      type="number"
+                      [(ngModel)]="item.bag"
+                      [name]="'bag_' + pIdx + '_' + iIdx"
+                      class="table-cell-input"
+                      [class.field-invalid]="isBagBagMissing(item)"
+                      [disabled]="job.isArriving"
+                    />
+                  </td>
+                  <td class="col-action">
+                    <button
+                      type="button"
+                      class="delete-icon-button"
+                      [disabled]="job.isArriving"
+                      (click)="removeBagItem(pIdx, iIdx)"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="pallet-empty-state" *ngIf="pallet.bags.length === 0">
+              ยังไม่มีรายการถุง — กด + Add Item เพื่อเพิ่ม
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- Print Section -->
+<div id="print-special-area" #printSpecialArea></div>

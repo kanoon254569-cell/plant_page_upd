@@ -1,0 +1,679 @@
+﻿<!-- Page Name -->
+<div class="header-section">
+  <div class="header-section-title">
+    <div class="header-section-icon">
+      <mat-icon>inventory_2</mat-icon>
+    </div>
+    <span>Pallet Management</span>
+  </div>
+
+  <!-- Pallet Type Tabs -->
+  <div class="pallet-type-tabs">
+    <button type="button" class="pallet-type-tab" [class.active]="palletType === 'normal'" (click)="onSelectPalletType('normal')">
+      <mat-icon>inventory_2</mat-icon>
+      <span class="pallet-type-text">Pallet</span>
+    </button>
+    <button type="button" class="pallet-type-tab" [class.active]="palletType === 'dummy'" (click)="onSelectPalletType('dummy')">
+      <mat-icon>autorenew</mat-icon>
+      <span class="pallet-type-text">Dummy Pallet</span>
+    </button>
+  </div>
+</div>
+
+<ng-container *ngIf="palletType === 'normal'">
+<!-- Search Filter -->
+<div class="search-filter">
+  <div class="search-filter-header">Search Filter</div>
+
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+      <div class="search-filter-field">
+        <label>Pallet Number / QR Code :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            [(ngModel)]="filter.palletNo"
+            placeholder="ค้นหาพาเลท / คิวอาร์โค้ด"
+            (keydown.enter)="onClickSearch()"
+          />
+        </mat-form-field>
+      </div>
+
+      <!-- Grade -->
+      <div class="search-filter-field">
+        <label>Grade :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.grade" placeholder="ค้นหาเกรด" />
+        </mat-form-field>
+      </div>
+
+      <!-- Lot -->
+      <div class="search-filter-field">
+        <label>Lot :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.lot" placeholder="ค้นหาล็อต" />
+        </mat-form-field>
+      </div>
+
+      <!-- Pallet Type -->
+      <div class="search-filter-field">
+        <label>Location Type :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.locationType">
+            <mat-option value="">ทั้งหมด</mat-option>
+            <mat-option *ngFor="let option of optionLocationType" [value]="option.code">
+              {{ option.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Pallet Location -->
+      <div class="search-filter-field">
+        <label>Current Location :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            [ngModel]="locationSearchText"
+            (ngModelChange)="onLocationSearchInput($event)"
+            [matAutocomplete]="locationAuto"
+            placeholder="ค้นหาตำแหน่งพาเลท"
+            [disabled]="filter.locationType == '' || filter.locationType == null || filter.locationType == undefined"
+          />
+          <mat-autocomplete
+            #locationAuto="matAutocomplete"
+            (optionSelected)="onSelectLocation($event.option.value)"
+          >
+            <mat-option *ngFor="let option of locationSearchOptions" [value]="option.location_name">
+              {{ option.location_name }}<ng-container *ngIf="option.location_code"> ({{ option.location_code }})</ng-container>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="Clear" (click)="resetFilter()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button type="button" class="search-button" title="Search" (click)="onClickSearch()">
+          <img src="assets/images/search.png" alt="search-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Display Table -->
+<div class="display-table">
+  <!-- Header -->
+  <div class="display-table-header">
+    <div>
+      Pallet List :
+      <span class="table-count">{{ totalCount }} Records</span>
+    </div>
+    <div class="pm-header-actions">
+    <button *hasPermission="'pallet.move_to_bagging'"
+      type="button"
+      class="move-bagging-button"
+      [disabled]="isMovingToBagging || selectedPallets.size === 0"
+      (click)="moveSelectedToBagging()"
+    >
+      <mat-icon>{{ isMovingToBagging ? 'hourglass_empty' : 'undo' }}</mat-icon>
+      ย้ายกลับ Bagging Area ({{ selectedPallets.size }})
+    </button>
+    <button *hasPermission="'data.export'"
+      type="button"
+      class="export-excel-button"
+      [disabled]="isExportingExcel || totalCount === 0"
+      (click)="exportToExcel()"
+    >
+      <mat-icon>{{ isExportingExcel ? 'hourglass_empty' : 'file_download' }}</mat-icon>
+      Export Excel
+    </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="display-table-content">
+    <!-- Skeleton while process/pallet loads: same columns and widths as the real table -->
+    <div class="table-container p-0" *ngIf="isPalletListLoading" aria-hidden="true">
+      <table class="w-100 skel-table pm-table--pallet" skeletonWidthsTo="pallet-management">
+        <thead>
+          <tr>
+            <th class="mat-column-select" *ngIf="canMoveToBagging"></th>
+            <th class="mat-column-no">#</th>
+            <th class="mat-column-palletNumber">Pallet Number</th>
+            <th class="mat-column-tonNo">Ton No.</th>
+            <th class="mat-column-grade">Grade</th>
+            <th class="mat-column-lot">Lot</th>
+            <th class="mat-column-qty">QTY (kg)</th>
+            <th class="mat-column-locationType">Location Type</th>
+            <th class="mat-column-palletLocation">Pallet Location</th>
+            <th class="mat-column-createDateTime">Created Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of skeletonRows">
+            <td *ngIf="canMoveToBagging"><span class="pm-skel" style="width: 18px; margin: 0 auto"></span></td>
+            <td><span class="pm-skel" style="width: 18px; margin: 0 auto"></span></td>
+            <td><span class="pm-skel" style="width: 110px"></span></td>
+            <td><span class="pm-skel" style="width: 32px; height: 26px"></span></td>
+            <td><span class="pm-skel" style="width: 60px"></span></td>
+            <td><span class="pm-skel" style="width: 84px"></span></td>
+            <td><span class="pm-skel" style="width: 44px"></span></td>
+            <td><span class="pm-skel" style="width: 110px; height: 28px; border-radius: 999px"></span></td>
+            <td><span class="pm-skel" style="width: 110px; height: 28px; border-radius: 999px"></span></td>
+            <td>
+              <span class="pm-skel" style="width: 78px"></span>
+              <span class="pm-skel" style="width: 48px; height: 10px; margin-top: 6px"></span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="table-container mat-elevation-z8 p-0"
+      *ngIf="!isPalletListLoading && _palletListTableData && _palletListTableData.length > 0"
+      style="box-shadow: none !important"
+    >
+      <table mat-table [dataSource]="_palletListTableData" class="w-100 pm-table--pallet" skeletonWidthsFrom="pallet-management">
+        <!-- Select (move to Bagging Area) -- pallets already in Bagging Area can't be ticked -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">
+            <mat-checkbox
+              [checked]="isAllPageSelected"
+              [indeterminate]="isSomePageSelected"
+              [disabled]="selectablePageRows.length === 0"
+              (change)="togglePageSelection($event.checked)"
+            ></mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row" style="text-align:center">
+            <mat-checkbox
+              [checked]="selectedPallets.has(row.id)"
+              [disabled]="!canSelectPallet(row)"
+              (change)="togglePalletSelection(row, $event.checked)"
+            ></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- No -->
+        <ng-container matColumnDef="no">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; justify-content: center">
+            #
+          </th>
+          <td mat-cell *matCellDef="let row; let i = index">
+            {{ ((filter.page ?? 1) - 1) * (filter.pageSize ?? 25) + i + 1 }}
+          </td>
+        </ng-container>
+
+        <!-- Pallet Number -->
+        <ng-container matColumnDef="palletNumber">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="w-10 pm-sortable"
+            [attr.aria-sort]="ariaSort('palletNumber')"
+            (click)="onSortColumn('palletNumber')"
+          >
+            Pallet Number
+            <mat-icon class="pm-sort-icon" [class.pm-sort-icon--active]="filter.sortBy === 'palletNumber'">{{ sortIcon('palletNumber') }}</mat-icon>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="pm-pallet-link" (click)="viewPalletInformation(row)">
+              {{ row.palletNumber }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Ton No. -->
+        <ng-container matColumnDef="tonNo">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="pm-sortable"
+            [attr.aria-sort]="ariaSort('tonNo')"
+            (click)="onSortColumn('tonNo')"
+          >
+            Ton No.
+            <mat-icon class="pm-sort-icon" [class.pm-sort-icon--active]="filter.sortBy === 'tonNo'">{{ sortIcon('tonNo') }}</mat-icon>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="ton-no" *ngIf="row.tonNo != null; else noTonNo">{{ row.tonNo }}</span>
+            <ng-template #noTonNo>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Grade -->
+        <ng-container matColumnDef="grade">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="w-10 pm-sortable"
+            [attr.aria-sort]="ariaSort('grade')"
+            (click)="onSortColumn('grade')"
+          >
+            Grade
+            <mat-icon class="pm-sort-icon" [class.pm-sort-icon--active]="filter.sortBy === 'grade'">{{ sortIcon('grade') }}</mat-icon>
+          </th>
+          <td mat-cell *matCellDef="let row" [title]="row.grade || ''">{{ row.grade || '-' }}</td>
+        </ng-container>
+
+        <!-- Lot -->
+        <ng-container matColumnDef="lot">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="w-10 pm-sortable"
+            [attr.aria-sort]="ariaSort('lot')"
+            (click)="onSortColumn('lot')"
+          >
+            Lot
+            <mat-icon class="pm-sort-icon" [class.pm-sort-icon--active]="filter.sortBy === 'lot'">{{ sortIcon('lot') }}</mat-icon>
+          </th>
+          <td mat-cell *matCellDef="let row" [title]="row.lot || ''">{{ row.lot || '-' }}</td>
+        </ng-container>
+
+        <!-- QTY -->
+        <ng-container matColumnDef="qty">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="w-10 pm-sortable"
+            [attr.aria-sort]="ariaSort('qty')"
+            (click)="onSortColumn('qty')"
+          >
+            QTY (kg)
+            <mat-icon class="pm-sort-icon" [class.pm-sort-icon--active]="filter.sortBy === 'qty'">{{ sortIcon('qty') }}</mat-icon>
+          </th>
+          <td mat-cell *matCellDef="let row" style="font-weight: 600">
+            <span [ngClass]="'pm-qty--' + row.qtyStatus" [title]="qtyStatusLabels[row.qtyStatus]">
+              {{ (row.qty | number: '1.0-2') || '-' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="locationType">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="pm-sortable"
+            [attr.aria-sort]="ariaSort('locationType')"
+            (click)="onSortColumn('locationType')"
+          >
+            Location Type
+            <mat-icon class="pm-sort-icon" [class.pm-sort-icon--active]="filter.sortBy === 'locationType'">{{ sortIcon('locationType') }}</mat-icon>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <span
+              class="badge-chip badge-chip--loc"
+              [ngClass]="'badge-chip--loc-' + row.locationTypeCode"
+              *ngIf="row.locationType && row.locationType !== '-'; else noLocType"
+            >
+              <mat-icon>{{ locationTypeIcon[row.locationTypeCode] ?? 'place' }}</mat-icon>
+              {{ row.locationType }}
+            </span>
+            <ng-template #noLocType>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Pallet Location -->
+        <ng-container matColumnDef="palletLocation">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="w-10 pm-sortable"
+            [attr.aria-sort]="ariaSort('palletLocation')"
+            (click)="onSortColumn('palletLocation')"
+          >
+            Pallet Location
+            <mat-icon class="pm-sort-icon" [class.pm-sort-icon--active]="filter.sortBy === 'palletLocation'">{{ sortIcon('palletLocation') }}</mat-icon>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="badge-chip badge-chip--blue" *ngIf="row.palletLocation; else noLoc" [title]="row.palletLocation">
+              <mat-icon>location_on</mat-icon>
+              {{ row.palletLocation }}
+            </span>
+            <ng-template #noLoc>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Create DateTime -->
+        <ng-container matColumnDef="createDateTime">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="w-10 pm-sortable"
+            [attr.aria-sort]="ariaSort('createDateTime')"
+            (click)="onSortColumn('createDateTime')"
+          >
+            Created Date
+            <mat-icon class="pm-sort-icon" [class.pm-sort-icon--active]="filter.sortBy === 'createDateTime'">{{ sortIcon('createDateTime') }}</mat-icon>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <div
+              class="last-update-cell"
+              *ngIf="row.createDateTime && row.createDateTime !== '-'; else noDate"
+            >
+              <span class="last-update-date">{{ row.createDateTime | date: 'dd/MM/yyyy' }}</span>
+              <span class="last-update-time">{{ row.createDateTime | date: 'HH:mm:ss' }}</span>
+            </div>
+            <ng-template #noDate>-</ng-template>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          [class.pm-row--not-full]="!row.isFullPallet"
+          [title]="row.isFullPallet ? '' : 'พาเลทยังไม่เต็ม'"
+        ></tr>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isPalletListLoading && (!_palletListTableData || _palletListTableData.length === 0)">
+      <app-empty-state variant="table" title="ไม่พบข้อมูล" message="กรุณาลองเปลี่ยนเงื่อนไขการค้นหา"></app-empty-state>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator
+    [length]="totalCount"
+    [pageIndex]="(filter.page ?? 1) - 1"
+    [pageSize]="filter.pageSize ?? 25"
+    [pageSizeOptions]="[25, 50, 75, 100]"
+    [showFirstLastButtons]="true"
+    (page)="onPageEvent($event)"
+  >
+  </mat-paginator>
+</div>
+</ng-container>
+
+<!-- ═══════════ Dummy Pallet (tr_pallet.pallet_type = 'D') ═══════════ -->
+<ng-container *ngIf="palletType === 'dummy'">
+<!-- Search Filter : Dummy Pallet -->
+<div class="search-filter">
+  <div class="search-filter-header">
+    <span class="type-badge type-badge--dummy">
+      <mat-icon>autorenew</mat-icon>
+      Dummy Pallet
+    </span>
+    <span>Search Filter</span>
+  </div>
+
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+      <div class="search-filter-field">
+        <label>Pallet Number :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            [(ngModel)]="dummyFilter.palletNo"
+            placeholder="ค้นหาเลข PLD..."
+            (keydown.enter)="onClickSearchDummy()"
+          />
+        </mat-form-field>
+      </div>
+
+      <div class="search-filter-field">
+        <label>Location Type :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="dummyFilter.locationType">
+            <mat-option value="">ทั้งหมด</mat-option>
+            <mat-option *ngFor="let option of optionLocationType" [value]="option.code">
+              {{ option.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="Clear" (click)="resetDummyFilter()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button type="button" class="search-button" title="Search" (click)="onClickSearchDummy()">
+          <img src="assets/images/search.png" alt="search-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Display Table : Dummy Pallet -->
+<div class="display-table">
+  <div class="display-table-header">
+    <div class="display-table-header-title">
+      <span class="type-badge type-badge--dummy">
+        <mat-icon>autorenew</mat-icon>
+        Dummy Pallet
+      </span>
+      Pallet List :
+      <span class="table-count">{{ dummyTotalCount }} Records</span>
+    </div>
+    <div class="pm-header-actions">
+      <button *hasPermission="'data.print_qr'"
+        type="button"
+        class="bulk-print-button"
+        [disabled]="selectedDummyPallets.size === 0"
+        (click)="printSelectedDummy()"
+      >
+        <mat-icon>print</mat-icon>
+        Print Selected ({{ selectedDummyPallets.size }})
+      </button>
+      <button *hasPermission="'pallet.dummy_clear'"
+        type="button"
+        class="move-bagging-button"
+        [disabled]="isClearingDummy || selectedClearableDummy.length === 0"
+        (click)="clearDummyPallets(selectedClearableDummy)"
+      >
+        <mat-icon>{{ isClearingDummy ? 'hourglass_empty' : 'cleaning_services' }}</mat-icon>
+        ล้างพาเลทที่เลือก ({{ selectedClearableDummy.length }})
+      </button>
+      <button *hasPermission="'pallet.dummy_create'"
+        type="button"
+        class="create-dummy-button"
+        [disabled]="isCreatingDummy"
+        (click)="createDummyPallets()"
+      >
+        <mat-icon>{{ isCreatingDummy ? 'hourglass_empty' : 'add' }}</mat-icon>
+        สร้าง Dummy Pallet
+      </button>
+    </div>
+  </div>
+
+  <div class="display-table-content">
+    <!-- Skeleton while the dummy list loads -->
+    <div class="table-container p-0" *ngIf="isDummyLoading" aria-hidden="true">
+      <table class="w-100 skel-table pm-table--dummy" skeletonWidthsTo="pallet-management-dummy">
+        <thead>
+          <tr>
+            <th class="mat-column-select"></th>
+            <th class="mat-column-no">#</th>
+            <th class="mat-column-palletNumber">Pallet Number</th>
+            <th class="mat-column-grade">Grade</th>
+            <th class="mat-column-lot">Lot</th>
+            <th class="mat-column-qty">QTY (kg)</th>
+            <th class="mat-column-bagCount">Bags</th>
+            <th class="mat-column-locationType">Location Type</th>
+            <th class="mat-column-palletLocation">Pallet Location</th>
+            <th class="mat-column-createDateTime">Created Date</th>
+            <th class="mat-column-print">พิมพ์</th>
+            <th class="mat-column-clear">ล้าง</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of skeletonRows">
+            <td><span class="pm-skel" style="width: 18px; margin: 0 auto"></span></td>
+            <td><span class="pm-skel" style="width: 18px; margin: 0 auto"></span></td>
+            <td><span class="pm-skel" style="width: 120px"></span></td>
+            <td><span class="pm-skel" style="width: 60px"></span></td>
+            <td><span class="pm-skel" style="width: 84px"></span></td>
+            <td><span class="pm-skel" style="width: 44px"></span></td>
+            <td><span class="pm-skel" style="width: 32px"></span></td>
+            <td><span class="pm-skel" style="width: 110px; height: 28px; border-radius: 999px"></span></td>
+            <td><span class="pm-skel" style="width: 110px; height: 28px; border-radius: 999px"></span></td>
+            <td><span class="pm-skel" style="width: 78px"></span></td>
+            <td><span class="pm-skel" style="width: 32px; height: 32px; margin: 0 auto"></span></td>
+            <td><span class="pm-skel" style="width: 32px; height: 32px; margin: 0 auto"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="table-container mat-elevation-z8 p-0"
+      *ngIf="!isDummyLoading && _dummyTableData.length > 0"
+      style="box-shadow: none !important"
+    >
+      <table mat-table [dataSource]="_dummyTableData" class="w-100 pm-table--dummy" skeletonWidthsFrom="pallet-management-dummy">
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">
+            <mat-checkbox
+              [checked]="isAllDummyPageSelected"
+              [indeterminate]="isSomeDummyPageSelected"
+              (change)="toggleDummyPageSelection($event.checked)"
+            ></mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row" style="text-align:center">
+            <mat-checkbox
+              [checked]="selectedDummyPallets.has(row.id)"
+              (change)="toggleDummySelection(row, $event.checked)"
+            ></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="no">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; justify-content: center">#</th>
+          <td mat-cell *matCellDef="let row; let i = index">
+            {{ (dummyPage - 1) * dummyPageSize + i + 1 }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="palletNumber">
+          <th mat-header-cell *matHeaderCellDef>Pallet Number</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="pm-pallet-link" (click)="viewPalletInformation(row)">{{ row.palletNumber }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="grade">
+          <th mat-header-cell *matHeaderCellDef>Grade</th>
+          <td mat-cell *matCellDef="let row" [title]="row.grade || ''">{{ row.grade || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="lot">
+          <th mat-header-cell *matHeaderCellDef>Lot</th>
+          <td mat-cell *matCellDef="let row" [title]="row.lot || ''">{{ row.lot || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="qty">
+          <th mat-header-cell *matHeaderCellDef>QTY (kg)</th>
+          <td mat-cell *matCellDef="let row" style="font-weight: 600">
+            {{ row.qty > 0 ? (row.qty | number: '1.0-2') : '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="locationType">
+          <th mat-header-cell *matHeaderCellDef>Location Type</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="badge-chip badge-chip--loc" [ngClass]="'badge-chip--loc-' + row.locationTypeCode">
+              <mat-icon>{{ locationTypeIcon[row.locationTypeCode] ?? 'place' }}</mat-icon>
+              {{ row.locationType }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="palletLocation">
+          <th mat-header-cell *matHeaderCellDef>Pallet Location</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="badge-chip badge-chip--blue" *ngIf="row.palletLocation && row.palletLocation !== '-'; else noDummyLoc" [title]="row.palletLocation">
+              <mat-icon>location_on</mat-icon>
+              {{ row.palletLocation }}
+            </span>
+            <ng-template #noDummyLoc>-</ng-template>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="bagCount">
+          <th mat-header-cell *matHeaderCellDef>Bags</th>
+          <td mat-cell *matCellDef="let row" style="font-weight: 600">
+            <span *ngIf="row.bagCount > 0; else emptyDummy">{{ row.bagCount }}</span>
+            <ng-template #emptyDummy><span class="pm-dummy-empty">ว่าง</span></ng-template>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="createDateTime">
+          <th mat-header-cell *matHeaderCellDef>Created Date</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="last-update-cell" *ngIf="row.createDateTime; else noDummyDate">
+              <span class="last-update-date">{{ row.createDateTime | date: 'dd/MM/yyyy' }}</span>
+              <span class="last-update-time">{{ row.createDateTime | date: 'HH:mm:ss' }}</span>
+            </div>
+            <ng-template #noDummyDate>-</ng-template>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="print">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">พิมพ์</th>
+          <td mat-cell *matCellDef="let row" style="text-align:center">
+            <button *hasPermission="'data.print_qr'" type="button" class="print-button" (click)="printDummy([row.palletNumber])">
+              <mat-icon>print</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Clear: unlink + deactivate the bags, pallet back to Bagging Area -->
+        <ng-container matColumnDef="clear">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">ล้าง</th>
+          <td mat-cell *matCellDef="let row" style="text-align:center">
+            <button *hasPermission="'pallet.dummy_clear'"
+              type="button"
+              class="clear-dummy-button"
+              title="ล้างพาเลท"
+              [disabled]="isClearingDummy || !canClearDummy(row)"
+              (click)="clearDummyPallets([row])"
+            >
+              <mat-icon>cleaning_services</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="dummyDisplayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: dummyDisplayedColumns"></tr>
+      </table>
+    </div>
+
+    <div class="empty-state" *ngIf="!isDummyLoading && _dummyTableData.length === 0">
+      <app-empty-state variant="table" title="ไม่พบ Dummy Pallet" message="กด &quot;สร้าง Dummy Pallet&quot; เพื่อเพิ่มพาเลท"></app-empty-state>
+    </div>
+  </div>
+
+  <mat-paginator
+    [length]="dummyTotalCount"
+    [pageIndex]="dummyPage - 1"
+    [pageSize]="dummyPageSize"
+    [pageSizeOptions]="[25, 50, 75, 100]"
+    [showFirstLastButtons]="true"
+    (page)="onDummyPageEvent($event)"
+  >
+  </mat-paginator>
+</div>
+</ng-container>
+
+<!-- Print QR Code Section : Dummy Pallet (one card per page, same layout as location-management) -->
+<div id="print-area">
+  <div class="pcard-print-page" *ngFor="let palletNo of printDummyPallets; let i = index">
+    <div class="pcard">
+      <header class="pcard__header">
+        <div class="pcard__plate" [style.fontSize.px]="getPlateFontSize(palletNo)">{{ palletNo }}</div>
+      </header>
+      <div class="pcard__body">
+        <div [id]="'print-qr-dummy-' + i"></div>
+      </div>
+      <footer class="pcard__footer">Dummy Pallet</footer>
+    </div>
+  </div>
+</div>

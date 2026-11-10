@@ -1,0 +1,17 @@
+/*  Same width / radius as select-bg-plant-location.css's #plantLocationModal
+    and #srcLocationConfirmModal, for this component's own modal ids. The
+    rest of the look comes from select-bg-plant-location.css. */
+#autoWhLocationModal .modal-dialog {
+  max-width: 900px;
+}
+
+#autoWhLocationConfirmModal .modal-dialog {
+  max-width: 380px;
+}
+
+#autoWhLocationModal .modal-content {
+  border: none;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.15);
+}

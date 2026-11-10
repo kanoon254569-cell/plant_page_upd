@@ -1,0 +1,198 @@
+.login-page {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'Prompt', 'Segoe UI', 'Noto Sans Thai', sans-serif;
+}
+
+/* ── Left panel ── */
+.login-left {
+  flex: 1;
+  background-color: #0f172a;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-left img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.75;
+}
+
+.login-left-overlay {
+  position: absolute;
+  inset: 0;
+  /* background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(29, 78, 216, 0.4) 100%); */
+  display: flex;
+  align-items: flex-end;
+  padding: 48px;
+}
+
+.login-left-brand__title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+
+.login-left-brand__sub {
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.75);
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+}
+
+/* ── Right panel ── */
+.login-right {
+  width: 440px;
+  height: 100%;
+  background: linear-gradient(160deg, #f0f7ff 0%, #ffffff 55%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: -4px 0 40px rgba(29, 78, 216, 0.12);
+  position: relative;
+  padding: 0 40px;
+}
+
+/* Blue accent bar at top */
+.login-right::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #1d4ed8, #25a3dd);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+/* ── Logo ── */
+.login-logo img {
+  width: 190px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+/* ── Header ── */
+.project-name {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.login-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 4px;
+  letter-spacing: -0.3px;
+}
+
+/* ── Divider ── */
+.login-divider {
+  height: 3px;
+  width: 48px;
+  background: linear-gradient(90deg, #1d4ed8, #25a3dd);
+  border-radius: 99px;
+  margin: 18px auto;
+}
+
+/* ── Form ── */
+.login-from {
+  padding: 4px 0 8px;
+  text-align: left;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+/* ── Submit button ── */
+.submit-btn {
+  width: 100%;
+  height: 52px;
+  background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(29, 78, 216, 0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.submit-btn mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(90deg, #1a44c4 0%, #1d4ed8 100%);
+  box-shadow: 0 6px 20px rgba(29, 78, 216, 0.45);
+  transform: translateY(-1px);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.3);
+}
+
+/* ── Footer ── */
+.footer {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 28px;
+  letter-spacing: 0.2px;
+}
+
+.swal2-custom-popup {
+  border-radius: 16px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .login-page {
+    flex-direction: column;
+  }
+
+  .login-left {
+    height: 28vh;
+  }
+
+  .login-left-overlay {
+    padding: 24px;
+  }
+
+  .login-left-brand__title {
+    font-size: 22px;
+  }
+
+  .login-right {
+    width: 100%;
+    height: 72vh;
+    box-shadow: none;
+    padding: 0 28px;
+  }
+
+  .login-card {
+    max-width: 400px;
+  }
+}

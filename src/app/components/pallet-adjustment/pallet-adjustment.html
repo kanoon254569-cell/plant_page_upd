@@ -1,0 +1,849 @@
+﻿<!-- Pinned: page title + Search Filter never scroll -- see pa-scroll-body
+     below for how the rest of the page's scrolling is bounded to make that
+     happen. -->
+<div class="pa-sticky-top" #stickyTop>
+  <!-- Page Name -->
+  <div class="header-section">
+    <div class="header-section-icon">
+      <mat-icon>inventory_2</mat-icon>
+    </div>
+    <span>BG01 - Pallet Adjustment</span>
+    <app-page-help page="pallet-adjustment"></app-page-help>
+    <span class="header-section-subtitle">
+      <mat-icon>warning_amber</mat-icon>
+      ปรับปรุงข้อมูลถุงในพาเลท (สำหรับกรณีฉุกเฉิน)
+    </span>
+  </div>
+
+  <!-- Search Filter -->
+  <div class="search-filter" data-tour="search-filter">
+    <div class="search-filter-content">
+      <div class="search-filter-row">
+        <!-- Print Date -->
+        <div class="search-filter-field">
+          <label>วันที่พิมพ์</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-date-range-input [rangePicker]="printDatePicker">
+              <input
+                matStartDate
+                [(ngModel)]="filter.printDateFrom"
+                placeholder="วันที่เริ่มต้น"
+                readonly
+                (click)="printDatePicker.open()"
+              />
+              <input
+                matEndDate
+                [(ngModel)]="filter.printDateTo"
+                placeholder="สิ้นสุด"
+                readonly
+                (click)="printDatePicker.open()"
+              />
+            </mat-date-range-input>
+            <mat-datepicker-toggle matIconSuffix [for]="printDatePicker"></mat-datepicker-toggle>
+            <mat-date-range-picker #printDatePicker></mat-date-range-picker>
+          </mat-form-field>
+        </div>
+
+        <!-- Cost Center -->
+        <div class="search-filter-field">
+          <label>Plant Cost Center</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-select [(ngModel)]="filter.ccCode">
+              <mat-option value="">ทั้งหมด</mat-option>
+              <mat-option *ngFor="let option of optionSapCcCode" [value]="option.cc_code">
+                {{ option.cc_code }} - {{ option.cc_desc }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Grade -->
+        <div class="search-filter-field">
+          <label>Grade</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <input
+              matInput
+              [ngModel]="filter.grade"
+              (ngModelChange)="onGradeInput($event)"
+              [matAutocomplete]="gradeAuto"
+              placeholder="ค้นหาเกรด"
+              style="text-transform: uppercase"
+            />
+            <mat-autocomplete #gradeAuto="matAutocomplete" (optionSelected)="onSelectGrade($event.option.value)">
+              <mat-option *ngFor="let option of gradeSearchOptions" [value]="option.fpd_grade_code">
+                {{ option.fpd_grade_code }}
+                <ng-container *ngIf="option.fpd_grade_desc"> - {{ option.fpd_grade_desc }}</ng-container>
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+
+        <!-- Lot -->
+        <div class="search-filter-field">
+          <label>Lot</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <input matInput [(ngModel)]="filter.lot" placeholder="ค้นหาล็อต" />
+          </mat-form-field>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="search-filter-actions">
+          <button type="button" class="clear-button" title="Clear" (click)="resetFilter()">
+            <img src="assets/images/clear.png" alt="clear-icon" />
+          </button>
+          <button type="button" class="search-button" title="Search" (click)="onClickSearch()">
+            <img src="assets/images/search.png" alt="search-icon" />
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Everything below this point scrolls in its own bounded region (height
+     computed in TS from the actual rendered space left below pa-sticky-top,
+     see updateScrollBodyHeight()) -- position:sticky alone doesn't work
+     here because styles.css sets `body { overflow-y: hidden }`, which makes
+     <body> (which never itself scrolls) the nearest "scroll container" for
+     sticky's positioning math instead of <html> (which is what actually
+     scrolls), so a sticky element never sees any scroll to react to. -->
+<div class="pa-scroll-body" #scrollBody>
+<!-- Summary Cards -->
+<!-- is-loading: ตัวเลขทุกใบกลายเป็นแถบ skeleton ระหว่างโหลดภาพรวม -->
+<!-- is-error: โหลดไม่สำเร็จ -> ตัวเลขทุกใบเป็น "–" (ไม่โชว์เลขเก่า/0 ที่ดูเหมือนข้อมูลจริง) -->
+<div
+  class="pa-summary-row"
+  data-tour="summary"
+  [class.is-loading]="isOverviewLoading"
+  [class.is-error]="showOverviewError"
+  [attr.aria-busy]="isOverviewLoading"
+>
+  <div class="pa-summary-card">
+    <div class="pa-summary-card__icon pa-summary-card__icon--blue">
+      <mat-icon>inventory_2</mat-icon>
+    </div>
+    <div class="pa-summary-card__body">
+      <span class="pa-summary-card__label">พาเลททั้งหมด</span>
+      <span class="pa-summary-card__value">{{ summary.totalPallets | number }}</span>
+    </div>
+  </div>
+
+  <div class="pa-summary-card">
+    <div class="pa-summary-card__icon pa-summary-card__icon--amber">
+      <mat-icon>hourglass_top</mat-icon>
+    </div>
+    <div class="pa-summary-card__body">
+      <span class="pa-summary-card__label">พาเลทที่กำลังดำเนินการ</span>
+      <span class="pa-summary-card__value">{{ summary.inProgress | number }}</span>
+    </div>
+  </div>
+
+  <div class="pa-summary-card">
+    <div class="pa-summary-card__icon pa-summary-card__icon--green">
+      <mat-icon>check_circle</mat-icon>
+    </div>
+    <div class="pa-summary-card__body">
+      <span class="pa-summary-card__label">พาเลทที่เสร็จสมบูรณ์</span>
+      <span class="pa-summary-card__value">{{ summary.complete | number }}</span>
+    </div>
+  </div>
+
+  <div class="pa-summary-card">
+    <div class="pa-summary-card__icon pa-summary-card__icon--teal">
+      <mat-icon>task_alt</mat-icon>
+    </div>
+    <div class="pa-summary-card__body">
+      <span class="pa-summary-card__label">พาเลทเศษ (ยืนยันแล้ว)</span>
+      <span class="pa-summary-card__value">{{ summary.confirmedRemainder | number }}</span>
+    </div>
+  </div>
+
+  <div class="pa-summary-card">
+    <div class="pa-summary-card__icon pa-summary-card__icon--slate">
+      <mat-icon>inventory</mat-icon>
+    </div>
+    <div class="pa-summary-card__body">
+      <span class="pa-summary-card__label">ถุงทั้งหมด</span>
+      <span class="pa-summary-card__value">{{ summary.totalBags | number }}</span>
+    </div>
+  </div>
+
+  <div class="pa-summary-card">
+    <div class="pa-summary-card__icon pa-summary-card__icon--purple">
+      <mat-icon>help</mat-icon>
+    </div>
+    <div class="pa-summary-card__body">
+      <span class="pa-summary-card__label">ถุงที่ยังไม่ผูกพาเลท</span>
+      <span class="pa-summary-card__value">{{ summary.orphanBags | number }}</span>
+    </div>
+  </div>
+
+  <div class="pa-summary-card">
+    <div class="pa-summary-card__icon pa-summary-card__icon--red">
+      <mat-icon>block</mat-icon>
+    </div>
+    <div class="pa-summary-card__body">
+      <span class="pa-summary-card__label">ถุงที่ถูก Reject</span>
+      <span class="pa-summary-card__value">{{ rejectedBags.length | number }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content: Pallet Overview (left) + Bag Panel (right) -->
+<div class="pa-main-grid">
+  <!-- ============================ LEFT: Pallet Overview ============================ -->
+  <div class="pa-overview-panel">
+    <div class="pa-overview-panel__header">
+      <div class="pa-panel-title">
+        <span class="pa-panel-title__icon"><mat-icon>dashboard</mat-icon></span>
+        <span>Pallet Overview</span>
+        <span class="table-count">
+          <mat-icon>schedule</mat-icon>
+          อัปเดตล่าสุด {{ (lastUpdated | date: 'dd/MM/yyyy HH:mm:ss') || '-' }}
+        </span>
+      </div>
+
+      <div class="pa-overview-panel__tools" data-tour="overview-tools">
+        <div class="pa-view-toggle">
+          <button
+            type="button"
+            [class.active]="overviewViewMode === 'card'"
+            (click)="overviewViewMode = 'card'"
+          >
+            <mat-icon>grid_view</mat-icon>
+            Board
+          </button>
+          <button
+            type="button"
+            [class.active]="overviewViewMode === 'table'"
+            (click)="overviewViewMode = 'table'"
+          >
+            <mat-icon>table_rows</mat-icon>
+            Table
+          </button>
+        </div>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="pa-group-select">
+          <mat-select
+            [ngModel]="groupByOption"
+            (ngModelChange)="onGroupByChange($event)"
+            panelClass="pa-group-select-panel"
+          >
+            <mat-option value="grade">Group by Grade</mat-option>
+            <mat-option value="lot">Group by Lot</mat-option>
+            <mat-option value="location">Group by Location</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Refresh ไม่สำเร็จแต่ยังมีข้อมูลเดิม: แถบเตือน + ลองใหม่ (ข้อมูลเดิมยังแสดงด้านล่าง) -->
+    <div class="pa-stale-banner" *ngIf="showOverviewStale" role="alert">
+      <mat-icon>warning_amber</mat-icon>
+      <span class="pa-stale-banner__text">
+        ข้อมูลอาจไม่เป็นปัจจุบัน รีเฟรชล่าสุดไม่สำเร็จ
+        <span class="pa-stale-banner__meta">({{ overviewError?.title }} · {{ overviewError?.time | date: 'HH:mm:ss' }})</span>
+      </span>
+      <button type="button" class="pa-retry-btn pa-retry-btn--sm" (click)="retryOverview()">
+        <mat-icon>refresh</mat-icon>
+        ลองใหม่
+      </button>
+    </div>
+
+    <div class="pa-overview-panel__body" [attr.aria-busy]="isOverviewLoading">
+      <!-- โหลดครั้งแรกของเงื่อนไขนี้ไม่สำเร็จ: error เต็ม panel (แทน "ไม่พบข้อมูลพาเลท") -->
+      <div class="pa-load-error" *ngIf="showOverviewError && overviewError as err" role="alert">
+        <span class="pa-load-error__icon"><mat-icon>{{ err.status === 0 ? 'cloud_off' : 'error_outline' }}</mat-icon></span>
+        <span class="pa-load-error__title">{{ err.title }}</span>
+        <span class="pa-load-error__message">{{ err.message }}</span>
+        <button type="button" class="pa-retry-btn" (click)="retryOverview()">
+          <mat-icon>refresh</mat-icon>
+          ลองใหม่
+        </button>
+        <span class="pa-load-error__meta">
+          {{ err.status ? 'HTTP ' + err.status : 'Network error' }} · {{ err.time | date: 'dd/MM/yyyy HH:mm:ss' }}
+        </span>
+      </div>
+
+      <!-- Skeleton ระหว่างโหลดภาพรวม: 2 กลุ่ม (หัวกลุ่ม + การ์ดพาเลท) -->
+      <ng-container *ngIf="isOverviewLoading">
+      <div class="pa-grade-group" *ngFor="let cards of skeletonGroups" aria-hidden="true">
+        <div class="pa-grade-group__header pa-grade-group__header--skeleton">
+          <span class="pa-skel pa-skel--title"></span>
+          <span class="pa-skel pa-skel--pill"></span>
+        </div>
+        <div class="pa-pallet-card-grid">
+          <div class="pa-pallet-card pa-pallet-card--skeleton" *ngFor="let _ of cards">
+            <div class="pa-pallet-card__top">
+              <span class="pa-skel pa-skel--no"></span>
+              <span class="pa-skel pa-skel--chip"></span>
+            </div>
+            <span class="pa-skel pa-skel--meta"></span>
+            <span class="pa-skel pa-skel--bar"></span>
+            <span class="pa-skel pa-skel--count"></span>
+          </div>
+        </div>
+      </div>
+      </ng-container>
+
+      <!-- No data: ค้นหาเสร็จแล้วแต่ไม่มีพาเลทตามเงื่อนไข (empty state กลางเดียวกับหน้าอื่น) -->
+      <div class="pa-overview-empty" *ngIf="!isOverviewLoading && !showOverviewError && groups.length === 0">
+        <app-empty-state
+          variant="job"
+          title="ไม่พบข้อมูลพาเลท"
+          message="ลองเปลี่ยนวันที่พิมพ์ หรือเงื่อนไขการค้นหาใหม่อีกครั้ง"
+        ></app-empty-state>
+      </div>
+
+      <!-- Overview Group (by Grade / Lot / Location, per groupByOption) -->
+      <ng-container *ngIf="!isOverviewLoading && !showOverviewError">
+      <div class="pa-grade-group" *ngFor="let group of groups">
+        <div class="pa-grade-group__header" data-tour="pallet-group" (click)="toggleGroup(group)">
+          <mat-icon>{{ group.expanded ? 'expand_more' : 'chevron_right' }}</mat-icon>
+          <span class="pa-grade-group__title">{{ group.title }}</span>
+          <span class="pa-grade-group__hint" *ngIf="group.hint">{{ group.hint }}</span>
+          <span class="pa-grade-group__count">{{ group.pallets.length }} pallets</span>
+        </div>
+
+        <div class="pa-pallet-card-grid" *ngIf="group.expanded && overviewViewMode === 'card'">
+          <div
+            class="pa-pallet-card"
+            *ngFor="let pallet of group.pallets"
+            [class.pa-pallet-card--selected]="selectedPallet?.id === pallet.id"
+            [ngClass]="'pa-pallet-card--' + pallet.status"
+            (click)="selectPallet(pallet)"
+          >
+            <div class="pa-pallet-card__top">
+              <span class="pa-pallet-card__no">{{ pallet.palletRunningNo || '-' }}</span>
+              <span
+                class="pa-status-chip"
+                [ngClass]="{
+                  'pa-status-chip--complete': pallet.status === 'complete',
+                  'pa-status-chip--wh_process': pallet.status === 'wh_process',
+                  'pa-status-chip--confirmed': pallet.status === 'confirmed'
+                }"
+              >
+                {{ getPalletStatusLabel(pallet.status) }}
+              </span>
+            </div>
+            <div class="pa-pallet-card__meta">{{ pallet.grade }} | {{ pallet.lot }}</div>
+
+            <div class="pa-pallet-card__progress">
+              <div class="pa-pallet-card__progress-bar">
+                <div
+                  class="pa-pallet-card__progress-fill"
+                  [ngClass]="{
+                    'pa-pallet-card__progress-fill--complete': pallet.status === 'complete',
+                    'pa-pallet-card__progress-fill--wh_process': pallet.status === 'wh_process',
+                    'pa-pallet-card__progress-fill--confirmed': pallet.status === 'confirmed'
+                  }"
+                  [style.width.%]="((pallet.bagCount ?? 0) / (pallet.unitPallet || 1)) * 100"
+                ></div>
+              </div>
+              <span class="pa-pallet-card__progress-text">
+                {{ pallet.bagCount }} / {{ pallet.unitPallet }} ถุง
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pa-pallet-table-wrapper" *ngIf="group.expanded && overviewViewMode === 'table'">
+          <table class="pa-pallet-table">
+            <thead>
+              <tr>
+                <th>Pallet No.</th>
+                <th>Grade | Lot</th>
+                <th>Type</th>
+                <th>Bags</th>
+                <th>Location</th>
+                <th>Created</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let pallet of group.pallets"
+                [class.pa-pallet-table__row--selected]="selectedPallet?.id === pallet.id"
+                (click)="selectPallet(pallet)"
+              >
+                <td class="pa-table__strong">{{ pallet.palletNo }}</td>
+                <td>{{ pallet.grade }} | {{ pallet.lot }} | {{ pallet.palletRunningNo || '-' }}</td>
+                <td>{{ pallet.palletType || '-' }}</td>
+                <td class="pa-table__num">{{ pallet.bagCount }} / {{ pallet.unitPallet }}</td>
+                <td [class.pa-table__muted]="!pallet.location">{{ pallet.location || '-' }}</td>
+                <td class="pa-table__muted">{{ (pallet.createDateTime | date: 'dd/MM/yyyy HH:mm') || '-' }}</td>
+                <td>
+                  <span
+                    class="pa-status-chip"
+                    [ngClass]="{
+                      'pa-status-chip--complete': pallet.status === 'complete',
+                      'pa-status-chip--wh_process': pallet.status === 'wh_process',
+                      'pa-status-chip--confirmed': pallet.status === 'confirmed'
+                    }"
+                  >
+                    {{ getPalletStatusLabel(pallet.status) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pa-grade-group__empty" *ngIf="group.expanded && group.pallets.length === 0">
+          ไม่มีข้อมูลพาเลทสำหรับเกรดนี้ในเงื่อนไขปัจจุบัน
+        </div>
+      </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ============================ RIGHT: Bag Panel ============================ -->
+  <div class="pa-bag-panel">
+    <!-- Same gradient title bar as Pallet Overview, so both panels read as a pair -->
+    <div class="pa-overview-panel__header">
+      <div class="pa-panel-title">
+        <span class="pa-panel-title__icon"><mat-icon>inventory_2</mat-icon></span>
+        <span>Pallet Detail</span>
+        <span class="table-count" *ngIf="selectedPallet">
+          <mat-icon>qr_code_2</mat-icon>
+          {{ selectedPallet.palletNo }}
+        </span>
+      </div>
+    </div>
+
+    <div class="pa-bag-panel__body">
+    <!-- Selected Pallet Card -->
+    <div class="pa-selected-card" data-tour="selected-pallet" *ngIf="selectedPallet as sp">
+      <div class="pa-selected-card__header">
+        <div class="pa-selected-card__title">
+          <span class="pa-selected-card__no">{{ sp.palletRunningNo || '-' }}</span>
+          <span class="pa-selected-card__meta">{{ sp.grade }} | {{ sp.lot }}</span>
+        </div>
+        <span
+          class="pa-status-chip"
+          [ngClass]="{
+            'pa-status-chip--complete': sp.status === 'complete',
+            'pa-status-chip--wh_process': sp.status === 'wh_process',
+            'pa-status-chip--confirmed': sp.status === 'confirmed'
+          }"
+        >
+          {{ getPalletStatusLabel(sp.status) }}
+        </span>
+      </div>
+      <div class="pa-pallet-card__progress pa-selected-card__progress">
+        <div class="pa-pallet-card__progress-bar">
+          <div
+            class="pa-pallet-card__progress-fill"
+            [ngClass]="'pa-pallet-card__progress-fill--' + sp.status"
+            [style.width.%]="((sp.bagCount ?? 0) / (sp.unitPallet || 1)) * 100"
+          ></div>
+        </div>
+        <span class="pa-pallet-card__progress-text">{{ sp.bagCount }} / {{ sp.unitPallet }} ถุง</span>
+      </div>
+    </div>
+
+    <div class="pa-empty-selected" *ngIf="!selectedPallet">
+      <mat-icon>touch_app</mat-icon>
+      <p>กรุณาเลือกพาเลทจากด้านซ้าย เพื่อดูรายการถุง</p>
+    </div>
+
+    <!-- Tabs: Bag List / Pallet Info -->
+    <div class="pa-bag-tabs" data-tour="selected-pallet" *ngIf="selectedPallet">
+      <button
+        type="button"
+        [class.active]="bagListTab === 'bagList'"
+        (click)="bagListTab = 'bagList'"
+      >
+        Bag List ({{ bagList.length }}<ng-container *ngIf="selectedPallet.unitPallet">/{{ selectedPallet.unitPallet }}</ng-container>)
+        <span class="pa-bag-tab-missing" *ngIf="missingSlotCount > 0">ขาด {{ missingSlotCount }}</span>
+      </button>
+      <button
+        type="button"
+        [class.active]="bagListTab === 'palletInfo'"
+        (click)="bagListTab = 'palletInfo'"
+      >
+        Pallet Info
+      </button>
+    </div>
+
+    <ng-container *ngIf="selectedPallet && bagListTab === 'bagList'">
+      <!-- Bag Search + View Toggle -->
+      <div class="pa-bag-toolbar" data-tour="bag-toolbar">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="pa-bag-search">
+          <input
+            matInput
+            [(ngModel)]="bagSearchText"
+            placeholder="ค้นหา Bag No. หรือ QR"
+          />
+          <mat-icon matIconSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <div class="pa-view-toggle">
+          <button
+            type="button"
+            [class.active]="bagViewMode === 'card'"
+            (click)="bagViewMode = 'card'"
+            title="Card View"
+          >
+            <mat-icon>grid_view</mat-icon>
+            Board
+          </button>
+          <button
+            type="button"
+            [class.active]="bagViewMode === 'table'"
+            (click)="bagViewMode = 'table'"
+            title="Table View"
+          >
+            <mat-icon>table_rows</mat-icon>
+            Table
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="pa-quick-actions" data-tour="quick-actions">
+        <div class="pa-quick-actions__title">Quick Actions</div>
+        <div class="pa-quick-actions__buttons">
+          <button
+            type="button"
+            class="pa-action-btn pa-action-btn--orange"
+            [disabled]="isActionLoading"
+            (click)="onClickRejectBag()"
+            matTooltip="ปลดถุงที่เลือกออกจากพาเลทและตั้งเป็นถุง Reject (เลือกได้หลายถุง ทำได้แม้พาเลทปิดแล้ว) ระบบจะจัดลำดับถุงที่เหลือใหม่ให้อัตโนมัติ และกดคืนค่าได้ที่ส่วน Rejected Bags"
+            matTooltipPosition="above"
+          >
+            <mat-icon>block</mat-icon>
+            ถุง Reject
+          </button>
+          <button
+            type="button"
+            class="pa-action-btn pa-action-btn--blue"
+            [disabled]="isActionLoading || !canAddMissingBag"
+            (click)="onClickAddMissingBag()"
+            matTooltip="เพิ่มข้อมูลถุงของช่องว่างที่เลือก (ไม่มีข้อมูลการพิมพ์) ด้วย QR Code รูปแบบเดิม ระบบจะจับถุงลงพาเลทตามตำแหน่ง QR ให้อัตโนมัติ ใช้ได้เฉพาะช่องว่างเท่านั้น"
+            matTooltipPosition="above"
+          >
+            <mat-icon>add_circle</mat-icon>
+            เพิ่มข้อมูล
+          </button>
+          <button
+            type="button"
+            class="pa-action-btn pa-action-btn--green"
+            [disabled]="isActionLoading"
+            (click)="onClickPullBagOut()"
+            matTooltip="ดึงถุงที่เลือกออกจากพาเลทไปเป็นถุงที่ยังไม่ผูกพาเลท (เลือกได้หลายถุง) ระบบจะเรียงหมายเลขถุงที่เหลือในพาเลทใหม่ให้ต่อเนื่อง"
+            matTooltipPosition="above"
+          >
+            <mat-icon>logout</mat-icon>
+            ดึงถุงออกจากพาเลท
+          </button>
+          <button
+            type="button"
+            class="pa-action-btn pa-action-btn--red"
+            [disabled]="isActionLoading"
+            (click)="onClickShiftMissingBag()"
+            matTooltip="ระบบจะย้ายถุงตั้งแต่หมายเลขนั้นจนถึงถุงสุดท้ายไปขึ้นพาเลทใหม่ โดยเริ่มนับถุงที่ 1"
+            matTooltipPosition="above"
+          >
+            <mat-icon>report</mat-icon>
+            ขึ้นพาเลทใหม่
+          </button>
+          <!-- ซ่อนปุ่ม Re-order ถุงใหม่ไว้ก่อน (onClickReorderPallet ยังอยู่ใน .ts)
+          <button type="button" class="pa-action-btn pa-action-btn--blue" (click)="onClickReorderPallet()">
+            <mat-icon>low_priority</mat-icon>
+            Re-order ถุงใหม่
+          </button>
+          -->
+          <button
+            *ngIf="canFinishSelectedPallet"
+            type="button"
+            class="pa-action-btn pa-action-btn--teal"
+            [disabled]="isActionLoading"
+            (click)="onClickFinishPallet()"
+            matTooltip="ยืนยันพาเลทที่ยังไม่เต็มเป็นพาเลทเศษด้วยจำนวนถุงปัจจุบัน ใช้กรณีเป็นพาเลทสุดท้ายของ Lot"
+            matTooltipPosition="above"
+          >
+            <mat-icon>task_alt</mat-icon>
+            จบพาเลท
+          </button>
+        </div>
+        <div class="pa-quick-actions__hint" *ngIf="selectedCount > 0">
+          เลือกอยู่ {{ selectedBagIds.size }} ถุง
+          <ng-container *ngIf="selectedMissingQrs.size > 0">
+            + ช่องว่าง {{ selectedMissingQrs.size }} ช่อง (ใช้ได้กับ "ถุง Reject" และ "เพิ่มข้อมูล" -- "เพิ่มข้อมูล" ต้องเลือกเฉพาะช่องว่าง)
+          </ng-container>
+          <button type="button" class="pa-clear-selection" (click)="clearBagSelection()">ล้างการเลือก</button>
+        </div>
+      </div>
+
+      <!-- Skeleton ระหว่างโหลดรายการถุง (ทั้ง Board และ Table) -->
+      <div class="pa-bag-grid" *ngIf="isBagListLoading" aria-hidden="true">
+        <span class="pa-skel pa-skel--bag" *ngFor="let _ of skeletonBagSlots"></span>
+      </div>
+
+      <!-- โหลดรายการถุงไม่สำเร็จ: แจ้งเฉพาะส่วนนี้ ส่วนอื่นของหน้ายังใช้ได้ -->
+      <div class="pa-bag-error" *ngIf="!isBagListLoading && bagListError as err" role="alert">
+        <mat-icon class="pa-bag-error__icon">error_outline</mat-icon>
+        <div class="pa-bag-error__text">
+          <span class="pa-bag-error__title">{{ err.title }}</span>
+          <span class="pa-bag-error__message">{{ err.message }}</span>
+        </div>
+        <button type="button" class="pa-retry-btn pa-retry-btn--sm" (click)="retryBagList()">
+          <mat-icon>refresh</mat-icon>
+          ลองใหม่
+        </button>
+      </div>
+
+      <!-- Bag Card Grid -->
+      <div class="pa-bag-grid" data-tour="bag-list" *ngIf="!isBagListLoading && !bagListError && bagViewMode === 'card'">
+        <ng-container *ngFor="let s of bagSlots; trackBy: trackBagSlot">
+          <div
+            *ngIf="s.bag as bag; else emptyBagCard"
+            class="pa-bag-card"
+            [class.pa-bag-card--selected]="isBagSelected(bag)"
+            [ngClass]="{
+              'pa-bag-card--matched': bag.status === 'matched' && !bag.isManualAdded,
+              'pa-bag-card--progress': bag.status === 'in_progress',
+              'pa-bag-card--missing': bag.status === 'missing',
+              'pa-bag-card--manual-added': bag.isManualAdded && bag.status === 'matched'
+            }"
+            [title]="bag.isManualAdded ? 'ถุงที่สร้างเอง (เพิ่มข้อมูลด้วยมือ): ' + bag.qrTextData : bag.qrTextData"
+            (click)="toggleBagSelect(bag)"
+          >
+            <!-- เลขถุงอย่างเดียว -- QR เต็มดูได้จาก tooltip (title) หรือ Table view
+                 (ช่องแคบเกินกว่าจะโชว์ QR ได้ เหลือแค่ "1372|GA…" ซึ่งไม่บอกอะไร) -->
+            <span class="pa-bag-card__no">{{ s.slotNo != null ? (s.slotNo | number: '2.0-0') : '-' }}</span>
+          </div>
+          <!-- ช่องที่ขาด (พาเลทถุงไม่ครบ) -- ช่องที่รู้ QR (s.missing) กดเลือกเพื่อ "ถุง Reject" ได้ -->
+          <ng-template #emptyBagCard>
+            <div
+              class="pa-bag-card pa-bag-card--empty"
+              [class.pa-bag-card--empty-selectable]="s.missing"
+              [class.pa-bag-card--selected]="isMissingSelected(s.missing?.qr_text_data)"
+              [title]="s.missing ? 'ไม่มีข้อมูลการพิมพ์: ' + s.missing.qr_text_data + ' (เลือกเพื่อ Reject ได้)' : 'ช่องนี้ยังไม่มีข้อมูล'"
+              (click)="toggleMissingSelect(s.missing?.qr_text_data)"
+            >
+              <span class="pa-bag-card__no">{{ s.slotNo | number: '2.0-0' }}</span>
+            </div>
+          </ng-template>
+        </ng-container>
+      </div>
+
+      <!-- Bag Table -->
+      <div class="pa-bag-table-wrapper" data-tour="bag-list" *ngIf="!isBagListLoading && !bagListError && bagViewMode === 'table'">
+        <table class="pa-bag-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Bag No.</th>
+              <th>QR Text Data</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let s of bagSlots; trackBy: trackBagSlot">
+              <tr
+                *ngIf="s.bag as bag; else emptyBagRow"
+                [class.pa-bag-table__row--selected]="isBagSelected(bag)"
+                [title]="bag.isManualAdded ? 'ถุงที่สร้างเอง (เพิ่มข้อมูลด้วยมือ)' : ''"
+                (click)="toggleBagSelect(bag)"
+              >
+                <td>
+                  <input type="checkbox" [checked]="isBagSelected(bag)" (click)="$event.stopPropagation()" (change)="toggleBagSelect(bag)" />
+                </td>
+                <td class="pa-table__strong">{{ s.slotNo != null ? (s.slotNo | number: '2.0-0') : '-' }}</td>
+                <td class="pa-table__qr">{{ bag.qrTextData }}</td>
+                <td>
+                  <span
+                    class="pa-status-chip"
+                    [ngClass]="{
+                      'pa-status-chip--complete': bag.status === 'matched' && !bag.isManualAdded,
+                      'pa-status-chip--progress': bag.status === 'in_progress',
+                      'pa-status-chip--incomplete': bag.status === 'missing',
+                      'pa-status-chip--manual-added': bag.isManualAdded && bag.status === 'matched'
+                    }"
+                  >
+                    {{ bag.isManualAdded && bag.status === 'matched' ? 'สร้างเอง' : bag.status }}
+                  </span>
+                </td>
+              </tr>
+              <!-- ช่องที่ขาด (พาเลทถุงไม่ครบ) -- ช่องที่รู้ QR (s.missing) กดเลือกเพื่อ "ถุง Reject" ได้ -->
+              <ng-template #emptyBagRow>
+                <tr
+                  class="pa-bag-row--empty"
+                  [class.pa-bag-row--empty-selectable]="s.missing"
+                  [class.pa-bag-table__row--selected]="isMissingSelected(s.missing?.qr_text_data)"
+                  (click)="toggleMissingSelect(s.missing?.qr_text_data)"
+                >
+                  <td>
+                    <input
+                      *ngIf="s.missing"
+                      type="checkbox"
+                      [checked]="isMissingSelected(s.missing.qr_text_data)"
+                      (click)="$event.stopPropagation()"
+                      (change)="toggleMissingSelect(s.missing.qr_text_data)"
+                    />
+                  </td>
+                  <td>{{ s.slotNo | number: '2.0-0' }}</td>
+                  <td>{{ s.missing ? s.missing.qr_text_data + ' (ไม่มีข้อมูลการพิมพ์)' : 'ไม่มีข้อมูล' }}</td>
+                  <td><span class="pa-status-chip pa-status-chip--empty">empty</span></td>
+                </tr>
+              </ng-template>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Legend -->
+      <div class="pa-legend" data-tour="bag-list">
+        <span><i class="pa-legend__dot pa-legend__dot--matched"></i> จับคู่แล้ว</span>
+        <span><i class="pa-legend__dot pa-legend__dot--manual-added"></i> ถุงที่สร้างเอง</span>
+        <span><i class="pa-legend__dot pa-legend__dot--progress"></i> กำลังดำเนินการ</span>
+        <span><i class="pa-legend__dot pa-legend__dot--missing"></i> หายไป/ว่าง (ถุงไม่ครบ)</span>
+      </div>
+    </ng-container>
+
+    <!-- Pallet Info Tab -->
+    <div class="pa-pallet-info-tab" *ngIf="bagListTab === 'palletInfo' && selectedPallet as sp2">
+      <div class="pa-selected-card__fields">
+        <div class="pa-selected-card__field">
+          <span class="pa-selected-card__label">Grade</span>
+          <span class="pa-selected-card__value">{{ sp2.grade }}</span>
+        </div>
+        <div class="pa-selected-card__field">
+          <span class="pa-selected-card__label">Lot</span>
+          <span class="pa-selected-card__value">{{ sp2.lot }}</span>
+        </div>
+        <div class="pa-selected-card__field">
+          <span class="pa-selected-card__label">Running Pallet No.</span>
+          <span class="pa-selected-card__value">{{ sp2.palletRunningNo || '-' }}</span>
+        </div>
+        <div class="pa-selected-card__field">
+          <span class="pa-selected-card__label">Pallet Type</span>
+          <span class="pa-selected-card__value">{{ sp2.palletType || '-' }}</span>
+        </div>
+        <div class="pa-selected-card__field">
+          <span class="pa-selected-card__label">Unit Pallet</span>
+          <span class="pa-selected-card__value">{{ sp2.unitPallet }} ถุง</span>
+        </div>
+        <div class="pa-selected-card__field">
+          <span class="pa-selected-card__label">Location</span>
+          <span class="pa-selected-card__value">
+            <span class="badge-chip badge-chip--blue" *ngIf="sp2.location">
+              <mat-icon>location_on</mat-icon>
+              {{ sp2.location }}
+            </span>
+            <span *ngIf="!sp2.location">-</span>
+          </span>
+        </div>
+        <div class="pa-selected-card__field">
+          <span class="pa-selected-card__label">วันที่สร้าง</span>
+          <span class="pa-selected-card__value">
+            {{ (sp2.createDateTime | date: 'dd/MM/yyyy HH:mm') || '-' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orphan Bags -->
+    <div class="pa-orphan-section" data-tour="orphan-bags">
+      <div class="pa-orphan-section__header" (click)="orphanExpanded = !orphanExpanded">
+        <mat-icon>{{ orphanExpanded ? 'expand_more' : 'chevron_right' }}</mat-icon>
+        ถุงที่ยังไม่ผูกพาเลท
+        <span class="table-count">{{ orphanBags.length }} bags</span>
+      </div>
+      <ng-container *ngIf="orphanExpanded">
+        <div class="pa-orphan-list" *ngIf="orphanBags.length > 0">
+          <div class="pa-orphan-item" *ngFor="let bag of orphanBags">
+            <span class="pa-orphan-item__qr">{{ bag.qrTextData }}</span>
+            <div class="pa-orphan-item__actions">
+              <button
+              type="button"
+              class="pa-action-btn pa-action-btn--purple pa-action-btn--sm"
+              [disabled]="isActionLoading"
+              (click)="onClickAddBagIn(bag)"
+              >
+                <mat-icon>add</mat-icon>
+                เพิ่มเข้าพาเลท
+              </button>
+              <button
+              type="button"
+              class="pa-action-btn pa-action-btn--teal pa-action-btn--sm"
+              [disabled]="isActionLoading"
+              (click)="onClickCreatePallet(bag)"
+              >
+                <mat-icon>add_box</mat-icon>
+                สร้างพาเลทใหม่
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="pa-section-empty" *ngIf="orphanBags.length === 0">
+          <span class="pa-section-empty__icon"><mat-icon>check_circle</mat-icon></span>
+          <div class="pa-section-empty__text">
+            <span class="pa-section-empty__title">ไม่มีถุงที่ยังไม่ผูกพาเลท</span>
+            <span class="pa-section-empty__sub">ถุงทุกใบในเงื่อนไขนี้ผูกพาเลทแล้ว</span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Rejected Bags -->
+    <div class="pa-rejected-section" data-tour="rejected-bags">
+      <div class="pa-rejected-section__header" (click)="rejectedExpanded = !rejectedExpanded">
+        <mat-icon>{{ rejectedExpanded ? 'expand_more' : 'chevron_right' }}</mat-icon>
+        ถุงที่ถูก Reject
+        <span class="table-count">{{ rejectedBags.length }} bags</span>
+      </div>
+      <ng-container *ngIf="rejectedExpanded">
+        <div class="pa-rejected-list" *ngIf="rejectedBags.length > 0">
+          <div
+            class="pa-rejected-item"
+            *ngFor="let bag of rejectedBags"
+            [class.pa-rejected-item--selected]="selectedRejectedBagId === bag.id"
+            (click)="toggleRejectedBagSelect(bag)"
+          >
+            <div class="pa-rejected-item__row">
+              <div class="pa-rejected-item__main">
+                <span class="pa-rejected-item__qr">{{ bag.qrTextData }}</span>
+                <span class="pa-rejected-item__reason" *ngIf="bag.rejectReason">{{ bag.rejectReason }}</span>
+              </div>
+              <span class="pa-rejected-item__datetime">
+                {{ (bag.rejectDatetime | date: 'dd/MM/yyyy HH:mm') || '-' }}
+              </span>
+            </div>
+            <div class="pa-rejected-item__actions" *ngIf="selectedRejectedBagId === bag.id">
+              <button
+                type="button"
+                class="pa-action-btn pa-action-btn--green pa-action-btn--sm"
+                [disabled]="isActionLoading"
+                (click)="$event.stopPropagation(); onClickUnrejectBag(bag)"
+              >
+                <mat-icon>restore</mat-icon>
+                กลับคืนพาเลทเดิม
+              </button>
+              <button
+                type="button"
+                class="pa-action-btn pa-action-btn--teal pa-action-btn--sm"
+                [disabled]="isActionLoading"
+                (click)="$event.stopPropagation(); onClickCreatePallet(bag)"
+              >
+                <mat-icon>add_box</mat-icon>
+                สร้างพาเลทใหม่
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="pa-section-empty" *ngIf="rejectedBags.length === 0">
+          <span class="pa-section-empty__icon"><mat-icon>check_circle</mat-icon></span>
+          <div class="pa-section-empty__text">
+            <span class="pa-section-empty__title">ไม่มีถุงที่ถูก Reject</span>
+            <span class="pa-section-empty__sub">ยังไม่มีถุงถูก Reject ในเงื่อนไขนี้</span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    </div>
+  </div>
+</div>
+</div>

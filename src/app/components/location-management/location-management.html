@@ -1,0 +1,711 @@
+﻿<!-- Page Name -->
+<div class="header-section">
+  <div class="header-section-title">
+    <div class="header-section-icon">
+      <mat-icon>place</mat-icon>
+    </div>
+    <span>Location Management</span>
+  </div>
+
+  <!-- Location Type Tabs -->
+  <div class="location-type-tabs">
+    <button type="button" class="location-type-tab" [class.active]="locationType === 'MWH'" (click)="onSelectLocationType('MWH')">
+      <mat-icon>warehouse</mat-icon>
+      <span class="location-type-text">Warehouse</span>
+    </button>
+    <button type="button" class="location-type-tab" [class.active]="locationType === 'DOCK'" (click)="onSelectLocationType('DOCK')">
+      <mat-icon>local_shipping</mat-icon>
+      <span class="location-type-text">Dock</span>
+    </button>
+    <button type="button" class="location-type-tab" [class.active]="locationType === 'PRE-ZONE'" (click)="onSelectLocationType('PRE-ZONE')">
+      <mat-icon>inventory_2</mat-icon>
+      <span class="location-type-text">Prepare Zone</span>
+    </button>
+    <button type="button" class="location-type-tab" [class.active]="locationType === 'PLANT'" (click)="onSelectLocationType('PLANT')">
+      <mat-icon>factory</mat-icon>
+      <span class="location-type-text">Plant</span>
+    </button>
+  </div>
+</div>
+
+<!-- Search Filter : Warehouse (MWH) -->
+<div class="search-filter" *ngIf="locationType === 'MWH'">
+  <div class="search-filter-header">
+    <span class="type-badge type-badge--mwh">
+      <mat-icon>warehouse</mat-icon>
+      Warehouse
+    </span>
+    <span>Search Filter</span>
+  </div>
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+
+      <!-- Location Name -->
+      <div class="search-filter-field">
+        <label>ชื่อ Location :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.locationDesc" placeholder="ค้นหาชื่อโลเคชัน" />
+        </mat-form-field>
+      </div>
+
+            <!-- Warehouse -->
+      <div class="search-filter-field">
+        <label>Warehouse :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.whCode">
+            <!-- <mat-option value="" disabled>เลือก Warehouse</mat-option> -->
+            <mat-option *ngFor="let option of optionWarehouse" [value]="option.wh_code">
+              {{ option.wh_name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Priority -->
+      <div class="search-filter-field">
+        <label>Priority :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.priorityName">
+            <mat-option value="">ทั้งหมด</mat-option>
+            <mat-option *ngFor="let option of priorityOptions" [value]="option.name">
+              {{ option.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Status -->
+      <div class="search-filter-field">
+        <label>สถานะ :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.statusId">
+            <mat-option [value]="0">ทั้งหมด</mat-option>
+            <mat-option *ngFor="let option of statusOptions" [value]="option.id">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="Clear" (click)="resetFilter()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button type="button" class="search-button" title="Search" (click)="onClickSearch()">
+          <img src="assets/images/search.png" alt="search-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Search Filter : Dock / Prepare Zone - all 3 are optional narrowing filters; the full list
+     already loads on tab switch, so "ทั้งหมด" clears a field back to the wider list. -->
+<div class="search-filter" *ngIf="locationType !== 'MWH' && locationType !== 'PLANT'">
+  <div class="search-filter-header">
+    <span class="type-badge" [ngClass]="locationType === 'DOCK' ? 'type-badge--dock' : 'type-badge--prezone'">
+      <mat-icon>{{ locationType === 'DOCK' ? 'local_shipping' : 'inventory_2' }}</mat-icon>
+      {{ locationType === 'DOCK' ? 'Dock' : 'Prepare Zone' }}
+    </span>
+    <span>Search Filter</span>
+  </div>
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+
+      <!-- Location Name -->
+      <div class="search-filter-field">
+        <label>ชื่อ Location :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            [(ngModel)]="dockPreZoneFilter.locationDesc"
+            placeholder="ค้นหาชื่อโลเคชัน"
+            (keyup.enter)="onClickSearchDockPreZone()"
+          />
+        </mat-form-field>
+      </div>
+
+      <!-- Warehouse -->
+      <div class="search-filter-field">
+        <label>Warehouse :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="dockPreZoneFilter.whCode" (selectionChange)="onSelectDockPreZoneWh()">
+            <mat-option value="">ทั้งหมด</mat-option>
+            <mat-option *ngFor="let option of optionDockPreZoneWh" [value]="option.wh_code">
+              {{ option.wh_name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Area -->
+      <div class="search-filter-field">
+        <label>Area :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select
+            [(ngModel)]="dockPreZoneFilter.areaCode"
+            (selectionChange)="onSelectDockPreZoneArea()"
+          >
+            <mat-option value="">ทั้งหมด</mat-option>
+            <mat-option *ngFor="let option of optionDockPreZoneArea" [value]="option.careacode">
+              {{ option.careacode }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Level -->
+      <div class="search-filter-field">
+        <label>Level :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select
+            [(ngModel)]="dockPreZoneFilter.levelCode"
+            (selectionChange)="onSelectDockPreZoneLevel()"
+          >
+            <mat-option value="">ทั้งหมด</mat-option>
+            <mat-option *ngFor="let option of optionDockPreZoneLevel" [value]="option.clevelcode">
+              {{ option.cleveldesc }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="Clear" (click)="onClickClearDockPreZoneFilter()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button type="button" class="search-button" title="Search" (click)="onClickSearchDockPreZone()">
+          <img src="assets/images/search.png" alt="search-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Search Filter : Plant -->
+<div class="search-filter" *ngIf="locationType === 'PLANT'">
+  <div class="search-filter-header">
+    <span class="type-badge type-badge--plant"><mat-icon>factory</mat-icon>Plant</span>
+    <span>Search Filter</span>
+  </div>
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+      <div class="search-filter-field">
+        <label>Plant :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="plantFilter.plantCode">
+            <mat-option value="">ทั้งหมด</mat-option>
+            <mat-option *ngFor="let plant of optionPlant" [value]="plant.bg_plant_code">{{ plant.bg_plant_code }} - {{ plant.bg_plant_location }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="search-filter-field">
+        <label>Plant Location :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="plantFilter.plantLocation" placeholder="ค้นหาชื่อ Plant Location" (keyup.enter)="onClickSearchPlant()" />
+        </mat-form-field>
+      </div>
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="Clear" (click)="onClickClearPlantFilter()"><img src="assets/images/clear.png" alt="clear-icon" /></button>
+        <button type="button" class="search-button" title="Search" (click)="onClickSearchPlant()"><img src="assets/images/search.png" alt="search-icon" /></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Display Table : Warehouse (MWH) -->
+<div class="display-table" *ngIf="locationType === 'MWH'">
+  <div class="display-table-header">
+    <div class="display-table-header-title">
+      <span class="type-badge type-badge--mwh">
+        <mat-icon>warehouse</mat-icon>
+        Warehouse
+      </span>
+      Location List
+      <span class="table-count">{{ totalCount }} Records</span>
+    </div>
+    <div class="table-header-actions">
+      <button *hasPermission="'data.export'"
+        type="button"
+        class="export-excel-button"
+        [disabled]="isExportingExcel || totalCount === 0"
+        (click)="exportToExcel()"
+      >
+        <mat-icon>{{ isExportingExcel ? 'hourglass_empty' : 'file_download' }}</mat-icon>
+        Export Excel
+      </button>
+      <button
+        type="button"
+        class="select-clear-button"
+        [disabled]="selectedLocationCount === 0"
+        (click)="clearSelectedLocations()"
+      >
+        <mat-icon>clear_all</mat-icon>
+        Clear Selected
+      </button>
+      <button *hasPermission="'data.print_qr'"
+        type="button"
+        class="bulk-print-button"
+        [disabled]="selectedLocationCount === 0"
+        (click)="printSelectedLocations()"
+      >
+        <mat-icon>print</mat-icon>
+        Print Selected ({{ selectedLocationCount }})
+      </button>
+      <button *hasPermission="'location.update'" type="button" class="sync-button" (click)="onClickSync()">
+        <mat-icon>sync</mat-icon>
+        Sync
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="display-table-content">
+    <!-- Skeleton while the location list loads: same columns as the real table -->
+    <div class="table-container p-0" *ngIf="isLoading" aria-hidden="true">
+      <table class="adm-skel-table" skeletonWidthsTo="location-management-mwh">
+        <thead>
+          <tr>
+            <th class="mat-column-select"></th>
+            <th class="mat-column-no" style="text-align: center">#</th>
+            <th class="mat-column-locationName">ชื่อ Location</th>
+            <th class="mat-column-whCode">Warehouse</th>
+            <th class="mat-column-priority">Priority</th>
+            <th class="mat-column-status">สถานะ</th>
+            <th class="mat-column-isActive">ใช้งาน</th>
+            <th class="mat-column-updatedDatetime">วันที่แก้ไขล่าสุด</th>
+            <th class="mat-column-action" style="text-align: center">พิมพ์</th>
+            <th class="mat-column-edit" style="text-align: center">แก้ไข</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of skeletonRows">
+            <td><span class="adm-skel adm-skel--box" style="width: 16px; height: 16px"></span></td>
+            <td><span class="adm-skel adm-skel--center" style="width: 18px"></span></td>
+            <td><span class="adm-skel" style="width: 120px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 72px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 64px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 72px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 72px"></span></td>
+            <td>
+              <span class="adm-skel" style="width: 78px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 52px"></span>
+            </td>
+            <td><span class="adm-skel adm-skel--box adm-skel--center" style="width: 32px; height: 32px"></span></td>
+            <td><span class="adm-skel adm-skel--box adm-skel--center" style="width: 32px; height: 32px"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="table-container mat-elevation-z8 p-0"
+      *ngIf="!isLoading && _locationListTableData && _locationListTableData.length > 0"
+      style="box-shadow: none !important"
+    >
+      <table mat-table [dataSource]="_locationListTableData" class="w-100" skeletonWidthsFrom="location-management-mwh">
+
+      <!-- Select -->
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">
+          <mat-checkbox
+            [checked]="isAllCurrentPageSelected()"
+            [indeterminate]="isSomeCurrentPageSelected()"
+            [disabled]="isSelectingAllLocations"
+            (change)="toggleSelectAllCurrentPage($event.checked)"
+          ></mat-checkbox>
+        </th>
+        <td mat-cell *matCellDef="let row" style="text-align:center">
+          <mat-checkbox
+            [checked]="isRowSelected(row)"
+            (change)="toggleRowSelection(row, $event.checked)"
+          ></mat-checkbox>
+        </td>
+      </ng-container>
+
+      <!-- No -->
+      <ng-container matColumnDef="no">
+        <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">#</th>
+        <td mat-cell *matCellDef="let row; let i = index" style="text-align:center">
+          {{ ((filter.page ?? 1) - 1) * (filter.pageSize ?? 25) + i + 1 }}
+        </td>
+      </ng-container>
+
+      <!-- Location Name -->
+      <ng-container matColumnDef="locationName">
+        <th mat-header-cell *matHeaderCellDef>ชื่อ Location</th>
+        <td mat-cell *matCellDef="let row"><strong>{{ row.titleLocation || '-' }}</strong></td>
+      </ng-container>
+
+      <!-- Warehouse -->
+      <ng-container matColumnDef="whCode">
+        <th mat-header-cell *matHeaderCellDef>Warehouse</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="badge-chip badge-chip--blue" *ngIf="row.whCode; else noWh">
+            <mat-icon>warehouse</mat-icon>
+            {{ formatWhCode(row.whCode) }}
+          </span>
+          <ng-template #noWh>-</ng-template>
+        </td>
+      </ng-container>
+
+      <!-- Priority -->
+      <ng-container matColumnDef="priority">
+        <th mat-header-cell *matHeaderCellDef>Priority</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="priority-badge" [ngClass]="'priority-badge--' + (row.priorityName | lowercase)" *ngIf="row.priorityName; else noPriority">
+            {{ row.priorityName }}
+          </span>
+          <ng-template #noPriority>-</ng-template>
+        </td>
+      </ng-container>
+
+      <!-- Status -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>สถานะ</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="status-badge" [ngClass]="'status-badge--' + (row.status | lowercase)" *ngIf="row.status; else noStatus">
+            {{ row.status }}
+          </span>
+          <ng-template #noStatus>-</ng-template>
+        </td>
+      </ng-container>
+
+      <!-- Active -->
+      <ng-container matColumnDef="isActive">
+        <th mat-header-cell *matHeaderCellDef style="text-align:left;justify-content:flex-start">ใช้งาน</th>
+        <td mat-cell *matCellDef="let row" style="text-align:left">
+          <span class="status-badge" [ngClass]="row.isActive ? 'status-badge--active' : 'status-badge--inactive'">
+            {{ row.isActive ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Updated Datetime -->
+      <ng-container matColumnDef="updatedDatetime">
+        <th mat-header-cell *matHeaderCellDef>วันที่แก้ไขล่าสุด</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="last-update-cell" *ngIf="row.updatedDateDisplay; else noDate">
+            <span class="last-update-date">{{ row.updatedDateDisplay }}</span>
+            <span class="last-update-time" *ngIf="row.updatedTimeDisplay">{{ row.updatedTimeDisplay }}</span>
+          </div>
+          <ng-template #noDate>-</ng-template>
+        </td>
+      </ng-container>
+
+      <!-- Print -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">พิมพ์</th>
+        <td mat-cell *matCellDef="let row" style="text-align:center">
+          <button *hasPermission="'data.print_qr'" type="button" class="print-button" (click)="printLocation(row || '-')">
+            <mat-icon>print</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      
+      <!-- Edit -->
+      <ng-container matColumnDef="edit">
+        <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">แก้ไข</th>
+        <td mat-cell *matCellDef="let row" style="text-align:center">
+          <button *hasPermission="'location.update'" type="button" class="edit-button" (click)="openEditModal(row)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && (!_locationListTableData || _locationListTableData.length === 0)">
+    <app-empty-state variant="table" title="ไม่พบข้อมูล" message="กรุณาลองเปลี่ยนเงื่อนไขการค้นหา"></app-empty-state>
+  </div>
+</div>
+
+  <!-- Pagination -->
+  <mat-paginator
+    [length]="totalCount"
+    [pageIndex]="(filter.page ?? 1) - 1"
+    [pageSize]="filter.pageSize ?? 25"
+    [pageSizeOptions]="[25, 50, 75, 100]"
+    [showFirstLastButtons]="true"
+    (page)="onPageEvent($event)"
+  ></mat-paginator>
+</div>
+
+<!-- Display Table : Dock / Prepare Zone (read-only - no priority/status/sync, API doesn't return them) -->
+<div class="display-table" *ngIf="locationType !== 'MWH' && locationType !== 'PLANT'">
+  <div class="display-table-header">
+    <div class="display-table-header-title">
+      <span class="type-badge" [ngClass]="locationType === 'DOCK' ? 'type-badge--dock' : 'type-badge--prezone'">
+        <mat-icon>{{ locationType === 'DOCK' ? 'local_shipping' : 'inventory_2' }}</mat-icon>
+        {{ locationType === 'DOCK' ? 'Dock' : 'Prepare Zone' }}
+      </span>
+      Location List
+      <span class="table-count">{{ dockPreZoneTotalCount }} Records</span>
+    </div>
+    <div class="table-header-actions">
+      <button *hasPermission="'data.export'"
+        type="button"
+        class="export-excel-button"
+        [disabled]="isExportingExcel || dockPreZoneTotalCount === 0"
+        (click)="exportToExcel()"
+      >
+        <mat-icon>{{ isExportingExcel ? 'hourglass_empty' : 'file_download' }}</mat-icon>
+        Export Excel
+      </button>
+      <button
+        type="button"
+        class="select-clear-button"
+        [disabled]="selectedLocationCount === 0"
+        (click)="clearSelectedLocations()"
+      >
+        <mat-icon>clear_all</mat-icon>
+        Clear Selected
+      </button>
+      <button *hasPermission="'data.print_qr'"
+        type="button"
+        class="bulk-print-button"
+        [disabled]="selectedLocationCount === 0"
+        (click)="printSelectedLocations()"
+      >
+        <mat-icon>print</mat-icon>
+        Print Selected ({{ selectedLocationCount }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="display-table-content">
+    <!-- Skeleton while the Dock / Pre-Zone list loads: same columns as the real table -->
+    <div class="table-container p-0" *ngIf="isLoading" aria-hidden="true">
+      <table class="adm-skel-table" skeletonWidthsTo="location-management-dock-pre-zone">
+        <thead>
+          <tr>
+            <th class="mat-column-select"></th>
+            <th class="mat-column-no" style="text-align: center">#</th>
+            <th class="mat-column-locationName">ชื่อ Location</th>
+            <th class="mat-column-whCode">Warehouse</th>
+            <th class="mat-column-isActive">ใช้งาน</th>
+            <th class="mat-column-action" style="text-align: center">พิมพ์</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of skeletonRows">
+            <td><span class="adm-skel adm-skel--box" style="width: 16px; height: 16px"></span></td>
+            <td><span class="adm-skel adm-skel--center" style="width: 18px"></span></td>
+            <td><span class="adm-skel" style="width: 120px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 72px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 72px"></span></td>
+            <td><span class="adm-skel adm-skel--box adm-skel--center" style="width: 32px; height: 32px"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="table-container mat-elevation-z8 p-0"
+      *ngIf="!isLoading && _dockPreZoneListTableData && _dockPreZoneListTableData.length > 0"
+      style="box-shadow: none !important"
+    >
+      <table mat-table [dataSource]="_dockPreZoneListTableData" class="w-100" skeletonWidthsFrom="location-management-dock-pre-zone">
+
+        <!-- Select -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">
+            <mat-checkbox
+              [checked]="isAllDockPreZoneCurrentPageSelected()"
+              [indeterminate]="isSomeDockPreZoneCurrentPageSelected()"
+              [disabled]="isSelectingAllDockPreZoneLocations"
+              (change)="toggleSelectAllDockPreZone($event.checked)"
+            ></mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row" style="text-align:center">
+            <mat-checkbox
+              [checked]="isRowSelected(row)"
+              (change)="toggleRowSelection(row, $event.checked)"
+            ></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- No -->
+        <ng-container matColumnDef="no">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">#</th>
+          <td mat-cell *matCellDef="let row" style="text-align:center">{{ row.no }}</td>
+        </ng-container>
+
+        <!-- Location Name -->
+        <ng-container matColumnDef="locationName">
+          <th mat-header-cell *matHeaderCellDef>ชื่อ Location</th>
+          <td mat-cell *matCellDef="let row"><strong>{{ row.titleLocation || '-' }}</strong></td>
+        </ng-container>
+
+        <!-- Warehouse -->
+        <ng-container matColumnDef="whCode">
+          <th mat-header-cell *matHeaderCellDef>Warehouse</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="badge-chip badge-chip--blue" *ngIf="row.whCode; else noWh2">
+              <mat-icon>warehouse</mat-icon>
+              {{ row.whCode }}
+            </span>
+            <ng-template #noWh2>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Active -->
+        <ng-container matColumnDef="isActive">
+          <th mat-header-cell *matHeaderCellDef style="text-align:left;justify-content:flex-start">ใช้งาน</th>
+          <td mat-cell *matCellDef="let row" style="text-align:left">
+            <span class="status-badge" [ngClass]="row.isActive ? 'status-badge--active' : 'status-badge--inactive'">
+              {{ row.isActive ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Print -->
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">พิมพ์</th>
+          <td mat-cell *matCellDef="let row" style="text-align:center">
+            <button *hasPermission="'data.print_qr'" type="button" class="print-button" (click)="printLocation(row || '-')">
+              <mat-icon>print</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="dockPreZoneDisplayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: dockPreZoneDisplayedColumns"></tr>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && (!_dockPreZoneListTableData || _dockPreZoneListTableData.length === 0)">
+      <app-empty-state variant="table" title="ไม่พบข้อมูล" message="กรุณาลองเปลี่ยนเงื่อนไขการค้นหา"></app-empty-state>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator
+    [length]="dockPreZoneTotalCount"
+    [pageIndex]="dockPreZonePage - 1"
+    [pageSize]="dockPreZonePageSize"
+    [pageSizeOptions]="[25, 50, 75, 100]"
+    [showFirstLastButtons]="true"
+    (page)="onDockPreZonePageEvent($event)"
+  ></mat-paginator>
+</div>
+
+<!-- Display Table : Plant -->
+<div class="display-table" *ngIf="locationType === 'PLANT'">
+  <div class="display-table-header">
+    <div class="display-table-header-title">
+      <span class="type-badge type-badge--plant"><mat-icon>factory</mat-icon>Plant</span>
+      Plant List
+      <span class="table-count">{{ plantTotalCount }} Records</span>
+    </div>
+    <div class="table-header-actions">
+      <button type="button" class="select-clear-button" [disabled]="selectedPlantCount === 0" (click)="clearSelectedPlants()">
+        <mat-icon>clear_all</mat-icon>Clear Selected
+      </button>
+    </div>
+  </div>
+  <div class="display-table-content">
+    <div class="table-container mat-elevation-z8 p-0" *ngIf="!isLoading && _plantListTableData.length > 0" style="box-shadow: none !important">
+      <table mat-table [dataSource]="_plantListTableData" class="w-100">
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">
+            <mat-checkbox [checked]="isAllCurrentPlantsSelected()" [indeterminate]="isSomeCurrentPlantsSelected()" (change)="toggleSelectAllPlants($event.checked)"></mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row" style="text-align:center"><mat-checkbox [checked]="isPlantSelected(row)" (change)="togglePlantSelection(row, $event.checked)"></mat-checkbox></td>
+        </ng-container>
+        <ng-container matColumnDef="no"><th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">#</th><td mat-cell *matCellDef="let row" style="text-align:center">{{ row.no }}</td></ng-container>
+        <ng-container matColumnDef="plantCode"><th mat-header-cell *matHeaderCellDef>Plant Code</th><td mat-cell *matCellDef="let row"><span class="badge-chip badge-chip--blue"><mat-icon>factory</mat-icon>{{ row.plantCode }}</span></td></ng-container>
+        <ng-container matColumnDef="plantLocation"><th mat-header-cell *matHeaderCellDef>Plant Location</th><td mat-cell *matCellDef="let row"><strong>{{ row.plantLocation || '-' }}</strong></td></ng-container>
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef style="text-align:center;justify-content:center">พิมพ์</th>
+          <td mat-cell *matCellDef="let row" style="text-align:center"><button *hasPermission="'data.print_qr'" type="button" class="print-button" (click)="printPlant(row)"><mat-icon>print</mat-icon></button></td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="plantDisplayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: plantDisplayedColumns"></tr>
+      </table>
+    </div>
+    <div class="empty-state" *ngIf="!isLoading && _plantListTableData.length === 0"><app-empty-state variant="table" title="ไม่พบข้อมูล" message="กรุณาลองเปลี่ยนเงื่อนไขการค้นหา"></app-empty-state></div>
+  </div>
+  <mat-paginator [length]="plantTotalCount" [pageIndex]="plantPage - 1" [pageSize]="plantPageSize" [pageSizeOptions]="[25, 50, 75, 100]" [showFirstLastButtons]="true" (page)="onPlantPageEvent($event)"></mat-paginator>
+</div>
+
+<!-- Edit Modal -->
+<div class="ul-modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="ul-modal" (click)="$event.stopPropagation()">
+    <div class="ul-modal__header">
+      <div class="ul-modal__title">
+        <span class="material-icons">edit_location</span>
+        แก้ไข Priority
+      </div>
+      <button type="button" class="ul-modal__close" (click)="closeEditModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="ul-modal__body">
+      <label class="ul-label">ชื่อ Location</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100 mb-3">
+        <input matInput [value]="_selectedEditItem.locationName" disabled />
+      </mat-form-field>
+
+      <label class="ul-label">Priority</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100 mb-3">
+        <mat-select [(ngModel)]="_selectedEditItem.priorityId" name="editPriorityId">
+          <mat-option *ngFor="let option of priorityOptions" [value]="option.id">
+            {{ option.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <label class="ul-label">สถานะ</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100">
+        <mat-select [(ngModel)]="_selectedEditItem.isActive" name="editIsActive">
+          <mat-option [value]="true">เปิดใช้งาน</mat-option>
+          <mat-option [value]="false">ปิดใช้งาน</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="ul-modal__footer">
+      <button type="button" class="btn modal-btn-cancel" (click)="closeEditModal()">ยกเลิก</button>
+      <button type="button" class="btn modal-btn-save" (click)="onClickSave()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Print Section -->
+<div id="print-area">
+  <div class="print-area-content" [ngClass]="printMode === 'multiple' ? 'print-area-content--multiple' : 'print-area-content--single'">
+    <div class="pcard-print-page pcard-print-page--single" *ngIf="printMode === 'single'">
+      <div class="pcard">
+        <header class="pcard__header">
+          <div class="pcard__plate" [style.fontSize.px]="getPlateFontSize(_printLocationName)">{{ _printLocationName }}</div>
+        </header>
+        <div class="pcard__body">
+          <div id="print-qr-single"></div>
+        </div>
+        <footer class="pcard__footer">Installation QR Code System</footer>
+      </div>
+    </div>
+
+    <div class="pcard-print-page" *ngFor="let location of printSelectedLocationsData; let i = index">
+      <div class="pcard">
+        <header class="pcard__header">
+          <div class="pcard__plate" [style.fontSize.px]="getPlateFontSize(location.displayTitle)">{{ location.displayTitle }}</div>
+        </header>
+        <div class="pcard__body">
+          <div [id]="'print-qr-selected-' + i"></div>
+        </div>
+        <footer class="pcard__footer">Installation QR Code System</footer>
+      </div>
+    </div>
+  </div>
+</div>

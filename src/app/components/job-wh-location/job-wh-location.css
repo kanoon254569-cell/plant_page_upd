@@ -1,0 +1,482 @@
+.wh-location {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  position: relative;
+}
+
+.wh-location-badge {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background-color: #1d4ed8;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.wh-location-header {
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.wh-location-header-left {
+  display: flex;
+  align-items: center;
+
+  .blue-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #1d4ed8;
+    margin-right: 8px;
+  }
+
+  .wh-location-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1e293b;
+    padding-right: 10px;
+    border-right: 1px solid #cbd5e1;
+  }
+
+  .qty-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #dc2626;
+    margin-left: 10px;
+  }
+
+  .full-qty {
+    font-size: 14px;
+    font-weight: 500;
+    color: #15803d;
+    margin-left: 10px;
+  }
+}
+
+
+.wh-location-header-right {
+  button {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #22c358 0%, #16a34a 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    gap: 8px;
+    box-shadow:
+      0 6px 16px rgba(34, 195, 88, 0.22),
+      0 1px 4px rgba(34, 195, 88, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      box-shadow:
+        0 10px 24px rgba(34, 195, 88, 0.28),
+        0 2px 8px rgba(34, 195, 88, 0.16);
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 12px rgba(34, 195, 88, 0.18);
+    }
+
+    &:disabled {
+      background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+      color: #f5f5f5;
+      cursor: not-allowed;
+      opacity: 0.6;
+      box-shadow: 0 2px 8px rgba(107, 114, 128, 0.1);
+      transform: none;
+    }
+  }
+
+  img {
+    width: 15px;
+    height: auto;
+  }
+}
+
+.wh-location-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: calc(100vh - 710px);
+  min-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.wh-location-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.wh-location-item-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+
+  .wh-location-icon {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  img {
+    width: 25px;
+    height: auto;
+  }
+}
+
+.wh-location-item-left-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-right: 16px;
+  padding: 8px 0;
+  border-left: 1px solid #cbd5e1;
+
+  .wh-location-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+    font-size: 14px;
+    font-weight: 500;
+
+    .location-name {
+      padding-right: 8px;
+      border-right: 1px solid #cbd5e1;
+    }
+
+    .location-qty,
+    .location-name {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      .edit-wh-location-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        margin-left: 8px;
+
+        img {
+          width: 20px;
+          height: auto;
+          margin-bottom: 4px;
+          opacity: 0.5;
+        }
+      }
+
+      .edit-wh-location-button:hover img {
+        opacity: 1;
+      }
+    }
+  }
+
+  /*  Name + pill badges row -- same look as select-internal-transfer-
+      location.css's .select-wh-location-details-content (.location-name +
+      .stat-pill WH/Lot/Qty), so a picked location reads the same here as it
+      did in the picker modal. New class names only: job-wh-internal-
+      transfer-detail also loads this file and still uses .wh-location-text. */
+  .wh-location-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-left: 16px;
+  }
+
+  /*  Name left, Qty (+ edit) pinned top-right. Still used as-is by
+      job-wh-internal-transfer-detail, which also loads this file. */
+  .wh-location-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /*  job-wh-location's own card: name + Grade/Lot pills kept on a single
+      line (qty moved to the progress row). Pills shrink and ellipsize
+      instead of wrapping when the card is narrow. */
+  .wh-location-title-row--inline {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    min-width: 0;
+
+    .wh-location-stats {
+      flex-wrap: nowrap;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .stat-pill {
+      min-width: 0;
+      padding: 3px 8px;
+    }
+
+    .stat-pill-value {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  /*  Same plain-text look as the old .location-qty (14px / 500). */
+  .wh-location-qty {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .wh-location-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    margin-right: 4px;
+  }
+
+  .wh-location-stats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .wh-location-edit-button {
+    display: inline-flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+
+    img {
+      width: 18px;
+      height: auto;
+      opacity: 0.5;
+    }
+
+    &:hover img {
+      opacity: 1;
+    }
+  }
+
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+    white-space: nowrap;
+
+    .stat-pill-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+  }
+
+  .stat-pill--grade {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+
+    .stat-pill-value {
+      color: #15803d;
+    }
+  }
+
+  .stat-pill--lot {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+
+    .stat-pill-value {
+      color: #1d4ed8;
+    }
+  }
+
+  .wh-location-details + .pallet-progress {
+    padding-top: 4px;
+  }
+
+  .pallet-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+
+    span {
+      margin-bottom: 4px;
+      font-size: 12px;
+      line-height: 1;
+      color: #64748b;
+    }
+
+    /*  "actual / qty unit" at the bar's right end, with the qty edit
+        button that used to sit next to the old "Qty:" label. */
+    .pallet-progress-qty {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      white-space: nowrap;
+      /*  Fixed row height so the card is the same height with or without
+          the edit button (its 18px icon would otherwise grow the row and
+          throw the card out of line with job-plant-location's beside it). */
+      height: 16px;
+
+      .wh-location-edit-button {
+        height: 16px;
+
+        img {
+          width: 16px;
+        }
+      }
+    }
+
+    /*  Bar shrinks (not the qty text) when the card is narrow, so the qty +
+        edit button never spill past the right divider; the 16px gap to
+        that divider comes from .wh-location-item-left-content's margin. */
+    .pallet-bar {
+      flex: 1;
+      min-width: 40px;
+      height: 6px;
+      background-color: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+
+      .pallet-bar-fill {
+        display: block;
+        height: 100%;
+        background-color: #22c358;
+        transition: width 0.3s ease-in-out;
+      }
+
+      /*  GET (source) card -- same indigo as the plant GET card. */
+      .pallet-bar-fill--get {
+        background: linear-gradient(90deg, #818cf8 0%, #4f46e5 100%);
+      }
+    }
+  }
+}
+
+.wh-location-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /*  Full-height divider between the details and the action button,
+      matching the one after the location icon. */
+  align-self: stretch;
+  padding-left: 6px;
+  border-left: 1px solid #cbd5e1;
+
+  button {
+    padding: 10px;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    margin-right: 6px;
+    gap: 8px;
+    transition:
+      transform 0.3s ease,
+      background-color 0.3s ease;
+
+    &:hover {
+      background-color: #fee2e2;
+      transform: scale(0.98);
+    }
+  }
+
+  img {
+    width: 25px;
+    height: auto;
+    padding: 0;
+    filter: brightness(0);
+  }
+}
+
+.no-data-wh-location {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 710px);
+  min-height: 220px;
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  text-align: center;
+}
+
+.validation-error {
+  border: 1px solid #dc2626;
+}
+
+.validation-error-message {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 500;
+}

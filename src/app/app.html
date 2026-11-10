@@ -1,0 +1,15 @@
+<!-- Without Login Page -->
+<ng-container *ngIf="router.url !== '/'; else loginLayout">
+  <div class="wrapper app-layout">
+    <app-header></app-header>
+    <app-sidebar></app-sidebar>
+    <div class="content-wrapper" style="background-color: #fff;">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</ng-container>
+
+<!-- On Login Page -->
+<ng-template #loginLayout>
+  <router-outlet></router-outlet>
+</ng-template>

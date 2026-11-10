@@ -1,0 +1,70 @@
+<div class="login-page">
+
+    <!-- Left : Background Image with overlay -->
+    <div class="login-left">
+        <img src="assets/images/irpc-boardman-bg.png" alt="room-bg" />
+        <div class="login-left-overlay">
+            <div class="login-left-brand">
+                <div class="login-left-brand__title">Q Track Boardman</div>
+                <div class="login-left-brand__sub">Warehouse Management System</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right : Login Card -->
+    <div class="login-right">
+        <div class="login-card">
+
+            <!-- Login Logo -->
+            <div class="login-logo">
+                <img src="assets/images/irpc-logo.png" alt="irpc-logo" />
+            </div>
+
+            <!-- Login Title -->
+            <div class="login-header">
+                <div class="project-name">IRPC - Q Track Boardman</div>
+                <div class="login-title">เข้าสู่ระบบ</div>
+            </div>
+
+            <!-- Divider -->
+            <div class="login-divider"></div>
+
+            <!-- Login Form -->
+            <div class="login-from">
+
+                <!-- Username -->
+                <mat-form-field class="username example-full-width" appearance="outline">
+                    <mat-label>Username</mat-label>
+                    <mat-icon matPrefix>person_outline</mat-icon>
+                    <input matInput type="text" [formControl]="_mUsername" autocomplete="off"
+                        (keydown)="onKeyDown($event)" />
+                </mat-form-field>
+
+                <!-- Password -->
+                <mat-form-field class="password example-full-width" appearance="outline">
+                    <mat-label>Password</mat-label>
+                    <mat-icon matPrefix>lock_outline</mat-icon>
+                    <input matInput [type]="_showPassword ? 'text' : 'password'" [formControl]="_mPassword"
+                        autocomplete="new-password" (keydown)="onKeyDown($event)" />
+                    <button mat-icon-button matSuffix type="button" (click)="_showPassword = !_showPassword">
+                        <mat-icon>{{ _showPassword ? "visibility_off" : "visibility" }}</mat-icon>
+                    </button>
+                </mat-form-field>
+
+            </div>
+
+            <!-- Login Button -->
+            <div class="login-submit">
+                <button type="submit" (click)="onClickSubmit()" class="submit-btn">
+                    <mat-icon>login</mat-icon>
+                    Log In
+                </button>
+            </div>
+
+            <!-- Login Footer -->
+            <div class="footer">
+                ©Copyright 2026 IRPC. All rights reserved. {{ _version }}
+            </div>
+        </div>
+    </div>
+</div>

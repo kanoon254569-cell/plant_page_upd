@@ -1,0 +1,548 @@
+<div class="header-section">
+  <div class="header-section-title">
+    <div class="header-section-icon">
+      <mat-icon>swap_horiz</mat-icon>
+    </div>
+    <span>WH03 - Internal Transfer</span>
+  </div>
+  <button *hasPermission="'warehouse.internal_transfer'" type="button" class="upload-button" (click)="goToCreateTransfer()">
+    <img src="assets/images/add.png" alt="" />
+    สร้างใบงาน
+  </button>
+</div>
+
+<!-- Closed multi-select text: selected labels comma-separated, full list on hover
+     (same as job-wh-transfer-list.html #multiTrigger). -->
+<ng-template #multiTrigger let-labels>
+  <span class="filter-trigger" [title]="labels.join(', ')">{{ labels.join(', ') }}</span>
+</ng-template>
+
+<div class="search-filter">
+  <div class="row search-filter-row">
+    <div class="col-md search-filter-col">
+      <label>เลขที่ใบงาน</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <input
+          matInput
+          [(ngModel)]="filter.systemNo"
+          placeholder="พิมพ์หมายเลขใบงาน"
+          (keyup.enter)="search()"
+        />
+      </mat-form-field>
+    </div>
+    <div class="col-md search-filter-col">
+      <label>วันที่</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-date-range-input [rangePicker]="rangePicker">
+          <input matStartDate [(ngModel)]="filter.dateFrom" placeholder="วันที่เริ่มต้น" readonly (click)="rangePicker.open()" />
+          <input matEndDate [(ngModel)]="filter.dateTo" placeholder="สิ้นสุด" readonly (click)="rangePicker.open()" />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
+        <mat-date-range-picker #rangePicker></mat-date-range-picker>
+      </mat-form-field>
+    </div>
+    <!-- Multi-selects: same look as job-wh-transfer-list.html (panelClass filter-multi-panel) -->
+    <div class="col-md-2 search-filter-col">
+      <label>WH ต้นทาง</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-select [(ngModel)]="filter.whFroms" multiple placeholder="ทั้งหมด" panelClass="filter-multi-panel">
+          <mat-select-trigger>
+            <ng-container *ngTemplateOutlet="multiTrigger; context: { $implicit: whLabels(filter.whFroms) }"></ng-container>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{ filter.whFroms.length ? 'เลือก ' + filter.whFroms.length + ' รายการ' : 'ทั้งหมด' }}</span>
+            <button type="button" class="filter-multi-clear" *ngIf="filter.whFroms.length" (click)="filter.whFroms = []">
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let wh of whOptions" [value]="wh.wh_code">
+            <span class="filter-option-code">{{ wh.wh_code }}</span>
+            <span class="filter-option-name">{{ wh.wh_name }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="col-md-2 search-filter-col">
+      <label>WH ปลายทาง</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-select [(ngModel)]="filter.whTos" multiple placeholder="ทั้งหมด" panelClass="filter-multi-panel">
+          <mat-select-trigger>
+            <ng-container *ngTemplateOutlet="multiTrigger; context: { $implicit: whLabels(filter.whTos) }"></ng-container>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{ filter.whTos.length ? 'เลือก ' + filter.whTos.length + ' รายการ' : 'ทั้งหมด' }}</span>
+            <button type="button" class="filter-multi-clear" *ngIf="filter.whTos.length" (click)="filter.whTos = []">
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let wh of whOptions" [value]="wh.wh_code">
+            <span class="filter-option-code">{{ wh.wh_code }}</span>
+            <span class="filter-option-name">{{ wh.wh_name }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="col-md-2 search-filter-col">
+      <label>สถานะ</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-select [(ngModel)]="filter.jobStatuses" multiple placeholder="ทั้งหมด" panelClass="filter-multi-panel">
+          <mat-select-trigger>
+            <ng-container *ngTemplateOutlet="multiTrigger; context: { $implicit: jobStatusLabels() }"></ng-container>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{ filter.jobStatuses.length ? 'เลือก ' + filter.jobStatuses.length + ' รายการ' : 'ทั้งหมด' }}</span>
+            <button type="button" class="filter-multi-clear" *ngIf="filter.jobStatuses.length" (click)="filter.jobStatuses = []">
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let status of jobStatusOptions" [value]="status.id">
+            <span class="filter-option-name">{{ status.name_th || status.name }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="col-md-auto search-filter-col search-filter-action-col">
+      <div class="search-button-group">
+        <button type="button" class="clear-button" aria-label="Clear filter" (click)="clearFilter()">
+          <img src="assets/images/clear.png" alt="" />
+        </button>
+        <button type="button" class="search-button" aria-label="Search" (click)="search()">
+          <mat-icon>search</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="job-section">
+  <div class="job-header">
+    <div class="job-header-left">
+      <strong>รายการใบงาน</strong>
+      <span class="job-count-badge">{{ totalCount }} งาน</span>
+    </div>
+
+    <div class="job-header-right">
+      <!-- Sort -- same menu as job-list.html: picking an option searches right away. -->
+      <button
+        type="button"
+        class="header-filter"
+        [class.active]="!!sortValue"
+        [matMenuTriggerFor]="sortMenu"
+        #sortTrigger="matMenuTrigger"
+        [class.open]="sortTrigger.menuOpen"
+        [title]="sortLabel"
+      >
+        <mat-icon class="header-filter-icon">swap_vert</mat-icon>
+        <span class="header-filter-label">เรียงตาม</span>
+        <span class="header-filter-value">{{ sortLabel }}</span>
+        <mat-icon class="header-filter-caret">expand_more</mat-icon>
+      </button>
+
+      <mat-menu #sortMenu="matMenu" xPosition="before" class="product-cc-menu">
+        <div class="product-cc-menu-title">เรียงตาม</div>
+        <button
+          mat-menu-item
+          class="product-cc-menu-item"
+          *ngFor="let option of sortOptions"
+          [class.selected]="sortValue === option.value"
+          (click)="onSelectSort(option.value)"
+        >
+          <span>{{ option.label }}</span>
+          <mat-icon *ngIf="sortValue === option.value">check</mat-icon>
+        </button>
+      </mat-menu>
+
+      <!-- Product CC (tr_job_main.product_cc) -- same multi-select menu as
+           job-wh-transfer-list.html: items toggle while the menu stays open;
+           the search runs on close if the picks changed. -->
+      <button
+        type="button"
+        class="header-filter"
+        [class.active]="!!filter.productCcs.length"
+        [matMenuTriggerFor]="productCcMenu"
+        #productCcTrigger="matMenuTrigger"
+        [class.open]="productCcTrigger.menuOpen"
+        (menuOpened)="onProductCcMenuOpened()"
+        (menuClosed)="onProductCcMenuClosed()"
+        [title]="filter.productCcs.length ? filter.productCcs.join(', ') : 'ทั้งหมด'"
+      >
+        <mat-icon class="header-filter-icon">category</mat-icon>
+        <span class="header-filter-label">Product CC</span>
+        <span class="header-filter-value">{{
+          filter.productCcs.length ? filter.productCcs.join(', ') : 'ทั้งหมด'
+        }}</span>
+        <mat-icon class="header-filter-caret">expand_more</mat-icon>
+      </button>
+
+      <mat-menu #productCcMenu="matMenu" xPosition="before" class="product-cc-menu">
+        <div class="product-cc-menu-title">Product CC</div>
+        <button
+          mat-menu-item
+          class="product-cc-menu-item"
+          [class.selected]="!filter.productCcs.length"
+          (click)="$event.stopPropagation(); clearProductCcs()"
+        >
+          <span>ทั้งหมด</span>
+          <mat-icon *ngIf="!filter.productCcs.length">check</mat-icon>
+        </button>
+        <button
+          mat-menu-item
+          class="product-cc-menu-item"
+          *ngFor="let option of productCcOptions"
+          [class.selected]="isProductCcSelected(option?.cc_code)"
+          (click)="$event.stopPropagation(); toggleProductCc(option?.cc_code)"
+        >
+          <span>{{ option?.cc_code }}</span>
+          <mat-icon *ngIf="isProductCcSelected(option?.cc_code)">check</mat-icon>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!isLoading; else jobListLoading">
+    <div class="job-list-container" *ngIf="jobs.length > 0; else internalTransferEmptyState">
+      <div class="job-list-card" *ngFor="let job of jobs">
+        <div class="job-icon job-icon-transfer">
+          <div class="text-topic-transfer">IT</div>
+        </div>
+
+        <div class="system-info">
+          <div class="system-header">
+            <div class="data-no">
+              <div class="system-no">{{ job.system_no }}</div>
+              <div class="wms_no" *ngIf="job.wms_no || getWmsPlusStatus(job.id)">
+                <ng-container *ngIf="getWmsPlusStatus(job.id) as wmsPlusStatus; else plainWmsNo">
+                  <div
+                    class="wms-plus-status"
+                    [class.success]="wmsPlusStatus.is_success === 'Y'"
+                    [class.failed]="wmsPlusStatus.is_success !== 'Y'"
+                    title="ดูรายละเอียด WMS+ log"
+                    data-bs-toggle="modal"
+                    data-bs-target="#wmsPlusDetailModal"
+                    (click)="openWmsPlusDetail(job)"
+                  >
+                    {{ job.wms_no || '-' }}
+                    <mat-icon>{{
+                      wmsPlusStatus.is_success === 'Y' ? 'check_circle' : 'error'
+                    }}</mat-icon>
+                  </div>
+                  <ng-container *hasPermission="'wms.resend'">
+                  <button
+                    type="button"
+                    class="wms-plus-resend-button"
+                    *ngIf="wmsPlusStatus.is_success !== 'Y'"
+                    [disabled]="isResendingWmsPlus(job.id)"
+                    title="ส่งข้อมูลไปยัง WMS+ ซ้ำ"
+                    (click)="resendWmsPlus(job.id)"
+                  >
+                    <mat-icon [class.spin]="isResendingWmsPlus(job.id)">refresh</mat-icon>
+                  </button>
+                  </ng-container>
+                </ng-container>
+                <ng-template #plainWmsNo>
+                  <div class="wms-plus-status neutral">{{ job.wms_no }}</div>
+                </ng-template>
+              </div>
+            </div>
+            <div class="date">{{ parseJobDate(job.job_create_datetime) | date: 'dd/MM/yyyy HH:mm:ss' }}</div>
+          </div>
+          <div class="badge">
+            <div class="status" [ngClass]="'internal-transfer-status--' + statusClass(job)">
+              {{ job.job_status_name }}
+            </div>
+          </div>
+        </div>
+
+        <div class="grade-lot-progress">
+          <div class="document-job">
+            <ng-container *ngIf="firstSourceItem(job) as item; else noSourceItem">
+              <span class="document-job-segments">
+                <span class="document-job-grade">{{ item.grade }}</span>
+                <span class="document-job-tag" *ngIf="item.lot">{{ item.lot }}</span>
+                <span class="document-job-tag document-job-qty">
+                  {{ item.qty | number: '1.0-0' }} {{ job.qty_unit }}
+                </span>
+              </span>
+              <button
+                type="button"
+                class="job-items-more-button"
+                *ngIf="job.items.length > 1"
+                [title]="job.items.length + ' items'"
+              >
+                + อีก {{ job.items.length - 1 }} รายการ
+              </button>
+            </ng-container>
+            <ng-template #noSourceItem>
+              <span class="document-job-segments">
+                <span class="document-job-tag document-job-qty">
+                  {{ job.total_qty | number: '1.0-2' }} {{ job.qty_unit }}
+                </span>
+              </span>
+            </ng-template>
+          </div>
+
+          <div class="pallet-progress">
+            <div class="pallet-text">
+              {{ progressQty(job) | number: '1.0-2' }}/{{ job.total_qty | number: '1.0-2' }}
+              {{ job.qty_unit }}
+            </div>
+            <!-- Light indigo = taken at GET (receive_qty), green on top = put
+                 away (complete_qty) -- colours from job-list.css's stacked bar. -->
+            <div
+              class="progress-wrapper progress-wrapper--stacked"
+              matTooltipClass="tooltip-nowrap"
+              [matTooltip]="'รับเข้า ' + (receiveQty(job) | number: '1.0-2') + ' ' + (job.qty_unit || '') + ' · จัดเก็บ ' + (progressQty(job) | number: '1.0-2') + ' ' + (job.qty_unit || '')"
+              matTooltipPosition="above"
+            >
+              <div class="progress-bar progress-bar--receive" [style.width.%]="receivePercent(job)"></div>
+              <div class="progress-bar" [style.width.%]="progressPercent(job)"></div>
+            </div>
+            <div class="percent">{{ progressPercent(job) }}%</div>
+          </div>
+
+          <div class="start-end-datetime">
+            {{ (parseJobDate(job.job_start_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }} -
+            {{ formatDateEnd(job.job_start_datetime, job.job_end_datetime) }} <span>|</span>
+            {{ formatDuration(job.job_start_datetime, job.job_end_datetime) }}
+          </div>
+        </div>
+
+        <div class="location">
+          <div class="get-location">
+            <div class="get-header">
+              <span style="color: #14a318"><strong>GET</strong></span>
+              <div class="cc-info">
+                <span class="cc-code">{{ job.wh_code || 'MWH' }}</span>
+                <span class="cc-desc">Manual WH</span>
+              </div>
+            </div>
+            <div class="location-detail">
+              <img src="assets/images/location.png" alt="location-icon" />
+              <span>{{ firstLocationName(sourceLocations(job)) }}</span>
+              <span
+                class="location-more-button"
+                *ngIf="sourceLocations(job).length > 1"
+              >
+                + อีก {{ sourceLocations(job).length - 1 }} รายการ
+              </span>
+            </div>
+          </div>
+
+          <div class="arrow">→</div>
+
+          <div class="put-location">
+            <div class="put-header">
+              <span style="color: #1d4ed8"><strong>PUT</strong></span>
+              <div class="cc-info">
+                <span class="cc-code">{{ job.wh_code || 'MWH' }}</span>
+                <span class="cc-desc">Manual WH</span>
+              </div>
+            </div>
+            <div class="location-detail">
+              <img src="assets/images/location.png" alt="location-icon" />
+              <span>{{ firstLocationName(destinationLocations(job)) }}</span>
+              <span
+                class="location-more-button"
+                *ngIf="destinationLocations(job).length > 1"
+              >
+                + อีก {{ destinationLocations(job).length - 1 }} รายการ
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Same product tags as job-wh-transfer-list.html -->
+        <div class="job-card-actions">
+          <div class="product-tags" *ngIf="job.product_cc || job.product_type">
+            <span class="product-tag product-tag--cc" *ngIf="job.product_cc" [title]="job.product_cc">
+              <b>CC {{ job.product_cc }}</b>
+            </span>
+            <span class="product-tag product-tag--type" *ngIf="job.product_type" [title]="job.product_type">
+              <b>{{ job.product_type }}</b>
+            </span>
+          </div>
+          <button class="inspect-button" type="button" (click)="goToTransferDetail(job)">
+            รายละเอียด
+            <svg class="inspect-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M9 6l6 6-6 6"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-pagination" *ngIf="!isLoading && jobs.length > 0">
+      <mat-paginator
+        [length]="totalCount"
+        [pageIndex]="filter.page - 1"
+        [pageSize]="filter.pageSize"
+        [pageSizeOptions]="[25, 50, 75, 100]"
+        [showFirstLastButtons]="true"
+        (page)="onPageEvent($event)"
+      >
+      </mat-paginator>
+    </div>
+  </ng-container>
+
+  <ng-template #internalTransferEmptyState>
+    <div class="internal-transfer-empty-state">
+      <app-empty-state
+        variant="transfer"
+        title="ยังไม่มีรายการย้ายสินค้าภายในคลัง"
+        message="ไม่พบใบงานตามเงื่อนไขที่เลือก ลองเปลี่ยนวันที่ หรือสร้างใบงานย้ายสินค้าใหม่"
+        [actionLabel]="canCreateTransfer ? 'สร้างรายการย้ายสินค้า' : ''"
+        (action)="goToCreateTransfer()"
+      ></app-empty-state>
+    </div>
+  </ng-template>
+
+  <ng-template #jobListLoading>
+    <div class="job-list-container job-list-loading">
+      <div class="job-list-skeleton-card" *ngFor="let row of skeletonRows">
+        <div class="skeleton skeleton-job-icon"></div>
+
+        <div class="skeleton-group skeleton-system-info">
+          <div class="skeleton skeleton-line skeleton-line-lg"></div>
+          <div class="skeleton skeleton-line skeleton-line-sm"></div>
+        </div>
+
+        <div class="skeleton-group skeleton-grade-lot-progress">
+          <div class="skeleton skeleton-line skeleton-line-md"></div>
+          <div class="skeleton skeleton-progress"></div>
+          <div class="skeleton skeleton-line skeleton-line-xs"></div>
+        </div>
+
+        <div class="skeleton-group skeleton-location-group">
+          <div class="skeleton skeleton-location-box"></div>
+          <div class="skeleton skeleton-arrow"></div>
+          <div class="skeleton skeleton-location-box"></div>
+        </div>
+
+        <div class="skeleton skeleton-button"></div>
+      </div>
+    </div>
+  </ng-template>
+</div>
+
+<!-- WMS+ Interface Log Detail -->
+<div class="modal fade" id="wmsPlusDetailModal" tabindex="-1" aria-labelledby="wmsPlusDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content wms-plus-detail-content">
+      <div class="modal-header wms-plus-detail-header">
+        <div>
+          <div class="system-eyebrow">{{ _wmsPlusDetailJob?.system_no || '-' }}</div>
+          <h5 class="modal-title" id="wmsPlusDetailModalLabel">รายละเอียดการส่งข้อมูล</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div
+        class="wms-plus-detail-tabs"
+        *ngIf="(_wmsPlusDetailLogs?.length ?? 0) > 1"
+      >
+        <button
+          type="button"
+          class="wms-plus-detail-tab"
+          *ngFor="let log of _wmsPlusDetailLogs; let i = index"
+          [class.success]="log.is_success === 'Y'"
+          [class.failed]="log.is_success !== 'Y'"
+          [class.active]="_wmsPlusDetailPage === i + 1"
+          (click)="_wmsPlusDetailPage = i + 1"
+        ></button>
+      </div>
+      <div class="modal-body" *ngIf="_wmsPlusDetailLogs?.length; else noWmsPlusLogs">
+        <div class="wms-plus-detail-entry" *ngFor="let wmsPlusDetailStatus of pagedWmsPlusDetailLogs">
+          <div class="wms-plus-detail-entry-header">
+            <span
+              class="wms-plus-detail-entry-badge"
+              [class.success]="wmsPlusDetailStatus.is_success === 'Y'"
+              [class.failed]="wmsPlusDetailStatus.is_success !== 'Y'"
+            >
+              <mat-icon>{{
+                wmsPlusDetailStatus.is_success === 'Y' ? 'check_circle' : 'error'
+              }}</mat-icon>
+              {{ wmsPlusDetailStatus.is_success === 'Y' ? 'Success' : 'Failed' }}
+            </span>
+            <span class="wms-plus-detail-entry-mode">{{ wmsPlusDetailStatus.mode || '-' }}</span>
+            <span class="wms-plus-detail-entry-time">{{ (wmsPlusDetailStatus.create_datetime | date:'dd/MM/yyyy HH:mm:ss') || '-' }}</span>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              Method
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusDetailStatus.method)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ wmsPlusDetailStatus.method || '-' }}</pre>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              Route
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusDetailStatus.route)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ wmsPlusDetailStatus.route || '-' }}</pre>
+          </div>
+          <div class="wms-plus-detail-row wms-plus-detail-row-payload">
+            <span class="wms-plus-detail-label">
+              Payload
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusDetailStatus.param)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ formatJsonPayload(wmsPlusDetailStatus.param) }}</pre>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              Message
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusDetailStatus.message)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ formatWmsMessage(wmsPlusDetailStatus.message) }}</pre>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              เวลา
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusDetailStatus.create_datetime)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ wmsPlusDetailStatus.create_datetime || '-' }}</pre>
+          </div>
+        </div>
+      </div>
+      <ng-template #noWmsPlusLogs>
+        <div class="modal-body">
+          <div class="wms-plus-detail-empty">ไม่พบข้อมูลการส่ง</div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

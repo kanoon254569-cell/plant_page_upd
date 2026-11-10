@@ -1,0 +1,19 @@
+.app-layout > .content-wrapper {
+	margin-left: 260px;
+	transition: margin-left 0.3s ease-in-out;
+	padding-bottom: 0 !important;
+}
+
+body.sidebar-collapse .app-layout > .content-wrapper {
+	margin-left: 4.6rem;
+}
+
+body.sidebar-collapse .app-layout:has(.main-sidebar:hover) > .content-wrapper {
+	margin-left: 260px;
+}
+
+@media (max-width: 991.98px) {
+	.app-layout > .content-wrapper {
+		margin-left: 0;
+	}
+}

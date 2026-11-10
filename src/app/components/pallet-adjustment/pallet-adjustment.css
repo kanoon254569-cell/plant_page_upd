@@ -1,0 +1,1851 @@
+﻿/* ═══════════════════════════════════════════════════
+   PINNED HEADER (page title + Search Filter never scroll away)
+   ═══════════════════════════════════════════════════ */
+/* pa-sticky-top itself needs no special CSS -- it's a plain block that
+   never scrolls simply because pa-scroll-body below absorbs all of the
+   page's own overflow internally instead of letting the outer page grow
+   past one viewport. (position: sticky was tried here first but does
+   nothing: styles.css sets `body { overflow-y: hidden }`, which makes
+   <body> -- which never itself scrolls -- the nearest "scroll container"
+   for sticky's positioning math, instead of <html>, which is what actually
+   scrolls. So a sticky element here never sees any scroll to react to.) */
+
+/* Height is set in TS (updateScrollBodyHeight(), pallet-adjustment.ts) to
+   exactly the viewport space left below pa-sticky-top -- computed from the
+   real rendered layout instead of a guessed calc(100vh - Npx) constant, so
+   it can't drift out of sync as this page's header/filter/summary content
+   changes over time. */
+/* Thin scrollbars on every area that scrolls on its own (same
+   scrollbar-width: thin as vehicle-list / job-special-zone-location),
+   tinted slate so they don't compete with the content. */
+.pa-overview-panel__body,
+.pa-bag-panel__body,
+.pa-pallet-table-wrapper,
+.pa-bag-table-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.pa-overview-panel__body:hover,
+.pa-bag-panel__body:hover,
+.pa-pallet-table-wrapper:hover,
+.pa-bag-table-wrapper:hover {
+  scrollbar-color: #94a3b8 transparent;
+}
+
+.pa-scroll-body {
+  /* This container itself never scrolls -- it's a fixed-size box (height
+     set in TS). pa-summary-row stays a fixed-height row up top; pa-main-grid
+     fills the rest and stretches its two panels to that exact height, so
+     each panel (pa-overview-panel__body / pa-bag-panel) scrolls on its own
+     instead of the whole area scrolling as one block. */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════ */
+/* Amber "emergency use" note next to the page title -- a soft warning pill
+   instead of faint gray text that read like an afterthought. */
+.header-section-subtitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 12px;
+  padding: 3px 12px 3px 8px;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  background: #fffbeb;
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   SEARCH FILTER (matches /job-wh-list's flat bordered-card look --
+   NOT the blue-gradient title-bar treatment, which in this app is
+   reserved for list/section headers, e.g. .pa-overview-panel__header
+   here and .job-header there)
+   ═══════════════════════════════════════════════════ */
+/* Full width (no side margin), 16px above/below -- same as job-list's
+   .search-filter; summary cards / panels below keep their 16px side gutter. */
+.search-filter {
+  margin: 16px 0;
+  border: 1px solid #cbd5e1;
+  overflow: visible;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.search-filter:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1), 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+/* 15px side padding + 1px .search-filter border = 16px, so the inputs line
+   up with the summary cards / panels below (pa-summary-row's 16px gutter). */
+.search-filter-content {
+  padding: 18px 15px;
+}
+
+.search-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.search-filter-field {
+  flex: 1 1 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-filter-field label {
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.search-filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-shrink: 0;
+  /* Stay right-aligned when wrapped onto their own row, like job-list */
+  margin-left: auto;
+}
+
+/* Field sizing intentionally left to Material's own default (subscriptSizing
+   ="dynamic" on each mat-form-field already trims the space reserved for
+   hint/error text) -- matching /job-wh-list, which doesn't force a height or
+   touch the infix internals at all. Forcing a height here previously meant
+   fighting Material's own layout with padding-top overrides every time
+   something upstream changed; letting it size itself is both the same look
+   as job-wh-list and the more robust choice going forward. */
+::ng-deep .search-filter-content .mat-mdc-form-field {
+  width: 100%;
+}
+
+::ng-deep .search-filter-content .mdc-text-field {
+  background-color: #f5f8fb !important;
+  border-radius: 8px;
+}
+
+::ng-deep .search-filter-content .mdc-text-field:hover {
+  background-color: #f0f4f9 !important;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field.mat-focused .mdc-text-field {
+  background-color: #ffffff !important;
+  box-shadow: inset 0 0 0 1.5px #1d4ed8 !important;
+}
+
+.clear-button {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(71, 85, 105, 0.14), 0 1px 3px rgba(71, 85, 105, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clear-button img {
+  width: 18px;
+  height: auto;
+}
+
+.clear-button:hover {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  box-shadow: 0 10px 22px rgba(71, 85, 105, 0.2), 0 2px 6px rgba(71, 85, 105, 0.14);
+}
+
+.clear-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(71, 85, 105, 0.14);
+}
+
+.search-button {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  padding: 0;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(29, 78, 216, 0.2), 0 2px 6px rgba(29, 78, 216, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-button img {
+  width: 18px;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.search-button:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  box-shadow: 0 12px 28px rgba(29, 78, 216, 0.28), 0 4px 10px rgba(29, 78, 216, 0.16);
+}
+
+.search-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.16);
+}
+
+/* ═══════════════════════════════════════════════════
+   SUMMARY CARDS
+   ═══════════════════════════════════════════════════ */
+.pa-summary-row {
+  margin: 0 16px 12px;
+  display: grid;
+  /* auto-fit instead of a fixed repeat(N, 1fr) -- the card count here has grown
+     past the original 6 (Reject / พาเลทเศษ added later) and will likely keep
+     growing, so a fixed column count would leave a lone card stranded in its
+     own mostly-empty row every time one more card is added. */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pa-summary-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  min-width: 0;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.pa-summary-card:hover {
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.pa-summary-card__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pa-summary-card__icon--blue { background: #eff6ff; color: #1d4ed8; }
+.pa-summary-card__icon--amber { background: #fffbeb; color: #d97706; }
+.pa-summary-card__icon--green { background: #ecfdf5; color: #059669; }
+.pa-summary-card__icon--red { background: #fef2f2; color: #dc2626; }
+.pa-summary-card__icon--slate { background: #f1f5f9; color: #475569; }
+.pa-summary-card__icon--purple { background: #f5f3ff; color: #7c3aed; }
+.pa-summary-card__icon--teal { background: #f0fdfa; color: #0f766e; }
+
+.pa-summary-card__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Thai labels -- uppercase/letter-spacing does nothing for Thai and only
+   spreads the glyphs apart, so keep them plain. Long ones wrap instead of
+   ellipsizing: a cut-off "พาเลทที่กำลังดำ…" no longer says which card it is.
+   line-height 1.5 / 1.3 leave room for Thai upper/lower vowel marks -- tighter
+   values let a wrapped label's 2nd line collide with the number below. */
+.pa-summary-card__label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.pa-summary-card__value {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════
+   MAIN GRID
+   ═══════════════════════════════════════════════════ */
+.pa-main-grid {
+  margin: 0 16px 16px;
+  display: grid;
+  /* Overview gets the larger share (~64%) so its 3-column pallet cards fit
+     the pallet no. and the longer "กำลังดำเนินการ" chip on one line. */
+  grid-template-columns: 1.8fr 1fr;
+  /* A definite row height (instead of the default auto-sized-to-content row)
+     is what lets the two panels stretch to fill it -- align-items defaults
+     to stretch once "align-items: start" is gone, so each panel becomes
+     exactly this row's height and scrolls its own content internally. */
+  grid-template-rows: 1fr;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 1180px) {
+  .pa-main-grid {
+    grid-template-columns: 1fr;
+    /* Stacked single column now needs 2 explicit rows (not the desktop's 1
+       row of 2 columns) -- otherwise the 2nd panel lands in an implicit
+       auto-height row that overflows pa-scroll-body's fixed/hidden box and
+       becomes unreachable (no outer scroll to reveal it). Split evenly so
+       both panels keep their own internal scroll. */
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   OVERVIEW PANEL (LEFT)
+   ═══════════════════════════════════════════════════ */
+.pa-overview-panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  /* Stretched by pa-main-grid's row to fill available height (see there);
+     min-height: 0 overrides grid items' default min-height: auto, which
+     would otherwise refuse to shrink below the header+body's natural
+     content height and defeat the stretch. Flex column so __body (flex: 1)
+     is the only part that grows/scrolls -- __header stays fixed on top. */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.pa-overview-panel__header {
+  min-height: 62px;
+  flex-shrink: 0;
+  font-size: 17px;
+  padding: 12px 16px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+/* Title block shared by both panel headers: icon tile + title + info pill */
+.pa-panel-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pa-panel-title__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.pa-panel-title .table-count {
+  margin-left: 0;
+}
+
+.pa-overview-panel__tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Group-by dropdown -- styled like .pa-view-toggle beside it (translucent
+   white on the blue header, white text/icon) instead of a plain white
+   Material field that stood out from everything else in the header. */
+/* Just wide enough for the longest option, "Group by Location" */
+.pa-group-select {
+  width: 155px;
+}
+
+::ng-deep .pa-group-select .mat-mdc-form-field,
+::ng-deep .pa-group-select .mdc-text-field {
+  height: 34px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+::ng-deep .pa-group-select .mdc-text-field:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+::ng-deep .pa-group-select .mdc-notched-outline > *,
+::ng-deep .pa-group-select .mat-mdc-form-field.mat-focused .mdc-notched-outline > *,
+::ng-deep .pa-group-select .mdc-text-field--focused .mdc-notched-outline > * {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  border-width: 1px !important;
+}
+
+::ng-deep .pa-group-select .mat-mdc-select-value,
+::ng-deep .pa-group-select .mat-mdc-select-arrow {
+  color: #fff !important;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Dropdown panel (rendered in the overlay, outside this component) */
+::ng-deep .pa-group-select-panel {
+  --mat-select-panel-background-color: #fff;
+  background: #fff !important;
+  border: 1px solid #e2e8f0;
+  padding: 6px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18), 0 2px 6px rgba(15, 23, 42, 0.1) !important;
+}
+
+::ng-deep .pa-group-select-panel .mat-mdc-option {
+  min-height: 38px;
+  border-radius: 8px;
+  color: #334155;
+  margin: 2px 0;
+}
+
+::ng-deep .pa-group-select-panel .mat-mdc-option .mdc-list-item__primary-text {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+::ng-deep .pa-group-select-panel .mat-mdc-option:hover:not(.mdc-list-item--selected) {
+  background: #f1f5f9;
+}
+
+::ng-deep .pa-group-select-panel .mat-mdc-option.mdc-list-item--selected {
+  background: #eff6ff !important;
+}
+
+::ng-deep .pa-group-select-panel .mat-mdc-option.mdc-list-item--selected .mdc-list-item__primary-text {
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+::ng-deep .pa-group-select-panel .mat-pseudo-checkbox {
+  display: none;
+}
+
+/* Vertically center the trigger text within the 34px-tall box -- without
+   this, the infix keeps Material's default top-heavy padding and the text
+   sits low/against the bottom edge. */
+::ng-deep .pa-group-select .mat-mdc-text-field-wrapper {
+  height: 34px;
+  padding-bottom: 0 !important;
+}
+
+::ng-deep .pa-group-select .mat-mdc-form-field-flex {
+  height: 100%;
+  align-items: center;
+}
+
+::ng-deep .pa-group-select .mat-mdc-form-field-infix {
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  padding-top: 2px !important;
+  padding-bottom: 0 !important;
+}
+
+.pa-view-toggle {
+  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pa-view-toggle button {
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  /* Same 34px as .pa-group-select next to it, so the header tools line up */
+  height: 34px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* .pa-view-toggle's default styling (white text on translucent white) is
+   built for sitting on the blue gradient .pa-overview-panel__header. The
+   Bag List's toolbar sits on this panel's plain white/light background
+   instead, so reusing those colors there rendered a technically-working
+   but practically invisible white-on-near-white button. */
+.pa-bag-toolbar .pa-view-toggle {
+  border: 1px solid #e2e8f0;
+}
+
+.pa-bag-toolbar .pa-view-toggle button {
+  background: #fff;
+  color: #64748b;
+}
+
+.pa-bag-toolbar .pa-view-toggle button.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.pa-view-toggle button.active {
+  background: #fff;
+  color: #1d4ed8;
+}
+
+.pa-overview-panel__body {
+  padding: 12px 12px;
+  /* Fills whatever's left of the panel below __header (flex: 1) instead of
+     a guessed calc(100vh - Npx) -- this is the one part of the panel that
+     actually scrolls. */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Grade Group */
+.pa-grade-group {
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.pa-grade-group__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 12px 8px 8px;
+  background: #f8fafc;
+  border-left: 3px solid #1d4ed8;
+  transition: background 0.15s ease;
+  user-select: none;
+
+  mat-icon {
+    color: #64748b;
+  }
+}
+
+.pa-grade-group__header:hover {
+  background: #f1f5f9;
+}
+
+.pa-grade-group > .pa-pallet-card-grid {
+  padding: 10px;
+}
+
+.pa-grade-group > .pa-pallet-table-wrapper {
+  margin: 10px;
+}
+
+.pa-grade-group__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.pa-grade-group__hint {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.pa-grade-group__count {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1d4ed8;
+  background: #eff6ff;
+  padding: 2px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* No-data state fills the panel body and centers the shared empty state */
+.pa-overview-empty {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.pa-grade-group__empty {
+  padding: 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.pa-pallet-card-grid {
+  display: grid;
+  /* Never more than 3 columns: each track's floor is 1/3 of the row width
+     (minus gaps), so auto-fill can't pack a 4th one in (4 left the
+     Grade | Lot | Running No. line ellipsized). On narrow screens that 1/3
+     share drops below 270px and the 270px floor takes over instead, letting
+     auto-fill wrap down to fewer columns -- 270px is about the least that
+     still fits the pallet no. beside the "กำลังดำเนินการ" chip. */
+  grid-template-columns: repeat(auto-fill, minmax(max(270px, calc((100% - 2 * 10px) / 3)), 1fr));
+  gap: 10px;
+  padding: 8px 4px 4px;
+}
+
+.pa-pallet-card {
+  border: 1px solid #e2e8f0;
+  border-left-width: 4px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: #fff;
+  min-width: 0;
+  transition: all 0.2s ease;
+}
+
+/* Left accent = pallet status, same colors as its progress fill */
+.pa-pallet-card--wh_process { border-left-color: #f59e0b; }
+.pa-pallet-card--complete { border-left-color: #22c55e; }
+.pa-pallet-card--confirmed { border-left-color: #0f766e; }
+
+.pa-pallet-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.12);
+  transform: translateY(-1px);
+}
+
+.pa-pallet-card--selected,
+.pa-pallet-card--selected:hover {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.18);
+  background: #eff6ff;
+}
+
+/* Pallet no. left, status chip pinned top-right on the same line -- never
+   wrapping (a chip that wrapped only on some cards made "กำลังดำเนินการ"
+   cards taller than "เสร็จสมบูรณ์" ones, so rows stopped lining up). On a
+   card too narrow for both, the pallet no. ellipsizes (full no. in title). */
+.pa-pallet-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.pa-pallet-card__no {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pa-pallet-card__meta {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pa-pallet-card__progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.pa-pallet-card__progress-fill {
+  height: 100%;
+  max-width: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* wh_process = amber, matching the "กำลังดำเนินการ" summary card and chip
+   (was blue, so the same status showed in two different colors). */
+.pa-pallet-card__progress-fill--complete { background: #22c55e; }
+.pa-pallet-card__progress-fill--progress { background: #f59e0b; }
+.pa-pallet-card__progress-fill--wh_process { background: #f59e0b; }
+.pa-pallet-card__progress-fill--confirmed { background: #0f766e; }
+
+.pa-pallet-card__progress-text {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-top: 4px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status Chip */
+.pa-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pa-status-chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.pa-status-chip--complete { background: #ecfdf5; color: #059669; }
+.pa-status-chip--progress { background: #fffbeb; color: #d97706; }
+.pa-status-chip--wh_process { background: #fffbeb; color: #b45309; }
+.pa-status-chip--confirmed { background: #f0fdfa; color: #0f766e; }
+.pa-status-chip--incomplete { background: #fff7ed; color: #c2410c; }
+
+/* Pallet Overview Table view (overviewViewMode === 'table') -- same table
+   look as the Bag List's .pa-bag-table, with row states mirroring
+   .pa-pallet-card--selected / --locked. */
+.pa-pallet-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+/* Shared look for both tables (Pallet Overview + Bag List) */
+.pa-pallet-table,
+.pa-bag-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  color: #334155;
+}
+
+.pa-pallet-table th,
+.pa-bag-table th {
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.pa-pallet-table td,
+.pa-bag-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.pa-pallet-table tbody tr:last-child td,
+.pa-bag-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pa-pallet-table tbody tr:hover td,
+.pa-bag-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+/* Selected row: light blue fill + blue bar on the left edge */
+.pa-pallet-table__row--selected td,
+.pa-pallet-table tbody tr.pa-pallet-table__row--selected:hover td,
+.pa-bag-table__row--selected td,
+.pa-bag-table tbody tr.pa-bag-table__row--selected:hover td {
+  background: #eff6ff;
+}
+
+.pa-pallet-table__row--selected td:first-child,
+.pa-bag-table__row--selected td:first-child {
+  box-shadow: inset 3px 0 0 #1d4ed8;
+}
+
+.pa-table__strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.pa-table__num {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pa-table__muted {
+  color: #94a3b8;
+}
+
+.pa-table__qr {
+  font-size: 12px;
+  color: #475569;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════
+   BAG PANEL (RIGHT)
+   ═══════════════════════════════════════════════════ */
+.pa-bag-panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  /* Same header/body split as pa-overview-panel: stretched by pa-main-grid's
+     row (min-height: 0 lets it shrink below its content), gradient header
+     fixed on top, __body the only part that scrolls. */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.pa-bag-panel__body {
+  padding: 14px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.pa-selected-card {
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #1d4ed8;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
+  margin: 0 0 10px;
+}
+
+.pa-selected-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.pa-selected-card__title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pa-selected-card__no {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pa-selected-card__meta {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.pa-selected-card__progress {
+  margin-top: 10px;
+}
+
+.pa-selected-card__fields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 16px;
+}
+
+.pa-selected-card__field {
+  display: flex;
+  flex-direction: column;
+}
+
+.pa-selected-card__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.pa-selected-card__fields {
+  row-gap: 14px;
+}
+
+.pa-selected-card__value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.pa-empty-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 16px;
+  color: #94a3b8;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  text-align: center;
+
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+    color: #93c5fd;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
+}
+
+.badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 3px 10px 3px 6px;
+  border-radius: 999px;
+
+  mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.badge-chip--blue {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* Tabs */
+.pa-bag-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 14px;
+}
+
+.pa-bag-tabs button {
+  border: none;
+  background: none;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.pa-bag-tabs button:hover {
+  color: #1e293b;
+}
+
+.pa-bag-tabs button.active {
+  color: #1d4ed8;
+  border-bottom-color: #1d4ed8;
+}
+
+/* Bag toolbar */
+.pa-bag-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* Board/Table toggle the same 40px tall as the search field beside it */
+.pa-bag-toolbar .pa-view-toggle button {
+  height: 40px;
+}
+
+.pa-bag-search {
+  flex: 1;
+}
+
+::ng-deep .pa-bag-search .mdc-text-field {
+  height: 40px;
+  background-color: #f5f8fb !important;
+  border-radius: 8px;
+}
+
+::ng-deep .pa-bag-search input.mat-mdc-input-element,
+::ng-deep .pa-bag-search input.mat-mdc-input-element::placeholder {
+  font-size: 12px;
+}
+
+/* Vertically center the input text within the 40px-tall box -- without
+   this, the infix keeps Material's default top-heavy padding and the text
+   sits low/against the bottom edge. */
+::ng-deep .pa-bag-search .mat-mdc-text-field-wrapper {
+  height: 40px;
+  padding-bottom: 0 !important;
+}
+
+::ng-deep .pa-bag-search .mat-mdc-form-field-flex {
+  height: 100%;
+  align-items: center;
+}
+
+::ng-deep .pa-bag-search .mat-mdc-form-field-infix {
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  padding-top: 2px !important;
+  padding-bottom: 0 !important;
+}
+
+.pa-view-toggle button mat-icon {
+  margin: 0;
+}
+
+/* Bag Grid (card view) */
+.pa-bag-grid {
+  display: grid;
+  /* ล็อก 8 คอลัมน์ -- พาเลทมาตรฐาน 40 ถุง = 5 แถวพอดี แสดงครบโดยไม่ต้องมี
+     scroll bar ของ grid เอง (เดิม auto-fill + max-height 260px ทำให้จอแคบ
+     กลายเป็น 7-8 แถวแล้วล้น) -- ถ้าเกินความสูง pa-bag-panel ก็ scroll ทั้งพาเนลแทน */
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 4px;
+}
+
+.pa-bag-card {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 4px;
+  text-align: center;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.15s ease;
+}
+
+.pa-bag-card:hover {
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+}
+
+.pa-bag-card--matched { border-color: #bbf7d0; background: #f0fdf4; }
+.pa-bag-card--progress { border-color: #fde68a; background: #fffbeb; }
+.pa-bag-card--missing { border-color: #fecaca; background: #fef2f2; }
+
+/* ช่องที่ขาดของพาเลทถุงไม่ครบ (bagSlots ที่ bag = null) -- กดเลือกไม่ได้ */
+.pa-bag-card--empty,
+.pa-bag-card--empty:hover {
+  border: 1.5px dashed #ef4444;
+  background: #fef2f2;
+  cursor: default;
+  transform: none;
+}
+.pa-bag-card--empty .pa-bag-card__no { color: #dc2626; }
+
+.pa-bag-row--empty td,
+.pa-bag-table tr.pa-bag-row--empty:hover td {
+  background: #fef2f2;
+  color: #dc2626;
+  cursor: default;
+}
+.pa-status-chip--empty { background: #fee2e2; color: #dc2626; }
+
+/* ช่องว่างที่ไม่มีข้อมูลการพิมพ์ (รู้ QR) -- กดเลือกเพื่อ "ถุง Reject" ได้ */
+.pa-bag-card--empty-selectable,
+.pa-bag-card--empty-selectable:hover,
+.pa-bag-table tr.pa-bag-row--empty-selectable td {
+  cursor: pointer;
+}
+
+.pa-bag-tab-missing {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pa-bag-card--selected {
+  border-color: #1d4ed8 !important;
+  background: #dbeafe !important;
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.25);
+}
+
+.pa-bag-card__no {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.pa-bag-card--matched .pa-bag-card__no { color: #047857; }
+.pa-bag-card--progress .pa-bag-card__no { color: #b45309; }
+.pa-bag-card--missing .pa-bag-card__no { color: #b91c1c; }
+
+/* ถุงที่สร้างจากปุ่ม "เพิ่มข้อมูล" */
+.pa-bag-card--manual-added { border-color: #c4b5fd; background: #f5f3ff; }
+.pa-bag-card--manual-added .pa-bag-card__no { color: #6d28d9; }
+.pa-status-chip--manual-added { background: #ede9fe; color: #6d28d9; }
+.pa-legend__dot--manual-added { background: #8b5cf6; }
+.pa-bag-card--selected .pa-bag-card__no { color: #1d4ed8; }
+
+/* Bag Table view */
+/* No max-height of its own any more (that gave a scroll box inside the
+   already-scrolling panel) -- the table flows in pa-bag-panel__body's
+   scroll, and overflow: clip (not hidden, which would make this the scroll
+   container) keeps the rounded corners while letting the header row stay
+   sticky against the panel's scroll. */
+.pa-bag-table-wrapper {
+  margin-bottom: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: clip;
+  background: #fff;
+}
+
+/* top: -14px = minus pa-bag-panel__body's padding, so the header sticks
+   flush to the panel's top edge instead of 14px below it with rows
+   showing through the gap. */
+.pa-bag-table th {
+  position: sticky;
+  top: -14px;
+  z-index: 1;
+}
+
+.pa-bag-table input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: #1d4ed8;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+/* Legend */
+.pa-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.pa-legend__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.pa-legend__dot--matched { background: #22c55e; }
+.pa-legend__dot--progress { background: #f59e0b; }
+.pa-legend__dot--missing { background: #ef4444; }
+
+/* Quick Actions */
+.pa-quick-actions {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.pa-quick-actions__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+/* Equal-width buttons in a grid (instead of ragged natural widths that left
+   a lone button stranded on its own row) */
+.pa-quick-actions__buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.pa-quick-actions__buttons .pa-action-btn {
+  justify-content: center;
+  height: 40px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.pa-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  /* Each color variant below sets its own tinted border-color -- without it
+     the pale fills almost disappear on the light panel background. */
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.pa-action-btn--sm {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.pa-action-btn--red {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+.pa-action-btn--red:hover { background: #fee2e2; }
+
+.pa-action-btn--green {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+.pa-action-btn--green:hover { background: #d1fae5; }
+
+.pa-action-btn--blue {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+.pa-action-btn--blue:hover { background: #dbeafe; }
+
+.pa-action-btn--purple {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+}
+.pa-action-btn--purple:hover { background: #ede9fe; }
+
+.pa-action-btn--orange {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fed7aa;
+}
+.pa-action-btn--orange:hover { background: #ffedd5; }
+
+.pa-action-btn--teal {
+  background: #f0fdfa;
+  color: #0f766e;
+  border-color: #99f6e4;
+}
+.pa-action-btn--teal:hover { background: #ccfbf1; }
+
+.pa-quick-actions__hint {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #e2e8f0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d4ed8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pa-clear-selection {
+  border: none;
+  background: none;
+  color: #1d4ed8;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 13px;
+}
+
+/* Pallet Info Tab -- ใช้ grid field เดียวกับ .pa-selected-card__fields */
+.pa-pallet-info-tab {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: #fff;
+}
+
+/* Orphan Section */
+.pa-orphan-section {
+  margin-top: 16px;
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 12px;
+}
+
+.pa-orphan-section__header {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+
+  mat-icon {
+    color: #64748b;
+    flex-shrink: 0;
+  }
+}
+
+.pa-orphan-section__header:hover {
+  background: #f8fafc;
+}
+
+/* Section headers sit on a plain white panel, unlike the blue gradient
+   pa-overview-panel__header .table-count was designed for -- override so
+   the count badge stays legible here instead of white-on-white. */
+.pa-orphan-section__header .table-count {
+  border-color: #f5d0fe;
+  background: #fdf4ff;
+  color: #86198f;
+}
+
+.pa-orphan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pa-orphan-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #f5d0fe;
+  background: #fdf4ff;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.pa-orphan-item__qr {
+  font-size: 13px;
+  font-weight: 600;
+  color: #86198f;
+}
+
+.pa-orphan-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* Empty state for the Orphan / Rejected sections -- "nothing here" is the
+   good outcome for both, so a green check + two-line message in a soft
+   dashed card instead of a lone line of faint gray text. */
+.pa-section-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.pa-section-empty__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ecfdf5;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.pa-section-empty__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pa-section-empty__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.pa-section-empty__sub {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* Rejected Section (mirrors Orphan Section, red "rejected" theme) */
+.pa-rejected-section {
+  margin-top: 16px;
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 12px;
+}
+
+.pa-rejected-section__header {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+
+  mat-icon {
+    color: #64748b;
+    flex-shrink: 0;
+  }
+}
+
+.pa-rejected-section__header:hover {
+  background: #f8fafc;
+}
+
+/* Section headers sit on a plain white panel, unlike the blue gradient
+   pa-overview-panel__header .table-count was designed for -- override so
+   the count badge stays legible here instead of white-on-white. */
+.pa-rejected-section__header .table-count {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.pa-rejected-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pa-rejected-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pa-rejected-item:hover {
+  border-color: #fca5a5;
+}
+
+.pa-rejected-item--selected {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.18);
+}
+
+.pa-rejected-item__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.pa-rejected-item__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pa-rejected-item__qr {
+  font-size: 13px;
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.pa-rejected-item__reason {
+  font-size: 12px;
+  color: #ef4444;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Revealed "กลับคืนพาเลทเดิม" / "สร้างพาเลทใหม่" buttons -- side by side at
+   natural width instead of stretching full-row like other pa-action-btn usages. */
+.pa-rejected-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pa-rejected-item__datetime {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.table-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-left: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  letter-spacing: 0;
+  white-space: nowrap;
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+  }
+}
+
+/* =====================================================================
+   Skeleton loading -- แทน overlay กลางจอ: แต่ละส่วนแสดงโครงของตัวเอง
+   ระหว่างโหลด (isOverviewLoading / isBagListLoading ใน .ts) ส่วนอื่นยังใช้ได้
+   ===================================================================== */
+.pa-skel {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e9eef5 25%, #f6f8fb 37%, #e9eef5 63%);
+  background-size: 400% 100%;
+  animation: pa-shimmer 1.4s ease infinite;
+}
+
+/* Summary cards: the number becomes a shimmer bar of its own width */
+.pa-summary-row.is-loading .pa-summary-card__value {
+  min-width: 56px;
+  color: transparent;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e9eef5 25%, #f6f8fb 37%, #e9eef5 63%);
+  background-size: 400% 100%;
+  animation: pa-shimmer 1.4s ease infinite;
+}
+
+.pa-grade-group__header--skeleton {
+  cursor: default;
+  gap: 12px;
+}
+
+.pa-grade-group__header--skeleton:hover {
+  background: #f8fafc;
+}
+
+.pa-skel--title { width: 220px; height: 16px; margin: 4px 0 4px 8px; }
+.pa-skel--pill  { width: 76px; height: 20px; margin-left: auto; border-radius: 999px; }
+
+.pa-pallet-card--skeleton,
+.pa-pallet-card--skeleton:hover {
+  cursor: default;
+  border-color: #e2e8f0;
+  border-left-color: #e2e8f0;
+  box-shadow: none;
+  transform: none;
+}
+
+.pa-skel--no    { width: 52%; height: 18px; }
+.pa-skel--chip  { width: 30%; height: 20px; border-radius: 999px; }
+.pa-skel--meta  { width: 72%; height: 13px; margin-bottom: 12px; }
+.pa-skel--bar   { width: 100%; height: 6px; border-radius: 999px; }
+.pa-skel--count { width: 28%; height: 13px; margin: 8px 0 0 auto; }
+
+.pa-skel--bag   { height: 44px; border-radius: 10px; }
+
+/* Action buttons are disabled while a change is being saved */
+.pa-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes pa-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-skel,
+  .pa-summary-row.is-loading .pa-summary-card__value {
+    animation: none;
+  }
+}
+
+/* =====================================================================
+   Load errors -- แสดงในหน้าแทน pop-up (overviewError / bagListError ใน .ts)
+   ===================================================================== */
+
+/* Summary cards: "–" แทนตัวเลข เมื่อโหลดครั้งแรกไม่สำเร็จ */
+.pa-summary-row.is-error .pa-summary-card__value {
+  font-size: 0;
+}
+
+.pa-summary-row.is-error .pa-summary-card__value::after {
+  content: "–";
+  font-size: 18px;
+  color: #94a3b8;
+}
+
+/* Error เต็ม panel (Pallet Overview) */
+.pa-load-error {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.pa-load-error__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.pa-load-error__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.pa-load-error__message {
+  max-width: 420px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.pa-load-error__meta {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ปุ่มลองใหม่ (ใช้ทั้ง 3 แบบ) */
+.pa-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  height: 38px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.2);
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.pa-retry-btn:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+}
+
+.pa-retry-btn--sm {
+  margin-top: 0;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  flex-shrink: 0;
+  box-shadow: none;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Refresh ไม่สำเร็จแต่ยังมีข้อมูลเดิม: แถบเหลืองใต้ header */
+.pa-stale-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: #fffbeb;
+  border-bottom: 1px solid #fde68a;
+  color: #92400e;
+  font-size: 13px;
+  flex-shrink: 0;
+
+  > mat-icon {
+    color: #d97706;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+}
+
+.pa-stale-banner__text {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.pa-stale-banner__meta {
+  font-weight: 400;
+  color: #b45309;
+}
+
+/* โหลดรายการถุงไม่สำเร็จ (ในช่องถุงของ Pallet Detail) */
+.pa-bag-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px dashed #fca5a5;
+  border-radius: 10px;
+  background: #fef2f2;
+}
+
+.pa-bag-error__icon {
+  color: #dc2626;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.pa-bag-error__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pa-bag-error__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.pa-bag-error__message {
+  font-size: 12px;
+  color: #dc2626;
+}

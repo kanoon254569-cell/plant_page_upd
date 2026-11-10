@@ -1,0 +1,2706 @@
+.example-full-width {
+  width: 100%;
+}
+
+.header-section {
+  justify-content: space-between;
+}
+
+.header-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cost-center-field,
+.product-type-field {
+  width: 220px;
+  height: 44px;
+  margin-bottom: 0;
+}
+
+/*  MDC's outlined field draws its border as 3 separate pieced-together
+    divs (leading/notch/trailing) that only merge into one clean line once
+    a floating label opens a gap in the notch -- on the RESTING (unfocused,
+    label not floated) state used here, that seam between leading and notch
+    stays visible as a short extra stroke at the top-left corner once
+    colored red. Coloring the 3 segments no longer used; instead draw ONE
+    real border on the wrapper itself and hide MDC's own segments
+    entirely, so there's exactly one continuous line, no seam. */
+::ng-deep .header-actions .field-invalid .mdc-notched-outline__leading,
+::ng-deep .header-actions .field-invalid .mdc-notched-outline__notch,
+::ng-deep .header-actions .field-invalid .mdc-notched-outline__trailing {
+  border-color: transparent !important;
+}
+
+::ng-deep .header-actions .field-invalid .mat-mdc-text-field-wrapper {
+  border: 1px solid #dc2626 !important;
+  border-radius: 4px;
+}
+
+::ng-deep .header-actions .mat-mdc-text-field-wrapper {
+  height: 44px;
+}
+
+::ng-deep .header-actions .mat-mdc-form-field-flex,
+::ng-deep .header-actions .mat-mdc-form-field-infix {
+  height: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .header-actions .mat-mdc-form-field-infix {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/*  !important on every rule below: Angular Material's own MDC theme CSS sets font-size/weight on
+    these exact classes too, and (being a separate, later-loaded global stylesheet rather than
+    this component's scoped styles) was silently winning the cascade over plain overrides -
+    nothing here actually changed on screen until these were forced. Same reason
+    location-management.css's Material overrides already use !important. */
+::ng-deep .header-actions .mat-mdc-select-value,
+::ng-deep .header-actions .mat-mdc-select-placeholder,
+::ng-deep .header-actions .mat-mdc-option {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/*  .mat-mdc-select-min-line is the inner span wrapping the trigger value/placeholder text (see
+    select.mjs) - it carries Material's own line-height sized for its default (taller) field
+    height, which was keeping this row taller than the 14px text actually needs. */
+::ng-deep .header-actions .mat-mdc-select-min-line {
+  line-height: 1.2 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #000 !important;
+}
+
+/*  .cost-center-field/.product-type-field are only 220px wide (see above) - at the same size as
+    the select value, "Product Type"'s floating label doesn't fit and gets clipped/overlaps the
+    select arrow. Sized down + lighter weight just for the label so it reads as a caption - this
+    covers both the resting (empty, unfocused) and floated-up states, since MDC uses the same
+    element/class for both. */
+::ng-deep .header-actions .mat-mdc-floating-label {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #000 !important;
+}
+
+/*  MDC positions the resting (unfocused, empty) label with a vertical-center calc tuned for its
+    own default field height, not this field's custom 44px - only the resting state is retargeted
+    here (:not(...--float-above) excludes the floated-to-the-top state) so the floated position,
+    which already sits correctly at the field's top edge, is left to Material's own positioning. */
+::ng-deep .header-actions .mat-mdc-floating-label:not(.mdc-floating-label--float-above) {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+.back-button {
+  width: 36px;
+  height: 36px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #475569;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.back-button:hover {
+  background: #e2e8f0;
+  color: #1d4ed8;
+}
+
+.approve-button {
+  height: 44px;
+  padding: 8px 22px;
+  border: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #22c358 0%, #16a34a 100%);
+  cursor: pointer;
+  box-shadow:
+    0 6px 16px rgba(34, 195, 88, 0.22),
+    0 1px 4px rgba(34, 195, 88, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+  }
+}
+
+.approve-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  box-shadow:
+    0 10px 24px rgba(34, 195, 88, 0.28),
+    0 2px 8px rgba(34, 195, 88, 0.16);
+  transform: translateY(-2px);
+}
+
+/* .approve-button:hover:not(:disabled) mat-icon {
+  transform: scale(1.2);
+} */
+
+.approve-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(34, 195, 88, 0.16);
+}
+
+.approve-button.btn-disabled,
+.approve-button:disabled {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.1);
+}
+
+.approve-button.btn-disabled:hover,
+.approve-button:disabled:hover {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  transform: none;
+}
+
+.main-section {
+  padding: 16px;
+}
+
+.job-detail-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.job-detail-header-skeleton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #e9edf2;
+  border-radius: 12px;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(233, 237, 242, 0) 0%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(233, 237, 242, 0) 100%
+  );
+  animation: jobDetailShimmer 1.3s infinite;
+}
+
+.skeleton-line {
+  height: 14px;
+  border-radius: 999px;
+}
+
+.skeleton-line-xl {
+  width: 240px;
+  height: 22px;
+}
+
+.skeleton-line-lg {
+  width: 180px;
+  height: 20px;
+}
+
+.skeleton-line-md {
+  width: 220px;
+}
+
+.skeleton-line-sm {
+  width: 120px;
+}
+
+.skeleton-line-xs {
+  width: 90px;
+}
+
+.skeleton-pill {
+  width: 72px;
+  height: 34px;
+  border-radius: 999px;
+}
+
+.skeleton-pill-wide {
+  width: 160px;
+  height: 44px;
+  border-radius: 20px;
+}
+
+.skeleton-job-icon {
+  width: 65px;
+  height: 65px;
+  border-radius: 10px;
+  flex: 0 0 65px;
+}
+
+.skeleton-urgent-box {
+  width: 92px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.skeleton-icon-round {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex: 0 0 30px;
+}
+
+.skeleton-arrow {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+}
+
+.skeleton-pane {
+  height: 110px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #eef1f5 0%, #e6ebf2 100%);
+}
+
+.skeleton-button-inline {
+  width: 100px;
+  height: 40px;
+  border-radius: 999px;
+  flex: 0 0 40px;
+}
+
+.job-title-card-skeleton {
+  gap: 16px;
+  min-height: 89px;
+}
+
+.job-content-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.step-toggle-skeleton,
+.urgent-section-skeleton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.job-detail-body-skeleton .grade-lot-card,
+.job-detail-body-skeleton .forklift-card {
+  min-height: calc(100vh - 380px);
+}
+
+.grade-lot-card-skeleton,
+.forklift-card-skeleton {
+  background: #fff;
+}
+
+.skeleton-grade-lot-content,
+.skeleton-forklift-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: calc(100vh - 330px);
+  padding: 16px;
+}
+
+.skeleton-grade-lot-item {
+  padding: 12px;
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.skeleton-grade-lot-item-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.skeleton-forklift-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.skeleton-forklift-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex: 0 0 44px;
+}
+
+.skeleton-delete-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  flex: 0 0 28px;
+}
+
+@keyframes jobDetailShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.job-icon-inbound {
+  background: linear-gradient(135deg, #eefdf1 0%, #dcfce7 100%);
+  border: 1px solid #bbf7d0;
+
+  img {
+    transform: scaleY(-1);
+    transform: rotate(180deg);
+  }
+}
+
+.job-icon-outbound {
+  background: linear-gradient(135deg, #fff1f1 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+}
+
+.source-changed-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border: 1px solid #ffd591;
+  border-radius: 12px;
+  background: #fff7e6;
+  color: #ad4e00;
+  font-size: 13px;
+
+  mat-icon {
+    flex-shrink: 0;
+    color: #d46b08;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .source-changed-title {
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .source-changed-item {
+    color: #873800;
+  }
+}
+
+.job-title-card {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.job-content-card {
+  flex: 1;
+  margin-left: 12px;
+}
+
+/*  fit-content (here and .job-detail) so the help tour's spotlight hugs the
+    text instead of stretching under the chips on the right. */
+.job-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: fit-content;
+}
+
+.job-system-no {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.wms_no {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wms-plus-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  width: fit-content;
+  padding: 2px 8px 2px 6px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.wms-plus-status.success {
+  background: #f6ffed;
+  border-color: #95de64;
+  color: #389e0d;
+}
+
+.wms-plus-status.failed {
+  background: #fff1f0;
+  border-color: #ff7875;
+  color: #cf1322;
+}
+
+.wms-plus-status.neutral {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #64748b;
+  cursor: default;
+}
+
+.wms-plus-detail-content {
+  overflow: hidden;
+  border: 1px solid #d9dee7;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+}
+
+.wms-plus-detail-header {
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e4e7ec;
+}
+
+.system-eyebrow {
+  margin-bottom: 2px;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+#wmsPlusDetailModal .modal-dialog {
+  max-width: 900px;
+}
+
+.wms-plus-detail-header .modal-title {
+  color: #101828;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.wms-plus-detail-content .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.wms-plus-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wms-plus-detail-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.wms-plus-detail-payload {
+  margin: 0;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #1e293b;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.wms-plus-detail-copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    color: #1e293b;
+  }
+}
+
+.wms-plus-detail-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.wms-plus-detail-entry-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.wms-plus-detail-entry-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+
+  mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.wms-plus-detail-entry-badge.success {
+  background: #f6ffed;
+  border-color: #95de64;
+  color: #389e0d;
+}
+
+.wms-plus-detail-entry-badge.failed {
+  background: #fff1f0;
+  border-color: #ff7875;
+  color: #cf1322;
+}
+
+.wms-plus-detail-entry-mode {
+  font-weight: 600;
+  color: #475569;
+}
+
+.wms-plus-detail-entry-time {
+  margin-left: auto;
+  color: #94a3b8;
+}
+
+.wms-plus-detail-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #e4e7ec;
+}
+
+.wms-plus-detail-tab {
+  width: 26px;
+  height: 8px;
+  padding: 0;
+  background: #cbd5e1;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wms-plus-detail-tab.success {
+  background: #95de64;
+}
+
+.wms-plus-detail-tab.failed {
+  background: #ff7875;
+}
+
+.wms-plus-detail-tab.active {
+  height: 10px;
+  border-color: #1e293b;
+}
+
+.wms-plus-detail-tab.active.success {
+  border-color: #389e0d;
+}
+
+.wms-plus-detail-tab.active.failed {
+  border-color: #cf1322;
+}
+
+.wms-plus-detail-empty {
+  padding: 20px;
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.wms-plus-resend-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: #fff1f0;
+  border: 1px solid #ff7875;
+  border-radius: 50%;
+  color: #cf1322;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  mat-icon.spin {
+    animation: wmsPlusResendSpin 0.8s linear infinite;
+  }
+
+  &:hover:not(:disabled) {
+    background: #ffd8d8;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@keyframes wmsPlusResendSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.job-detail {
+  width: fit-content;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.job-detail span {
+  display: flex;
+  align-items: center;
+}
+
+.remark-item {
+  order: 3;
+  flex-basis: 100%;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+}
+
+.remark-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 20px;
+  color: #b45309;
+  margin-top: 1px;
+}
+
+.remark-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.remark-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #b45309;
+}
+
+.remark-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #78350f;
+  word-break: break-word;
+}
+
+.job-icon {
+  width: 65px;
+  height: 65px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+
+  img {
+    width: 50px;
+    height: auto;
+  }
+
+  .text-topic-inbound {
+    font-size: 24px;
+    font-weight: 600;
+    color: #15803d;
+  }
+
+  .text-topic-outbound {
+    font-size: 24px;
+    font-weight: 600;
+    color: #dc2626;
+  }
+}
+
+.step-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 150px;
+  height: 38px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-right: 16px;
+}
+
+.step-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(50%);
+  height: calc(100% - 4px);
+  background: linear-gradient(135deg, #22c358 0%, #16a34a 100%);
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(34, 195, 88, 0.28);
+  transition: all 0.25s ease;
+}
+
+.step-slider.step-2 {
+  left: calc(50% + 0px);
+}
+
+.step-btn {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  border: none;
+  background: transparent;
+  height: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.step-btn.active {
+  color: white;
+}
+
+.step-btn:disabled {
+  cursor: not-allowed;
+}
+
+.urgent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px 0 12px;
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  color: #dc2626;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: #f87171;
+    background: #fef2f2;
+  }
+
+  &.active {
+    background: #dc2626;
+    border-color: #b91c1c;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+  }
+
+  &.active:hover:not(:disabled) {
+    background: #b91c1c;
+    border-color: #991b1b;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+  }
+
+  /*  Urgent on a locked job stays fully red, not faded. */
+  &.active:disabled {
+    opacity: 1;
+  }
+}
+
+.advance-order-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  margin-right: 16px; /* same gap as .step-toggle's margin-right */
+  padding: 0 16px 0 12px;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: #93c5fd;
+    background: #f8fafc;
+  }
+
+  &.active {
+    background: #2563eb;
+    border-color: #1d4ed8;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+  }
+
+  &.active:hover:not(:disabled) {
+    background: #1d4ed8;
+    border-color: #1e40af;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+  }
+
+  /*  Saved advance order on a locked job stays fully blue, not faded. */
+  &.active:disabled {
+    opacity: 1;
+  }
+}
+
+.advance-interface-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  margin-right: 16px; /* sits where .advance-order-chip was, same gap */
+  padding: 0 16px;
+  background: #1d4ed8;
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(29, 78, 216, 0.25);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover:not(:disabled) {
+    background: #1e40af;
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.45);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    background: #1e3a8a;
+    box-shadow: 0 1px 4px rgba(29, 78, 216, 0.35);
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #93c5fd;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.grade-lot-card {
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.grade-lot-header {
+  font-size: 20px;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 16px 20px;
+  font-weight: 400;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+
+  .grade-lot-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: nowrap;
+
+    mat-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+    }
+  }
+}
+
+.grade-lot-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 330px);
+  gap: 8px;
+  padding: 16px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.grade-lot-item {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+  transition: border-color 0.2s ease;
+}
+
+.grade-lot-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 9px;
+  transition: background-color 0.2s ease;
+}
+
+.grade-lot-item-header:hover {
+  background-color: #f8fafc;
+}
+
+.grade-lot-item-header-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+
+  .item-icon {
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    img {
+      width: 30px;
+      height: auto;
+    }
+  }
+
+  .item-text {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    text-wrap: nowrap;
+    padding: 16px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    gap: 8px;
+    border-left: 1px solid #cbd5e1;
+
+    .lot-location-list {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      min-width: 0;
+      gap: 6px;
+      margin: 0 8px;
+      vertical-align: middle;
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+        height: 0;
+      }
+    }
+
+    .lot-location-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid #d9dee7;
+      color: #475467;
+      font-size: 14px;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
+    .lot-location-label {
+      display: inline-flex;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      line-height: 1.4;
+      color: #737b88;
+    }
+
+    .lot-location-code {
+      display: inline-flex;
+      align-items: center;
+      font-weight: 600;
+      line-height: 1.4;
+      color: #475467;
+      margin-bottom: 2px;
+    }
+
+    .lot-location-qty {
+      padding-left: 6px;
+      border-left: 1px solid #bfd0ff;
+      color: #475467;
+      margin-bottom: 2px;
+    }
+  }
+
+  .do-text {
+    margin-left: 8px;
+    padding-right: 8px;
+    margin-right: 8px;
+    border-right: 1px solid #cbd5e1;
+  }
+}
+
+/*  Grade / lot / qty pills in the item header -- same colors as
+    job-list's .document-job-grade / -tag / -qty. */
+.item-text {
+  align-items: center;
+}
+
+.item-pill {
+  padding: 2px 10px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.item-pill--grade {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.item-pill--lot {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.item-pill--qty {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+
+.grade-lot-item-header-right {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+
+}
+
+/*  "ตำแหน่ง" pill: outline when collapsed, tinted blue when the GET / PUT
+    panels are open; the chevron turns up while open. */
+.location-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+
+  &:hover {
+    border-color: #93c5fd;
+    background: #f1f5ff;
+  }
+
+  &.expanded {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  .location-toggle-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  .location-toggle-arrow {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    transition: transform 0.2s ease;
+  }
+
+  /*  Picked GET / PUT location names, coloured like their progress bars;
+      long names ellipsize so the pill stays on one line. */
+  .location-toggle-name {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .location-toggle-name--get {
+    color: #4f46e5;
+  }
+
+  .location-toggle-name--put {
+    color: #15803d;
+  }
+
+  .location-toggle-to {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    color: #94a3b8;
+  }
+
+  &.expanded .location-toggle-arrow {
+    transform: rotate(180deg);
+  }
+}
+
+.grade-lot-item-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border-top: 1px solid #cbd5e1;
+}
+
+.grade-lot-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 12px;
+  min-width: 0;
+}
+
+/*  Width share of a GET / PUT column per location card type. The columns
+    sit side by side in .grade-lot-item-content, so their flex sets width;
+    a flex on the card tag itself only sets its height (the column is
+    flex-direction: column). 1 = same as the other side. */
+.grade-lot-column:has(> app-job-plant-location) {
+  flex: 0.9;
+}
+
+.grade-lot-column:has(> app-job-wh-location) {
+  flex: 1;
+}
+
+.grade-lot-column:has(> app-job-auto-wh-location) {
+  flex: 1;
+}
+
+.grade-lot-column:has(> app-job-pre-zone-location) {
+  flex: 1;
+}
+
+.grade-lot-column:has(> app-job-dock-location) {
+  flex: 1;
+}
+
+.grade-lot-column:has(> app-job-special-zone-location) {
+  flex: 1;
+}
+
+.grade-lot-column:has(> app-job-replace-zone-location) {
+  flex: 1;
+}
+
+.pallet-lot-mini {
+  position: relative;
+}
+
+.pallet-lot-mini-label {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background-color: #1d4ed8;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.pallet-lot-input {
+  width: 100%;
+  padding: 18px 12px 10px 12px;
+  border: 1px solid #d9dee7;
+  border-radius: 6px;
+  background: #fff;
+  color: #101828;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.4;
+
+  &:focus {
+    outline: none;
+    border-color: #1d4ed8;
+  }
+
+  &.invalid {
+    border-color: #dc2626;
+  }
+
+  &.invalid:focus {
+    border-color: #dc2626;
+  }
+}
+
+.forklift-card {
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.forklift-card-header {
+  font-size: 20px;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 11px 20px;
+  font-weight: 400;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+
+  span {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.add-forklift-button {
+  height: 40px;
+  padding: 0 18px;
+  background: linear-gradient(135deg, #22c358 0%, #16a34a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 8px;
+  box-shadow:
+    0 6px 16px rgba(34, 195, 88, 0.22),
+    0 1px 4px rgba(34, 195, 88, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    box-shadow:
+      0 10px 24px rgba(34, 195, 88, 0.28),
+      0 2px 8px rgba(34, 195, 88, 0.16);
+    transform: translateY(-2px);
+  }
+
+  /*  Completed job (readOnlyMode) -- Add stays rendered but greyed out,
+      same as job-wh-internal-transfer-detail's disabled Add. */
+  &:disabled,
+  &:disabled:hover {
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+    box-shadow: none;
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+img {
+  width: 15px;
+  height: auto;
+}
+
+.forklift-card-content {
+  display: flex;
+  flex-direction: column;
+  /* Room for .forklift-read-badge, which sits on each card's bottom border. */
+  gap: 14px;
+  height: calc(100vh - 330px);
+  padding: 16px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.forklift-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #cbd5e1;
+  /* gap: 12px; */
+  border-radius: 10px;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.forklift-item-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+  /* gap: 10px; */
+
+  .forklift-icon {
+    padding: 20px;
+    border-right: 1px solid #cbd5e1;
+
+    img {
+      width: 30px;
+      height: auto;
+    }
+
+    /* is_read of the assignment: green = read, amber = not read yet.
+       Absolute to .forklift-item: inside the card, centered under the
+       forklift image (icon cell = 20px padding + 30px image + 20px), so the
+       card's own layout is unchanged. */
+    .forklift-read-badge {
+      position: absolute;
+      top: -8px;
+      left: 50px;
+      transform: translateX(-50%);
+      z-index: 1;
+      pointer-events: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      white-space: nowrap;
+      font-size: 11px;
+      font-weight: 500;
+      color: #92400e;
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+
+      mat-icon {
+        width: 12px;
+        height: 12px;
+        font-size: 12px;
+      }
+
+      &.is-read {
+        color: #166534;
+        background: #dcfce7;
+        border-color: #86efac;
+      }
+    }
+  }
+
+  .forklift-details {
+    flex: 1;
+    min-width: 0;
+    margin-left: 16px;
+
+    .forklift-text {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-weight: 100;
+
+      .forklift-name {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .forklift-code {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 15px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+
+      .forklift-wh-badge {
+        display: inline-flex;
+        align-items: center;
+        flex-shrink: 0;
+        padding: 2px 9px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        color: #1d4ed8;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+
+      .forklift-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .forklift-user {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+
+        mat-icon {
+          flex-shrink: 0;
+          font-size: 15px;
+          width: 15px;
+          height: 15px;
+          color: #94a3b8;
+        }
+
+        .forklift-user-name {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .forklift-queue {
+        flex-shrink: 0;
+        white-space: nowrap;
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+      }    }
+  }
+}
+
+.forklift-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  button {
+    padding: 8px;
+    color: #1e293b;
+    background: none;
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 6px;
+    gap: 8px;
+    transition:
+      transform 0.3s ease,
+      background-color 0.3s ease;
+
+    img {
+      width: 25px;
+      height: auto;
+      filter: brightness(0);
+    }
+
+    &:hover {
+      background-color: #fee2e2;
+      transform: scale(0.98);
+    }
+  }
+}
+
+#forkliftModal .modal-dialog {
+  max-width: 700px;
+}
+
+#forkliftModal .modal-content {
+  border: none;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.15);
+}
+
+.forklift-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.forklift-modal-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.forklift-modal-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1d4ed8;
+}
+
+.forklift-modal-title-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.forklift-modal-close {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.forklift-modal-close:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+#forkliftModal .modal-body {
+  padding: 16px;
+  background: #ffffff;
+}
+
+/*  Warehouse / Section multi-select trigger text (one line, ellipsis) */
+.forklift-filter-trigger {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+#forkliftModal .modal-footer {
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.select-forklift-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 16px;
+  height: calc(100vh - 630px);
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.select-forklift-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    opacity 0.2s ease,
+    filter 0.2s ease;
+
+  &:hover {
+    border-color: #94a3b8;
+    box-shadow:
+      0 8px 24px rgba(15, 23, 42, 0.1),
+      0 2px 6px rgba(15, 23, 42, 0.12);
+  }
+
+  /*  Offline forklifts stay selectable (onCheckForklift asks the user to
+      confirm first), so they're only dimmed, not blocked. */
+  &.offline {
+    opacity: 0.75;
+    filter: grayscale(0.4);
+
+    &:hover {
+      opacity: 1;
+      border-color: #f59e0b;
+    }
+  }
+
+  .select-forklift-item-left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    /* gap: 10px; */
+
+    .select-forklift-icon {
+      padding: 20px;
+      border-right: 1px solid #cbd5e1;
+
+      img {
+        width: 30px;
+        height: auto;
+      }
+    }
+
+    .select-forklift-details {
+      flex: 1;
+      min-width: 0;
+      margin-left: 10px;
+
+      .select-forklift-name {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 12px;
+
+        .forklift-code {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-size: 16px;
+          font-weight: 700;
+          color: #1e293b;
+        }
+
+        .forklift-wh-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          justify-self: stretch;
+          padding: 2px 9px;
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          border-radius: 999px;
+          color: #1d4ed8;
+          font-size: 14px;
+          font-weight: 600;
+          letter-spacing: 0.2px;
+        }
+      }
+
+      .forklift-meta-row {
+        display: grid;
+        grid-template-columns: 1fr 100px;
+        align-items: center;
+        gap: 12px;
+        margin-top: 4px;
+      }
+
+      .forklift-user {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748b;
+
+        .forklift-status-icon {
+          flex-shrink: 0;
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          color: #94a3b8;
+          transition: color 0.2s ease;
+
+          &.is-online {
+            color: #22c55e;
+          }
+        }
+
+        .forklift-user-name {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .forklift-status-tag {
+          flex-shrink: 0;
+          padding: 1px 7px;
+          background: #f1f5f9;
+          border-radius: 999px;
+          color: #94a3b8;
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.2px;
+
+          &.is-online {
+            background: #f0fdf4;
+            color: #16a34a;
+          }
+        }
+      }
+
+      .select-forklift-queue {
+        display: block;
+        text-align: right;
+        white-space: nowrap;
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748b;
+      }
+    }
+  }
+
+  .select-forklift-item-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    min-width: 44px;
+    gap: 8px;
+
+    button {
+      padding: 8px;
+      color: #1e293b;
+      background: none;
+      border: none;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-right: 10px;
+      gap: 8px;
+      transition:
+        transform 0.3s ease,
+        background-color 0.3s ease;
+
+      img {
+        width: 16px;
+        height: auto;
+        filter: brightness(0);
+      }
+
+      &:hover {
+        background-color: #fee2e2;
+        transform: scale(0.98);
+      }
+    }
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+  border-top: 1px solid #cbd5e1;
+
+  button {
+    flex: 1;
+    background: linear-gradient(135deg, #22c358 0%, #16a34a 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 0px;
+    margin: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    box-shadow:
+      0 6px 16px rgba(34, 195, 88, 0.22),
+      0 1px 4px rgba(34, 195, 88, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      box-shadow:
+        0 10px 24px rgba(34, 195, 88, 0.28),
+        0 2px 8px rgba(34, 195, 88, 0.16);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.checked {
+  background-color: #eff6ff;
+  border: 1px solid #1d4ed8;
+}
+
+.select-forklift-item.cursor-default {
+  cursor: default;
+}
+
+.no-data-forklift {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 330px);
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  text-align: center;
+}
+
+.no-data-select-forklift {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 630px);
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  text-align: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+}
+
+#forkliftConfirmModal .modal-dialog {
+  max-width: 380px;
+}
+
+/*  DO Preparing -- same pill shape and size as the "ตำแหน่ง" toggle next to
+    it (.location-toggle), tinted by state: orange = still to fill in,
+    green = saved. */
+.do-preparing-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 10px;
+  padding: 6px 12px;
+  border: 1px solid #fdba74;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.do-preparing-btn:hover {
+  border-color: #fb923c;
+  background: #ffedd5;
+}
+
+.do-preparing-btn .do-preparing-btn-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+}
+
+/* State: บันทึกข้อมูลแล้ว (Completed / Success) */
+.do-preparing-btn.completed {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.do-preparing-btn.completed:hover {
+  border-color: #4ade80;
+  background: #dcfce7;
+}
+
+.do-preparing-content {
+  overflow: hidden;
+  border: 1px solid #d9dee7;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+}
+
+.do-preparing-header {
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e4e7ec;
+}
+
+.do-preparing-header .modal-title {
+  color: #101828;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+#doPreparingModalCloseButton {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0;
+  margin: 0;
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  background-size: 12px;
+  opacity: 1;
+  transition: background-color 0.2s ease;
+}
+
+#doPreparingModalCloseButton:hover {
+  background-color: #e2e8f0;
+}
+
+.do-preparing-body {
+  padding: 16px 20px;
+}
+
+.do-preparing-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.do-preparing-table thead th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.do-preparing-table thead th:last-child {
+  border-top-right-radius: 8px;
+}
+
+.do-preparing-table th,
+.do-preparing-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e4e7ec;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.do-preparing-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.do-preparing-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.do-preparing-table thead th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  text-align: left;
+}
+
+.do-preparing-col-no {
+  width: 48px;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.do-preparing-input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #1e293b;
+  background: #fff;
+}
+
+.do-preparing-input:focus {
+  outline: none;
+  border-color: #1f5fa8;
+  box-shadow: 0 0 0 2px rgba(31, 95, 168, 0.12);
+}
+
+.do-preparing-input[readonly] {
+  color: #101828;
+  font-weight: 600;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.do-preparing-field {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0px;
+}
+
+::ng-deep .do-preparing-field .mat-mdc-text-field-wrapper {
+  height: 40px;
+}
+
+::ng-deep .do-preparing-field .mat-mdc-form-field-flex,
+::ng-deep .do-preparing-field .mat-mdc-form-field-infix {
+  height: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+/*  No <mat-label> on this field (placeholder-only), so there's no floating
+    label to reserve room for above the text - the default MDC outline infix
+    padding-top (~16px) was pushing the placeholder/value down inside the
+    40px box instead of centering it. Zero it out here (kept separate from
+    the block above since setting it there would also wipe out the
+    height/min-height/flex declarations if merged incorrectly). */
+::ng-deep .do-preparing-field .mat-mdc-form-field-infix {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+::ng-deep .do-preparing-field.field-invalid .mdc-notched-outline__leading,
+::ng-deep .do-preparing-field.field-invalid .mdc-notched-outline__notch,
+::ng-deep .do-preparing-field.field-invalid .mdc-notched-outline__trailing {
+  border-color: #dc2626 !important;
+}
+
+.do-preparing-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid #e4e7ec;
+}
+
+.do-preparing-footer .do-preparing-btn-update {
+  flex: none;
+  padding: 9px 22px;
+  margin: 0;
+  border: none;
+  border-radius: 8px;
+  background: #1f5fa8;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.do-preparing-footer .do-preparing-btn-update:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.do-preparing-footer .do-preparing-btn-cancel {
+  flex: none;
+  padding: 9px 22px;
+  margin: 0;
+  border: none;
+  border-radius: 8px;
+  background: #b3aeae !important;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.do-preparing-footer .do-preparing-btn-update:hover {
+  background: #1f5fa8;
+  opacity: 0.85;
+  transform: none;
+  box-shadow: none;
+}
+
+.do-preparing-footer .do-preparing-btn-cancel:hover {
+  background: #b3aeae !important;
+  opacity: 0.85;
+  transform: none;
+  box-shadow: none;
+}
+
+.confirm-modal-content {
+  background: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 36px 28px 28px;
+  text-align: center;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.15);
+}
+
+.confirm-icon {
+  width: 72px;
+  height: 72px;
+  background: #eff6ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+
+  img {
+    width: 38px;
+    height: auto;
+  }
+}
+
+.confirm-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.confirm-body {
+  font-size: 15px;
+  color: #64748b;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.confirm-footer {
+  display: flex;
+  gap: 8px;
+}
+
+.confirm-btn {
+  flex: 1;
+  padding: 11px 0;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
+.confirm-btn-save {
+  background: linear-gradient(135deg, #22c358 0%, #16a34a 100%);
+  color: #fff;
+  box-shadow:
+    0 6px 16px rgba(34, 195, 88, 0.22),
+    0 1px 4px rgba(34, 195, 88, 0.1);
+}
+
+#whSrcLocationModal .modal-dialog,
+#whDestLocationModal .modal-dialog {
+  max-width: 900px;
+}
+
+.clear-button {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  gap: 10px;
+  transition:
+    transform 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-color: #94a3b8;
+  }
+
+  img {
+    width: 24px;
+    height: auto;
+  }
+}
+
+#plantLocationModal .modal-dialog {
+  max-width: 900px;
+}
+
+#doPreparingModal .modal-dialog {
+  max-width: 1200px;
+}
+
+#srcLocationConfirmModal .modal-dialog {
+  max-width: 380px;
+}
+
+.select-src-location-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 16px;
+  height: calc(100vh - 630px);
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.select-src-location-item {
+  display: flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+
+  .select-src-location-icon {
+    padding: 16px;
+    border-right: 1px solid #cbd5e1;
+
+    img {
+      width: 25px;
+      height: auto;
+    }
+  }
+
+  .select-src-location-details {
+    margin-left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 16px;
+    font-weight: 100;
+
+    span {
+      font-size: 16px;
+      font-weight: 500;
+      color: #1e293b;
+    }
+  }
+}
+
+.validation-error {
+  border: 1px solid #dc2626;
+}
+
+.validation-error-message {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  border: 1px solid #cbd5e1;
+}
+
+.number-date-status {
+  padding: 0px 8px 0px 0px;
+}
+
+.number-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.status-pending {
+  background: #fff7d6;
+  border-color: #e5c85c;
+  color: #8a6a00;
+}
+
+.status-wh-approved {
+  background: #f2dfff;
+  border-color: #6011aa;
+  color: #310044;
+}
+
+.status-in-progress {
+  background: #e6f4ff;
+  border-color: #91caff;
+  color: #0958d9;
+}
+
+.status-complete {
+  background: #f6ffed;
+  border-color: #95de64;
+  color: #389e0d;
+}
+
+.status-cancelled {
+  background: #fff1f0;
+  border-color: #ff7875;
+  color: #cf1322;
+}
+
+::ng-deep .do-preparing-field .mat-mdc-select-value,
+::ng-deep .do-preparing-field .mat-mdc-select-placeholder,
+::ng-deep .do-preparing-field .mat-mdc-option {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+::ng-deep .do-preparing-field .mat-mdc-select-min-line {
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  margin-bottom: 4px !important;
+}
+
+/*  Forklift warehouse: one badge (the job's own warehouse when the
+    forklift serves it) + "+N more" chip; the rest are in its tooltip. */
+.forklift-wh-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.forklift-wh-more {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border: 1px dashed #93c5fd;
+  border-radius: 999px;
+  background: #fff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.forklift-wh-more:hover {
+  background: #eff6ff;
+}
+
+/*  Forklift section(s) -- Warehouse / Loading / Pallet. Small neutral chip
+    next to the forklift name (the blue pill on the right is its warehouse). */
+.forklift-section-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #f9fafb;
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/*  Name row: [code + section chip] on the left, warehouse on the right. */
+.forklift-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.forklift-title .forklift-code {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.forklift-title .forklift-section-badge {
+  padding: 1px 8px;
+  border-color: #e2e8f0;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+}
+
+/*  Select Forklift modal: tighter card, queue as a pill. */
+.select-forklift-item .select-forklift-item-left .select-forklift-details {
+  padding: 10px 0px 10px 0;
+}
+
+.select-forklift-item .select-forklift-item-left .select-forklift-details .forklift-meta-row {
+  grid-template-columns: 1fr auto;
+  margin-top: 6px;
+}
+
+.select-forklift-item .select-forklift-item-left .select-forklift-details .select-forklift-queue {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.select-forklift-item.checked {
+  border-color: #1d4ed8;
+  background: #f8fbff;
+  box-shadow: 0 0 0 1px #1d4ed8, 0 6px 18px rgba(29, 78, 216, 0.12);
+}
+
+/*  Forklift card in the narrow side panel: min-width: 0 lets the card
+    shrink to the panel. */
+.forklift-item,
+.forklift-item-left {
+  min-width: 0;
+}
+
+/*  Side-panel card rows: [code + section chips ... warehouse] / [user ... queue].
+    Section chips that don't fit are clipped; the full list is on hover (matTooltip). */
+.forklift-item-left .forklift-details {
+  padding: 10px 0;
+}
+
+.forklift-item-left .forklift-details .forklift-text .forklift-name {
+  gap: 8px;
+}
+
+.forklift-item-left .forklift-details .forklift-text .forklift-code {
+  white-space: nowrap;
+}
+
+.forklift-item-left .forklift-details .forklift-text .forklift-wh-badge {
+  padding: 1px 9px;
+  font-size: 13px;
+}
+
+.forklift-item-left .forklift-details .forklift-text .forklift-code {
+  flex-shrink: 0;
+}
+
+.forklift-section-row {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.forklift-item-left .forklift-details .forklift-text .forklift-wh-group {
+  margin-left: auto;
+}
+
+.forklift-section-row .forklift-section-badge {
+  padding: 1px 8px;
+  border-color: #e2e8f0;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+}
+
+/* WH Transfer (TW) title icon: sky blue, matches job-wh-transfer-list. */
+.job-icon.job-icon-wh-transfer {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+}
+
+.job-icon .text-topic-wh-transfer {
+  font-size: 24px;
+  font-weight: 600;
+  color: #0284c7;
+}

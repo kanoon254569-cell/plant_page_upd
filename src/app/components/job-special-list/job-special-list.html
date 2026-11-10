@@ -1,0 +1,1198 @@
+<!-- Page Name -->
+<div class="header-section">
+  <div class="header-section-title">
+    <div class="header-section-icon">
+      <mat-icon>assignment</mat-icon>
+    </div>
+    <span>SPC01 - Job Special List</span>
+  </div>
+  <div class="header-actions">
+    <button *hasPermission="'outbound.special_package'"
+      type="button"
+      class="create-button"
+      data-bs-toggle="modal"
+      data-bs-target="#createSpecialJobUploadModal"
+      (click)="resetUploadForm()"
+    >
+      <img src="assets/images/add.png" alt="create-icon" />
+      Create
+    </button>
+  </div>
+</div>
+
+<!-- Search Filter -->
+<div class="search-filter">
+  <div class="row search-filter-row">
+    <!-- เลขที่เอกสาร -->
+    <div class="col-md search-filter-col">
+      <label>เลขที่เอกสาร</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <input matInput [(ngModel)]="filter.docNo" placeholder="ค้นหาเลขที่เอกสาร" />
+      </mat-form-field>
+    </div>
+
+    <!-- ลูกค้า -->
+    <div class="col-md search-filter-col">
+      <label>ลูกค้า</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <input matInput [(ngModel)]="filter.customer" placeholder="ค้นหาลูกค้า" />
+      </mat-form-field>
+    </div>
+
+    <!-- Date range -->
+    <div class="col-md search-filter-col">
+      <label>วันที่</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-date-range-input [rangePicker]="rangePicker">
+          <input
+            matStartDate
+            [ngModel]="_filterDateFromObj"
+            (dateChange)="onFilterDateChange('from', $event.value)"
+            placeholder="วันที่เริ่มต้น"
+            readonly
+            (click)="rangePicker.open()"
+          />
+          <input
+            matEndDate
+            [ngModel]="_filterDateToObj"
+            (dateChange)="onFilterDateChange('to', $event.value)"
+            placeholder="สิ้นสุด"
+            readonly
+            (click)="rangePicker.open()"
+          />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
+        <mat-date-range-picker #rangePicker></mat-date-range-picker>
+      </mat-form-field>
+    </div>
+
+    <!-- Status -->
+    <div class="col-md search-filter-col">
+      <label>สถานะ</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-select [(ngModel)]="filter.jobStatus">
+          <mat-option [value]="0">All</mat-option>
+          <mat-option *ngFor="let option of _optionJobStatus" [value]="option.id">
+            {{ option.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Job Type -->
+    <!-- <div class="col-md-2 search-filter-col">
+      <label>ประเภทของงาน</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-select [(ngModel)]="filter.jobType">
+          <mat-option [value]="0">All</mat-option>
+          <mat-option *ngFor="let option of _optionJobType" [value]="option.id">
+            {{ option.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div> -->
+
+    <!-- Search Button -->
+    <div class="col-md-auto search-filter-col search-filter-action-col">
+      <label>&nbsp;</label>
+      <div class="search-button-group">
+        <button class="clear-button" (click)="resetFilter(); onClickSearch()" title="Clear">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button class="search-icon-button" (click)="onClickSearch()" title="Search">
+          <mat-icon>search</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Job List Container -->
+<div class="job-section">
+  <div class="job-header">
+    <div class="job-header-left">
+      <strong>JOB LIST</strong>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!_isLoading; else jobListLoading">
+    <div class="job-list-container" *ngIf="_jobData && _jobData.length > 0; else noJobData">
+      <div class="job-list-card" *ngFor="let job of _jobData">
+        <div class="job-icon">
+          <div class="text-topic-special">SPC</div>
+        </div>
+
+        <div class="system-info">
+          <div class="system-header">
+            <!-- Shows เลขที่เอกสาร (doc_no) instead of the running JOB No
+                 (system_no) -- system_no is still shown inside the Inspect
+                 modal's "JOB No {{ job.jobNo }}" title. -->
+            <div class="system-no">
+              <div>{{ job?.doc_no || '-' }}</div>
+            </div>
+            <div class="date">
+              {{ (parseJobDate(job?.create_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }}
+            </div>
+          </div>
+
+          <div class="badge">
+            <div [ngClass]="'status ' + replaceWhiteSpaceWithDash(job?.status_name || '')">
+              {{ job?.status_name || '-' }}
+            </div>
+            <span
+              class="arrival-badge"
+              [ngClass]="job?.is_arrived ? 'arrived' : (job?.is_arriving ? 'arriving' : 'not-arriving')"
+            >
+              {{ job?.is_arrived ? 'Arrived' : (job?.is_arriving ? 'Arriving' : 'Not Arrived') }}
+            </span>
+          </div>
+        </div>
+
+        <div class="grade-lot-progress">
+          <div class="document-job">
+            <span>{{ jobItem(job)?.grade || '-' }}</span>
+
+            <!-- <ng-container *ngIf="itemLots(job).length === 1">{{
+              itemLots(job)[0].lot || '-'
+            }}</ng-container>
+            <ng-container *ngIf="itemLots(job).length > 1">
+              <ng-container *ngFor="let lot of itemLots(job)">
+                <span class="lot-location-item">
+                  <span class="lot-location-label">LOT</span>
+                  <span class="lot-location-code">{{ lot.lot }}</span>
+                </span>
+              </ng-container>
+            </ng-container> -->
+
+            <span class="document-job-qty">
+              {{ jobItem(job)?.qty || 0 }}
+            </span>
+
+            <button
+              type="button"
+              class="job-items-more-button"
+              *ngIf="job.details.length > 1"
+              data-bs-toggle="modal"
+              data-bs-target="#specialJobItemsModal"
+              (click)="selectJobItems(job)"
+            >
+              + {{ job.details.length - 1 }} more
+            </button>
+          </div>
+
+          <div class="job-totals">
+            <div class="job-totals-item">
+              <span class="job-totals-label">Pallet</span>
+              <span class="job-totals-value">{{ job?.total_pallet || 0 }}</span>
+            </div>
+            <div class="job-totals-item">
+              <span class="job-totals-label">Bag</span>
+              <span class="job-totals-value">{{ job?.total_bag || 0 }}</span>
+            </div>
+            <div class="job-totals-item">
+              <span class="job-totals-label">Ton</span>
+              <span class="job-totals-value">{{ job?.total_ton || 0 }}</span>
+            </div>
+          </div>
+
+          <div class="pallet-progress">
+            <div class="pallet-text">{{ job?.complete_pallet || 0 }}/{{ job?.total_pallet || 0 }} Pallet</div>
+
+            <div class="progress-wrapper">
+              <div
+                class="progress-bar"
+                [style.width.%]="((job?.complete_pallet || 0) / (job?.total_pallet || 1)) * 100"
+              ></div>
+            </div>
+
+            <div class="percent">
+              {{ ((job?.complete_pallet || 0) / (job?.total_pallet || 1)) * 100 }}%
+            </div>
+          </div>
+        </div>
+
+        <div class="location">
+          <div class="get-location">
+            <div class="get-header">
+              <span style="color: #14a318"><strong>ลูกค้า</strong></span>
+            </div>
+            <div class="location-detail">
+              <mat-icon>person</mat-icon>
+              <span>{{ job?.customer || '-' }}</span>
+            </div>
+          </div>
+
+          <!-- <div class="arrow">→</div> -->
+
+          <div class="special-zone-location">
+            <div class="special-zone-header">
+              <span style="color: #7c3aed"><strong>Special Zone</strong></span>
+            </div>
+            <div class="location-detail">
+              <mat-icon>place</mat-icon>
+              <span>{{ job?.special_zone || '-' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="job-actions">
+          <button class="inspect-button" [routerLink]="['/job-special-detail', job.id]">
+            Detail
+            <svg
+              class="inspect-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M9 6l6 6-6 6"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+
+          <button type="button" class="kebab-button" [matMenuTriggerFor]="jobMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #jobMenu="matMenu">
+            <button *hasPermission="'outbound.special_package'" mat-menu-item (click)="deleteJob(job)">Delete</button>
+          </mat-menu>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #jobListLoading>
+    <div class="job-list-container job-list-loading">
+      <div class="job-list-skeleton-card" *ngFor="let row of skeletonRows">
+        <div class="skeleton skeleton-job-icon"></div>
+
+        <div class="skeleton-group skeleton-system-info">
+          <div class="skeleton skeleton-line skeleton-line-lg"></div>
+          <div class="skeleton skeleton-line skeleton-line-sm"></div>
+        </div>
+
+        <div class="skeleton-group skeleton-grade-lot-progress">
+          <div class="skeleton skeleton-line skeleton-line-md"></div>
+          <div class="skeleton skeleton-progress"></div>
+          <div class="skeleton skeleton-line skeleton-line-xs"></div>
+        </div>
+
+        <div class="skeleton-group skeleton-location-group">
+          <div class="skeleton skeleton-location-box"></div>
+          <div class="skeleton skeleton-arrow"></div>
+          <div class="skeleton skeleton-location-box"></div>
+        </div>
+
+        <div class="skeleton skeleton-button"></div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Pagination -->
+  <div class="job-pagination" *ngIf="!_isLoading && _jobData && _jobData.length > 0">
+    <mat-paginator
+      [length]="_specialJobTotalCount"
+      [pageIndex]="(filter.page ?? 1) - 1"
+      [pageSize]="filter.pageSize ?? 25"
+      [pageSizeOptions]="[25, 50, 75, 100]"
+      [showFirstLastButtons]="true"
+      (page)="onPageEvent($event)"
+    >
+    </mat-paginator>
+  </div>
+
+  <div
+    class="modal fade"
+    id="specialJobItemsModal"
+    tabindex="-1"
+    aria-labelledby="specialJobItemsModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered job-items-modal-dialog">
+      <div class="modal-content job-items-modal-content">
+        <div class="modal-header job-items-modal-header">
+          <div>
+            <div class="system-eyebrow">{{ selectedJob?.doc_no || '-' }}</div>
+            <h5 class="modal-title" id="specialJobItemsModalLabel">Job Pallets Information</h5>
+          </div>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body job-items-modal-body">
+          <div class="job-items-modal-summary">
+            <mat-icon>inventory_2</mat-icon>
+            <span>{{ selectedJobPalletCount() }} Pallets</span>
+          </div>
+          <table
+            class="job-items-table"
+            *ngIf="selectedJob?.details?.length; else noSelectedJobItems"
+          >
+            <thead>
+              <tr>
+                <th>Grade</th>
+                <th>Lot</th>
+                <th>Qty</th>
+                <th>Bag</th>
+              </tr>
+            </thead>
+            <tbody *ngFor="let group of groupedSelectedJobPallets()">
+              <tr>
+                <td class="pallet-group-header" colspan="4">Pallet #{{ group.palletNo }}</td>
+              </tr>
+              <tr
+                class="pallet-item-row"
+                [class.pallet-item-row-last]="i === group.items.length - 1"
+                *ngFor="let item of group.items; let i = index"
+              >
+                <td class="job-item-grade">{{ item.grade || '-' }}</td>
+                <td class="job-item-lot">{{ item.lots[0]?.lot || '-' }}</td>
+                <td class="job-item-qty">{{ item.qty || 0 }}</td>
+                <td class="job-item-qty">{{ item.bag || 0 }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <ng-template #noSelectedJobItems>
+            <div class="job-items-empty-state">
+              <div class="app-empty-state-icon app-empty-state-icon--sm">
+                <mat-icon>inventory_2</mat-icon>
+              </div>
+              No item data available.
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #noJobData>
+  <div class="no-job-data">
+    <app-empty-state
+      variant="job"
+      title="No job data available"
+      message="ลองปรับเงื่อนไขการค้นหาใหม่อีกครั้ง"
+    ></app-empty-state>
+  </div>
+</ng-template>
+
+<!-- Inspect Special Job Modal -- editable view of one job, reusing the same
+     form-section/bag-table layout + editing methods as the Upload modal
+     (see openInspectJob/listJobToVM/onSaveInspectJob on the component).
+     jobIndex is always 0 for 'inspect' mode -- jobFor() ignores it and
+     returns _inspectJobVM directly. -->
+<div
+  class="modal fade"
+  id="inspectSpecialJobModal"
+  tabindex="-1"
+  aria-labelledby="inspectSpecialJobModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl create-modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="inspectSpecialJobModalLabel">
+          Special Job <span *ngIf="_inspectJobVM">{{ _inspectJobVM.jobNo }}</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" *ngIf="_inspectJobVM as job">
+        <div class="detail-body">
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <mat-icon>info_outline</mat-icon>
+              ข้อมูลใบงาน
+            </div>
+            <div class="detail-card-body">
+
+              <!-- Section 1: ข้อมูลพื้นฐาน -->
+              <div class="form-section">
+                <div class="form-section-label">ข้อมูลพื้นฐาน</div>
+                <div class="form-row">
+                  <div class="form-field form-field-xs">
+                    <label>JOB No</label>
+                    <div class="jobno-display">{{ job.jobNo || '-' }}</div>
+                  </div>
+                  <div class="form-field form-field-xs">
+                    <label>NO.</label>
+                    <input [(ngModel)]="job.no" name="inspectNo" />
+                  </div>
+                  <div class="form-field form-field-xl">
+                    <label>วันที่ <span class="required-mark">*</span></label>
+                    <mat-form-field
+                      appearance="outline"
+                      class="form-date-field"
+                      subscriptSizing="dynamic"
+                      [class.field-invalid]="isJobMetaMissing(job, 'date')"
+                    >
+                      <input
+                        matInput
+                        [matDatepicker]="inspectDatePicker"
+                        [ngModel]="job.dateObj"
+                        (dateChange)="onJobDateChange(job, 'date', $event.value)"
+                        name="inspectDate"
+                        placeholder="เลือก"
+                        readonly
+                        (click)="inspectDatePicker.open()"
+                      />
+                      <mat-datepicker-toggle
+                        matIconSuffix
+                        [for]="inspectDatePicker"
+                      ></mat-datepicker-toggle>
+                      <mat-datepicker #inspectDatePicker></mat-datepicker>
+                    </mat-form-field>
+                  </div>
+                  <div class="form-field form-field-lg">
+                    <label>เลขที่เอกสาร <span class="required-mark">*</span></label>
+                    <input
+                      [(ngModel)]="job.docNo"
+                      name="inspectDocNo"
+                      placeholder="เช่น SPEC-20260001"
+                      [class.field-invalid]="isBlank(job.docNo)"
+                    />
+                  </div>
+                  <div class="form-field form-field-flex">
+                    <label>ลูกค้า <span class="required-mark">*</span></label>
+                    <input
+                      [(ngModel)]="job.customer"
+                      name="inspectCustomer"
+                      [class.field-invalid]="isJobMetaMissing(job, 'customer')"
+                    />
+                  </div>
+                  <div class="form-field form-field-sm">
+                    <label>ลำดับ <span class="required-mark">*</span></label>
+                    <input
+                      [(ngModel)]="job.seq"
+                      name="inspectSeq"
+                      [class.field-invalid]="isJobMetaMissing(job, 'seq')"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 2: รายละเอียดสินค้า -->
+              <div class="form-section">
+                <div class="form-section-label">รายละเอียดสินค้า</div>
+                <div class="form-row">
+                  <div class="form-field form-field-md">
+                    <label>ขนาดพาเลท <span class="required-mark">*</span></label>
+                    <input
+                      [(ngModel)]="job.palletSize"
+                      name="inspectPalletSize"
+                      [class.field-invalid]="isJobMetaMissing(job, 'palletSize')"
+                    />
+                  </div>
+                  <div class="form-field form-field-xs">
+                    <label>ตัน <span class="required-mark">*</span></label>
+                    <input
+                      type="number"
+                      [ngModel]="job.tonPerCart"
+                      (ngModelChange)="onJobTonInput(job, $event)"
+                      name="inspectTon"
+                      [class.field-invalid]="isJobTonMissing(job)"
+                    />
+                  </div>
+                  <div class="form-field form-field-xs">
+                    <label>คัน</label>
+                    <input
+                      type="number"
+                      [ngModel]="job.cartQty"
+                      (ngModelChange)="onJobCartQtyInput(job, $event)"
+                      name="inspectCartQty"
+                    />
+                  </div>
+                  <div class="form-field form-field-xs">
+                    <label>Qty (kg) รวม</label>
+                    <input [value]="jobTotalQtyDisplay(job)" disabled />
+                  </div>
+                  <div class="form-field form-field-xl">
+                    <label>ขายวันที่</label>
+                    <mat-form-field appearance="outline" class="form-date-field" subscriptSizing="dynamic">
+                      <input
+                        matInput
+                        [matDatepicker]="inspectSaleDatePicker"
+                        [ngModel]="job.saleDateObj"
+                        (dateChange)="onJobDateChange(job, 'saleDate', $event.value)"
+                        name="inspectSaleDate"
+                        placeholder="เลือก"
+                        readonly
+                        (click)="inspectSaleDatePicker.open()"
+                      />
+                      <mat-datepicker-toggle
+                        matIconSuffix
+                        [for]="inspectSaleDatePicker"
+                      ></mat-datepicker-toggle>
+                      <mat-datepicker #inspectSaleDatePicker></mat-datepicker>
+                    </mat-form-field>
+                  </div>
+                  <div class="form-field form-field-flex"></div>
+                  <div class="form-checkboxes">
+                    <label class="cb-label">
+                      <input type="checkbox" [(ngModel)]="job.arranged" name="inspectArranged" />
+                      จัดเรียง
+                    </label>
+                    <label class="cb-label">
+                      <input type="checkbox" [(ngModel)]="job.wrapFilm" name="inspectWrapFilm" />
+                      พันฟิล์ม
+                    </label>
+                    <label class="cb-label">
+                      <input type="checkbox" [(ngModel)]="job.taped" name="inspectTaped" />
+                      รัดเทป
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 3: ข้อมูลเพิ่มเติม -->
+              <div class="form-section form-section-last">
+                <div class="form-section-label">ข้อมูลเพิ่มเติม</div>
+                <div class="form-row">
+                  <div class="form-field form-field-md">
+                    <label>INVOICE</label>
+                    <input [(ngModel)]="job.invoice" name="inspectInvoice" />
+                  </div>
+                  <div class="form-field form-field-sm">
+                    <label>ผู้สั่งงาน</label>
+                    <input [(ngModel)]="job.orderedBy" name="inspectOrderedBy" />
+                  </div>
+                  <div class="form-field form-field-flex">
+                    <label>หมายเหตุ</label>
+                    <input [(ngModel)]="job.remark" name="inspectRemark" />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-field form-field-md">
+                    <label>สถานะการจัดทำสินค้า</label>
+                    <input [(ngModel)]="job.prepStatus" name="inspectPrepStatus" />
+                  </div>
+                  <div class="form-field form-field-flex">
+                    <label>รายละเอียดที่ยังไม่เสร็จ</label>
+                    <input [(ngModel)]="job.incompleteDetail" name="inspectIncompleteDetail" />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <mat-icon>inventory_2</mat-icon>
+              Pallet List
+              <span class="pallet-count-badge">{{ job.pallets.length }} pallets</span>
+              <button
+                type="button"
+                class="add-button"
+                style="margin-left: auto"
+                (click)="addInspectPallet()"
+              >
+                + Add Pallet
+              </button>
+            </div>
+            <div class="detail-card-body">
+
+              <div class="pallet-list-grid">
+                <div class="pallet-block" *ngFor="let pallet of job.pallets; let pIdx = index">
+                  <div class="pallet-block-header">
+                    <span>Pallet #{{ pIdx + 1 }}</span>
+                    <div class="pallet-block-actions">
+                      <button type="button" class="duplicate-button" (click)="duplicateInspectPallet(pIdx)">
+                        <mat-icon>content_copy</mat-icon>
+                        Duplicate
+                      </button>
+                      <button type="button" class="add-button" (click)="addBagItem('inspect', 0, pIdx)">
+                        + Add Item
+                      </button>
+                      <button
+                        type="button"
+                        class="remove-pallet-button"
+                        title="Remove Pallet"
+                        (click)="removeInspectPallet(pIdx)"
+                      >
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <table class="bag-table" *ngIf="pallet.bags.length > 0">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Grade <span class="required-mark">*</span></th>
+                        <th>Lot</th>
+                        <th>Qty (kg)</th>
+                        <th>Bag</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of pallet.bags; let iIdx = index">
+                        <td class="col-no">{{ iIdx + 1 }}</td>
+                        <td>
+                          <input
+                            [(ngModel)]="item.grade"
+                            name="inspectGrade_{{ pIdx }}_{{ iIdx }}"
+                            class="table-cell-input"
+                            [class.field-invalid]="isBagGradeMissing(item)"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            [(ngModel)]="item.lot"
+                            name="inspectLot_{{ pIdx }}_{{ iIdx }}"
+                            class="table-cell-input"
+                          />
+                        </td>
+                        <td class="col-num">
+                          <input
+                            type="number"
+                            [(ngModel)]="item.qty"
+                            name="inspectQty_{{ pIdx }}_{{ iIdx }}"
+                            class="table-cell-input"
+                          />
+                        </td>
+                        <td class="col-num">
+                          <input
+                            type="number"
+                            [(ngModel)]="item.bag"
+                            name="inspectBag_{{ pIdx }}_{{ iIdx }}"
+                            class="table-cell-input"
+                          />
+                        </td>
+                        <td class="col-action">
+                          <button
+                            type="button"
+                            class="delete-icon-button"
+                            (click)="removeItem('inspect', 0, pIdx, iIdx)"
+                          >
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <div class="pallet-empty-state" *ngIf="pallet.bags.length === 0">
+                    <mat-icon>inbox</mat-icon>
+                    ยังไม่มีรายการถุง — กด + Add Item เพื่อเพิ่ม
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn modal-btn-cancel" data-bs-dismiss="modal">Cancel</button>
+        <button *hasPermission="'outbound.special_package'"
+          type="button"
+          class="btn modal-btn-save"
+          [disabled]="!canSaveInspect() || _isSavingInspect"
+          (click)="onSaveInspectJob()"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Special Job Modal : Upload -->
+<div
+  class="modal fade"
+  id="createSpecialJobUploadModal"
+  tabindex="-1"
+  aria-labelledby="createSpecialJobUploadModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl create-modal-dialog">
+    <div class="modal-content">
+      <div class="upload-modal-header">
+        <div class="upload-modal-title-group">
+          <span class="upload-modal-eyebrow">SPECIAL JOB</span>
+          <span class="upload-modal-title-text" id="createSpecialJobUploadModalLabel">Create Special Job</span>
+        </div>
+        <button type="button" class="upload-modal-close" data-bs-dismiss="modal" aria-label="Close">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-method-row">
+          <div class="upload-method-card">
+            <div class="upload-method-icon upload-method-icon-manual">
+              <mat-icon>edit_note</mat-icon>
+            </div>
+            <div class="upload-method-body">
+              <div class="upload-method-title">เพิ่มด้วยตนเอง</div>
+              <div class="upload-method-desc">สร้าง Job ว่างแล้วกรอกข้อมูลเอง</div>
+            </div>
+            <button type="button" class="add-button" (click)="addUploadJob()">+ Add Pallet</button>
+          </div>
+
+          <div class="upload-method-divider"><span>หรือ</span></div>
+
+          <div class="upload-method-card">
+            <div class="upload-method-icon upload-method-icon-excel">
+              <mat-icon>upload_file</mat-icon>
+            </div>
+            <div class="upload-method-body">
+              <div class="upload-method-title">อัปโหลดไฟล์ Excel</div>
+              <div class="upload-method-desc" *ngIf="!_uploadFileName">รองรับไฟล์ .xlsx, .xls</div>
+              <div class="upload-file-info" *ngIf="_uploadFileName">
+                <mat-icon class="upload-file-icon">description</mat-icon>
+                <span class="upload-file-name">{{ _uploadFileName }}</span>
+              </div>
+            </div>
+            <label class="upload-file-label">
+              <mat-icon>upload</mat-icon>
+              เลือกไฟล์
+              <input
+                type="file"
+                class="upload-file-input"
+                accept=".xlsx,.xls"
+                (change)="onSpecialFileSelected($event)"
+              />
+            </label>
+          </div>
+        </div>
+
+        <!-- Sheet picker: newer workbooks (Aug 69+) are one sheet per day,
+             so importing every sheet at once can produce 200+ jobs. Default
+             is just the first sheet (set in onSpecialFileSelected) -- pick
+             a different day here, or "นำเข้าทุกชีท" for the old
+             import-everything behavior. -->
+        <div class="upload-sheet-picker" *ngIf="_uploadSheetNames.length > 1">
+          <div class="upload-sheet-picker-icon">
+            <mat-icon>event_note</mat-icon>
+          </div>
+          <div class="upload-sheet-picker-body">
+            <label>เลือกชีท (วัน)</label>
+            <div class="upload-sheet-select-wrap">
+              <select
+                class="upload-sheet-select"
+                [ngModel]="_uploadSelectedSheet"
+                (ngModelChange)="onUploadSheetChange($event)"
+                name="uploadSheetName"
+              >
+                <option *ngFor="let sheetName of _uploadSheetNames" [value]="sheetName">
+                  {{ sheetName }}
+                </option>
+                <option [value]="ALL_SHEETS_OPTION">นำเข้าทุกชีท ({{ _uploadSheetNames.length }} วัน)</option>
+              </select>
+              <mat-icon class="upload-sheet-select-caret">expand_more</mat-icon>
+            </div>
+          </div>
+          <div class="upload-sheet-picker-badge">
+            {{ _uploadSelectedSheet === ALL_SHEETS_OPTION ? _uploadSheetNames.length + ' วัน' : '1 วัน' }}
+          </div>
+        </div>
+
+        <div class="upload-summary-row" *ngIf="_uploadJobs.length > 0">
+          <div class="upload-stat-box">
+            <div class="upload-stat-value">{{ _uploadJobs.length }}</div>
+            <div class="upload-stat-label">Job</div>
+          </div>
+          <div class="upload-stat-box">
+            <div class="upload-stat-value">{{ totalUploadPallets() }}</div>
+            <div class="upload-stat-label">Pallet</div>
+          </div>
+          <div class="upload-stat-box">
+            <div class="upload-stat-value">{{ totalUploadBags() }}</div>
+            <div class="upload-stat-label">Bag</div>
+          </div>
+          <div class="upload-stat-box">
+            <div class="upload-stat-value">{{ totalUploadTon() | number: '1.0-2' }}</div>
+            <div class="upload-stat-label">ตัน</div>
+          </div>
+        </div>
+
+        <div class="upload-toolbar-row" *ngIf="_uploadJobs.length > 0">
+          <button type="button" class="toolbar-link-button" (click)="expandAllUploadJobs()">
+            <mat-icon>unfold_more</mat-icon>
+            Expand All
+          </button>
+          <button type="button" class="toolbar-link-button" (click)="collapseAllUploadJobs()">
+            <mat-icon>unfold_less</mat-icon>
+            Collapse All
+          </button>
+        </div>
+
+        <div class="create-modal-columns" *ngIf="_uploadJobs.length > 0; else noUploadData">
+          <div class="create-modal-main upload-jobs-wrapper">
+            <div
+              class="upload-job-block"
+              [class.job-block-invalid]="isJobIncomplete(job)"
+              *ngFor="let job of _uploadJobs; let jIdx = index"
+            >
+              <!-- Clicking anywhere in this top bar toggles collapse/expand
+                   (see toggleJobCollapsed()) -- the Delete button stops the
+                   click from bubbling here so deleting doesn't also toggle
+                   the card. The toggle icon itself has no separate click
+                   handler; it just relies on this same bubbled click. -->
+              <div
+                class="upload-job-header"
+                (click)="toggleJobCollapsed(jIdx)"
+              >
+                <button
+                  type="button"
+                  class="collapse-toggle-button"
+                  [title]="job.collapsed ? 'ขยายการ์ด' : 'ย่อการ์ด'"
+                >
+                  <mat-icon>{{ job.collapsed ? 'chevron_right' : 'expand_more' }}</mat-icon>
+                </button>
+                <div class="upload-job-header-left">
+                  <!-- JOB No is a running number from the system (starts at
+                       1) -- plain text, not user-editable (see nextJobNo()
+                       on the component). เลขที่เอกสาร/สถานะการจัดทำสินค้า
+                       moved down into the ข้อมูลพื้นฐาน form-section below,
+                       so this header only carries the read-only JOB No. -->
+                  <span class="job-no-text">JOB No {{ nextJobNo(jIdx) }}</span>
+
+                  <!-- While collapsed the form-sections below are hidden, so
+                       show a quick-glance summary of the important fields
+                       right after JOB No -- เลขที่เอกสาร/ลูกค้า/วันที่/ตัน/
+                       Pallet count -- so the card is still identifiable
+                       without expanding it. -->
+                  <div class="job-summary-chips">
+                    <span class="job-summary-chip" *ngIf="job.docNo">{{ job.docNo }}</span>
+                    <span class="job-summary-chip" *ngIf="job.customer">{{ job.customer }}</span>
+                    <span class="job-summary-chip" *ngIf="job.date">{{ job.date }}</span>
+                    <span class="job-summary-chip" *ngIf="jobGradesSummary(job) as grades">Grade {{ grades }}</span>
+                    <span class="job-summary-chip" *ngIf="job.tonPerCart !== null && job.tonPerCart !== undefined">
+                      {{ job.tonPerCart | number: '1.0-2' }} ตัน
+                    </span>
+                    <span class="job-summary-chip">{{ job.pallets.length }} Pallet</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="delete-job-button"
+                  (click)="removeUploadJob(jIdx); $event.stopPropagation()"
+                >
+                  Delete
+                </button>
+              </div>
+
+              <!-- Sections + pallets/items are hidden while the card is
+                   collapsed; the header row above (JOB No/Delete) stays
+                   visible either way. Mirrors job-special-detail.html's
+                   .form-section/.form-row/.form-field-* layout (see
+                   #inspectSpecialJobModal above for the same treatment)
+                   instead of the old flat job-meta-grid. -->
+              <div class="upload-job-body" *ngIf="!job.collapsed">
+
+                <!-- Section 1: ข้อมูลพื้นฐาน -->
+                <div class="form-section">
+                  <div class="form-section-label">ข้อมูลพื้นฐาน</div>
+                  <div class="form-row">
+                    <div class="form-field form-field-xs">
+                      <label>NO.</label>
+                      <input [(ngModel)]="job.no" [name]="'uploadNo' + jIdx" />
+                    </div>
+                    <div class="form-field form-field-xl">
+                      <label>วันที่ <span class="required-mark">*</span></label>
+                      <mat-form-field
+                        appearance="outline"
+                        class="form-date-field"
+                        subscriptSizing="dynamic"
+                        [class.field-invalid]="isJobMetaMissing(job, 'date')"
+                      >
+                        <input
+                          matInput
+                          [matDatepicker]="uploadDatePicker"
+                          [ngModel]="job.dateObj"
+                          (dateChange)="onJobDateChange(job, 'date', $event.value)"
+                          [name]="'uploadDate' + jIdx"
+                          placeholder="เลือก"
+                          readonly
+                          (click)="uploadDatePicker.open()"
+                        />
+                        <mat-datepicker-toggle
+                          matIconSuffix
+                          [for]="uploadDatePicker"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #uploadDatePicker></mat-datepicker>
+                      </mat-form-field>
+                    </div>
+                    <div class="form-field form-field-lg">
+                      <label>เลขที่เอกสาร <span class="required-mark">*</span></label>
+                      <input
+                        [(ngModel)]="job.docNo"
+                        [name]="'uploadDocNo' + jIdx"
+                        placeholder="เช่น SPEC-20260001"
+                        [class.field-invalid]="isJobMetaMissing(job, 'docNo')"
+                      />
+                    </div>
+                    <div class="form-field form-field-flex">
+                      <label>ลูกค้า <span class="required-mark">*</span></label>
+                      <input
+                        [(ngModel)]="job.customer"
+                        [name]="'uploadCustomer' + jIdx"
+                        [class.field-invalid]="isJobMetaMissing(job, 'customer')"
+                      />
+                    </div>
+                    <div class="form-field form-field-sm">
+                      <label>ลำดับ <span class="required-mark">*</span></label>
+                      <input
+                        [(ngModel)]="job.seq"
+                        [name]="'uploadSeq' + jIdx"
+                        [class.field-invalid]="isJobMetaMissing(job, 'seq')"
+                      />
+                    </div>
+                    <div class="form-field form-field-md">
+                      <label>สถานะการจัดทำสินค้า</label>
+                      <input [(ngModel)]="job.prepStatus" [name]="'uploadPrepStatus' + jIdx" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 2: รายละเอียดสินค้า -->
+                <div class="form-section">
+                  <div class="form-section-label">รายละเอียดสินค้า</div>
+                  <div class="form-row">
+                    <div class="form-field form-field-md">
+                      <label>ขนาดพาเลท <span class="required-mark">*</span></label>
+                      <input
+                        [(ngModel)]="job.palletSize"
+                        [name]="'uploadPalletSize' + jIdx"
+                        [class.field-invalid]="isJobMetaMissing(job, 'palletSize')"
+                      />
+                    </div>
+                    <!-- ตัน/คัน/Qty(kg) รวม -- job-level totals. Editing ตัน or
+                       คัน here regenerates the item list below into exactly
+                       คัน items (one per คัน), each weighing ตัน x 1000 kg. -->
+                    <div class="form-field form-field-xs">
+                      <label>ตัน <span class="required-mark">*</span></label>
+                      <input
+                        type="number"
+                        [ngModel]="job.tonPerCart"
+                        (ngModelChange)="onJobTonInput(job, $event)"
+                        [name]="'uploadTon' + jIdx"
+                        [class.field-invalid]="isJobTonMissing(job)"
+                      />
+                    </div>
+                    <div class="form-field form-field-xs">
+                      <label>คัน</label>
+                      <input
+                        type="number"
+                        [ngModel]="job.cartQty"
+                        (ngModelChange)="onJobCartQtyInput(job, $event)"
+                        [name]="'uploadCartQty' + jIdx"
+                      />
+                    </div>
+                    <div class="form-field form-field-xs">
+                      <label>Qty (kg) รวม</label>
+                      <input [value]="jobTotalQtyDisplay(job)" disabled />
+                    </div>
+                    <div class="form-field form-field-xl">
+                      <label>ขายวันที่</label>
+                      <mat-form-field appearance="outline" class="form-date-field" subscriptSizing="dynamic">
+                        <input
+                          matInput
+                          [matDatepicker]="uploadSaleDatePicker"
+                          [ngModel]="job.saleDateObj"
+                          (dateChange)="onJobDateChange(job, 'saleDate', $event.value)"
+                          [name]="'uploadSaleDate' + jIdx"
+                          placeholder="เลือก"
+                          readonly
+                          (click)="uploadSaleDatePicker.open()"
+                        />
+                        <mat-datepicker-toggle
+                          matIconSuffix
+                          [for]="uploadSaleDatePicker"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #uploadSaleDatePicker></mat-datepicker>
+                      </mat-form-field>
+                    </div>
+                    <div class="form-field form-field-flex"></div>
+                    <div class="form-checkboxes">
+                      <label class="cb-label">
+                        <input
+                          type="checkbox"
+                          [(ngModel)]="job.arranged"
+                          [name]="'uploadArranged' + jIdx"
+                        />
+                        จัดเรียง
+                      </label>
+                      <label class="cb-label">
+                        <input
+                          type="checkbox"
+                          [(ngModel)]="job.wrapFilm"
+                          [name]="'uploadWrapFilm' + jIdx"
+                        />
+                        พันฟิล์ม
+                      </label>
+                      <label class="cb-label">
+                        <input
+                          type="checkbox"
+                          [(ngModel)]="job.taped"
+                          [name]="'uploadTaped' + jIdx"
+                        />
+                        รัดเทป
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 3: ข้อมูลเพิ่มเติม -->
+                <div class="form-section form-section-last">
+                  <div class="form-section-label">ข้อมูลเพิ่มเติม</div>
+                  <div class="form-row">
+                    <div class="form-field form-field-md">
+                      <label>INVOICE</label>
+                      <input [(ngModel)]="job.invoice" [name]="'uploadInvoice' + jIdx" />
+                    </div>
+                    <div class="form-field form-field-sm">
+                      <label>ผู้สั่งงาน</label>
+                      <input [(ngModel)]="job.orderedBy" [name]="'uploadOrderedBy' + jIdx" />
+                    </div>
+                    <div class="form-field form-field-flex">
+                      <label>หมายเหตุ</label>
+                      <input [(ngModel)]="job.remark" [name]="'uploadRemark' + jIdx" />
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-field form-field-flex">
+                      <label>รายละเอียดที่ยังไม่เสร็จ</label>
+                      <input
+                        [(ngModel)]="job.incompleteDetail"
+                        [name]="'uploadIncompleteDetail' + jIdx"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pallet-list-header">
+                  <span>Pallet List</span>
+                  <button type="button" class="add-button" (click)="addUploadPallet(jIdx)">
+                    + Add Pallet
+                  </button>
+                </div>
+
+                <div class="pallet-block" *ngFor="let pallet of job.pallets; let pIdx = index">
+                  <div class="pallet-block-header">
+                    <span>Pallet #{{ pIdx + 1 }}</span>
+                    <div class="pallet-block-actions">
+                      <button
+                        type="button"
+                        class="duplicate-button"
+                        (click)="duplicateUploadPallet(jIdx, pIdx)"
+                      >
+                        <mat-icon>content_copy</mat-icon>
+                        Duplicate
+                      </button>
+                      <button
+                        type="button"
+                        class="add-button"
+                        (click)="addBagItem('upload', jIdx, pIdx)"
+                      >
+                        + Add Item
+                      </button>
+                      <button
+                        type="button"
+                        class="remove-pallet-button"
+                        title="Remove Pallet"
+                        (click)="removeUploadPallet(jIdx, pIdx)"
+                      >
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <table class="bag-table" *ngIf="pallet.bags.length > 0">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Grade <span class="required-mark">*</span></th>
+                        <th>Lot</th>
+                        <th>Qty (kg)</th>
+                        <th>Bag</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of pallet.bags; let iIdx = index">
+                        <td class="col-no">{{ iIdx + 1 }}</td>
+                        <td>
+                          <input
+                            [(ngModel)]="item.grade"
+                            name="uploadGrade_{{ jIdx }}_{{ pIdx }}_{{ iIdx }}"
+                            class="table-cell-input"
+                            [class.field-invalid]="isBagGradeMissing(item)"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            [(ngModel)]="item.lot"
+                            name="uploadLot_{{ jIdx }}_{{ pIdx }}_{{ iIdx }}"
+                            class="table-cell-input"
+                          />
+                        </td>
+                        <td class="col-num">
+                          <input
+                            type="number"
+                            [(ngModel)]="item.qty"
+                            name="uploadQty_{{ jIdx }}_{{ pIdx }}_{{ iIdx }}"
+                            class="table-cell-input"
+                          />
+                        </td>
+                        <td class="col-num">
+                          <input
+                            type="number"
+                            [(ngModel)]="item.bag"
+                            name="uploadBag_{{ jIdx }}_{{ pIdx }}_{{ iIdx }}"
+                            class="table-cell-input"
+                          />
+                        </td>
+                        <td class="col-action">
+                          <button
+                            type="button"
+                            class="delete-icon-button"
+                            (click)="removeItem('upload', jIdx, pIdx, iIdx)"
+                          >
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <div class="pallet-empty-state" *ngIf="pallet.bags.length === 0">
+                    <mat-icon>inbox</mat-icon>
+                    ยังไม่มีรายการถุง — กด + Add Item เพื่อเพิ่ม
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noUploadData>
+          <div class="upload-empty-state">
+            <mat-icon>cloud_upload</mat-icon>
+            <p>เลือกไฟล์ Excel หรือกด + Add Pallet เพื่อเริ่มเพิ่มข้อมูล</p>
+          </div>
+        </ng-template>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn modal-btn-cancel" data-bs-dismiss="modal">Cancel</button>
+        <button *hasPermission="'outbound.special_package'"
+          type="button"
+          class="btn modal-btn-save"
+          [disabled]="!canCreateUpload() || _isCreating"
+          (click)="onSubmitCreateUpload()"
+        >
+          {{ _isCalculatingBags ? 'กำลังคำนวณถุง...' : 'Create' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

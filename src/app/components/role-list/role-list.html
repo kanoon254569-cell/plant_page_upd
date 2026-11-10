@@ -1,0 +1,744 @@
+<!-- Page Name -->
+<div class="header-section">
+  <div class="header-section-icon">
+    <mat-icon>admin_panel_settings</mat-icon>
+  </div>
+  <span>Role Management</span>
+</div>
+
+<!-- Search Filter -->
+<div class="search-filter">
+  <div class="search-filter-header">Search Filter</div>
+
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+      <!-- Role Name -->
+      <div class="search-filter-field">
+        <label>ค้นหาชื่อบทบาท :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.roleName" placeholder="ค้นหาชื่อบทบาท" />
+        </mat-form-field>
+      </div>
+
+      <div class="search-filter-field">
+        <label>ค้นหาคำอธิบาย :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.details" placeholder="ค้นหาคำอธิบาย" />
+        </mat-form-field>
+      </div>
+
+      <!-- Status -->
+      <div class="search-filter-field">
+        <label>ตามการใช้งาน :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.isActive">
+            <mat-option [value]="''"> ทั้งหมด </mat-option>
+            <mat-option [value]="'Y'"> เปิดใช้งาน </mat-option>
+            <mat-option [value]="'N'"> ปิดใช้งาน </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="Clear" (click)="resetFilter()">
+          <img src="assets/images/clear.png" />
+        </button>
+        <button type="button" class="search-button" title="Search" (click)="onClickSearch()">
+          <img src="assets/images/search.png" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Display Table -->
+<div class="display-table">
+  <!-- Header -->
+  <div class="display-table-header">
+    <div>
+      Role List
+      <span class="table-count"> {{ totalCount }} รายการ </span>
+    </div>
+
+    <div class="table-header-actions">
+      <!-- Export Excel Button -->
+      <button *hasPermission="'data.export'"
+        type="button"
+        class="export-excel-button"
+        [disabled]="isExportingExcel || totalCount === 0"
+        (click)="exportToExcel()"
+      >
+        <mat-icon>{{ isExportingExcel ? 'hourglass_empty' : 'file_download' }}</mat-icon>
+        Export Excel
+      </button>
+
+      <!-- Add Role Button -->
+      <button *hasPermission="'role.create'" type="button" class="add-user-button" (click)="openAddModal()">
+        <mat-icon>add</mat-icon>
+        Add Role
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="display-table-content">
+    <!-- Skeleton while the role list loads: same columns as the real table -->
+    <div class="table-container p-0" *ngIf="isLoading" aria-hidden="true">
+      <table class="adm-skel-table" skeletonWidthsTo="role-list">
+        <thead>
+          <tr>
+            <th class="mat-column-no" style="text-align: center">#</th>
+            <th class="mat-column-roleName">ชื่อบทบาท</th>
+            <th class="mat-column-description">คำอธิบาย</th>
+            <th class="mat-column-userCount" style="text-align: center">จำนวนผู้ใช้งาน</th>
+            <th class="mat-column-status" style="text-align: center">สถานะ</th>
+            <th class="mat-column-lastUpdate" style="text-align: center">Last Update</th>
+            <th class="mat-column-edit" style="text-align: center">Edit</th>
+            <th class="mat-column-delete" style="text-align: center">Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of skeletonRows">
+            <td><span class="adm-skel adm-skel--center" style="width: 18px"></span></td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 10px">
+                <span class="adm-skel adm-skel--box" style="width: 32px; height: 32px; flex-shrink: 0"></span>
+                <span class="adm-skel" style="width: 120px"></span>
+              </div>
+            </td>
+            <td><span class="adm-skel" style="width: 75%"></span></td>
+            <td><span class="adm-skel adm-skel--center" style="width: 24px"></span></td>
+            <td><span class="adm-skel adm-skel--pill adm-skel--center" style="width: 72px"></span></td>
+            <td>
+              <span class="adm-skel adm-skel--center" style="width: 78px"></span>
+              <span class="adm-skel adm-skel--sub adm-skel--center" style="width: 52px"></span>
+            </td>
+            <td><span class="adm-skel adm-skel--box adm-skel--center" style="width: 32px; height: 32px"></span></td>
+            <td><span class="adm-skel adm-skel--box adm-skel--center" style="width: 32px; height: 32px"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="table-container mat-elevation-z8 p-0"
+      *ngIf="!isLoading && roleList && roleList.length > 0"
+      style="box-shadow: none !important"
+    >
+      <table mat-table [dataSource]="roleList" class="w-100" skeletonWidthsFrom="role-list">
+        <!-- No -->
+        <ng-container matColumnDef="no">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; justify-content: center">
+            #
+          </th>
+          <td mat-cell *matCellDef="let r; let i = index">
+            {{ i + 1 }}
+          </td>
+        </ng-container>
+
+        <!-- Role Name -->
+        <ng-container matColumnDef="roleName">
+          <th mat-header-cell *matHeaderCellDef>ชื่อบทบาท</th>
+          <td mat-cell *matCellDef="let r">
+            <div class="rl-role-cell">
+              <span class="rl-role-icon" [style.background]="getRoleColor(r.role_name)">
+                <mat-icon>{{ getRoleIcon(r.role_name) }}</mat-icon>
+              </span>
+              <span>{{ r.role_name }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- User Count -->
+        <ng-container matColumnDef="userCount">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; justify-content: center">
+            จำนวนผู้ใช้งาน
+          </th>
+          <td mat-cell *matCellDef="let r">
+            {{ r.user_count }}
+          </td>
+        </ng-container>
+
+        <!-- Status -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; justify-content: center">
+            สถานะ
+          </th>
+          <td mat-cell *matCellDef="let r">
+            <span class="rl-status-badge" [class.rl-status-badge--on]="r.is_active === 'Y'">
+              {{ r.is_active === 'Y' ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Description -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>คำอธิบาย</th>
+          <td mat-cell *matCellDef="let r">
+            <span style="color: #64748b; font-size: 13px">{{ r.role_description || '-' }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Last Update -->
+        <ng-container matColumnDef="lastUpdate">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; justify-content: center">
+            Last Update
+          </th>
+          <td mat-cell *matCellDef="let r">
+            <div class="last-update-cell" style="align-items: center">
+              <span class="last-update-date">{{
+                r.last_update_datetime | date: 'dd/MM/yyyy'
+              }}</span>
+              <span class="last-update-time">{{ r.last_update_datetime | date: 'HH:mm:ss' }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Edit -->
+        <ng-container matColumnDef="edit">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; justify-content: center">
+            Edit
+          </th>
+
+          <td mat-cell *matCellDef="let r">
+            <button *hasPermission="'role.update'" type="button" class="edit-button" (click)="openEditModal(r)">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Delete -->
+        <ng-container matColumnDef="delete">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; justify-content: center">
+            Delete
+          </th>
+
+          <td mat-cell *matCellDef="let r">
+            <button *hasPermission="'role.delete'" type="button" class="delete-button" (click)="submitDeleteRole(r)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && (!roleList || roleList.length === 0)">
+      <app-empty-state variant="table" title="ไม่พบข้อมูล" message="กรุณาลองเปลี่ยนเงื่อนไขการค้นหา"></app-empty-state>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator
+    [length]="totalCount"
+    [pageSize]="filter.pageSize ?? 25"
+    [pageSizeOptions]="[25, 50, 75, 100]"
+    [showFirstLastButtons]="true"
+    (page)="onPageEvent($event)"
+  >
+  </mat-paginator>
+</div>
+
+<!-- Add / Edit Role Modal (Shared Template) -->
+<ng-template #rolePermissionForm>
+  <!-- Tabs -->
+  <div class="rl-tabs">
+    <button
+      type="button"
+      class="rl-tab"
+      [class.rl-tab--active]="activeTab === 'permission'"
+      (click)="activeTab = 'permission'"
+    >
+      สิทธิ์การใช้งาน
+    </button>
+    <button
+      type="button"
+      class="rl-tab"
+      [class.rl-tab--active]="activeTab === 'general'"
+      (click)="activeTab = 'general'"
+    >
+      ข้อมูลทั่วไป
+    </button>
+  </div>
+
+  <!-- Tab: General Info -->
+  <div class="rl-tab-panel" *ngIf="activeTab === 'general'">
+    <div class="row g-3">
+      <div class="col-md-8">
+        <label class="ul-label">ชื่อบทบาท <span class="text-danger">*</span></label>
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          [(ngModel)]="roleNameInput"
+          [ngModelOptions]="{ standalone: true }"
+          placeholder="เช่น Supervisor / Boardman"
+        />
+      </div>
+
+      <div class="col-md-4">
+        <label class="ul-label">สถานะการใช้งาน</label>
+        <select
+          class="form-select form-select-sm"
+          [(ngModel)]="statusInput"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <option value="Y">ใช้งาน</option>
+          <option value="N">ไม่ใช้งาน</option>
+        </select>
+      </div>
+
+      <div class="col-md-12">
+        <label class="ul-label">คำอธิบายบทบาท</label>
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          [(ngModel)]="descriptionInput"
+          [ngModelOptions]="{ standalone: true }"
+          placeholder="อธิบายหน้าที่ความรับผิดชอบของบทบาทนี้"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Permissions -->
+  <div class="rl-tab-panel" *ngIf="activeTab === 'permission'">
+    <!-- Loading Permission Data -->
+    <div *ngIf="permissionLoading" aria-hidden="true">
+      <div class="rl-select-all-row">
+        <span class="adm-skel" style="width: 280px"></span>
+        <span class="adm-skel" style="width: 96px"></span>
+      </div>
+
+      <div class="rl-department-gate">
+        <div class="rl-department-gate__heading">
+          <span class="adm-skel adm-skel--box" style="width: 24px; height: 24px"></span>
+          <div style="flex: 1">
+            <span class="adm-skel" style="width: 220px"></span>
+            <span class="adm-skel adm-skel--sub" style="width: 300px"></span>
+          </div>
+        </div>
+        <div class="rl-department-tabs">
+          <span class="adm-skel adm-skel--pill" style="width: 76px" *ngFor="let t of skeletonDepartmentTabs"></span>
+        </div>
+      </div>
+
+      <div class="rl-section">
+        <div class="rl-section-header">
+          <span class="adm-skel" style="width: 220px"></span>
+        </div>
+        <div class="rl-section-body">
+          <div class="row g-3">
+            <div class="col-md-4" *ngFor="let column of skeletonModuleColumns">
+              <span class="adm-skel" style="width: 110px; margin-bottom: 14px"></span>
+              <span class="adm-skel" style="width: 80%; margin-bottom: 12px" *ngFor="let item of column"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-container *ngIf="!permissionLoading">
+      <div class="rl-select-all-row">
+        <span>กำหนดสิทธิ์การเข้าถึงฟังก์ชั่นต่างๆ ของบทบาทนี้</span>
+        <label class="rl-checkbox-label">
+          เลือกทั้งหมด
+          <input
+            type="checkbox"
+            [checked]="isAllPermissionSelected"
+            [disabled]="activeDepartmentId === null"
+            (change)="onToggleSelectAll($any($event.target).checked)"
+          />
+        </label>
+      </div>
+
+      <div class="rl-department-gate">
+        <div class="rl-department-gate__heading">
+          <mat-icon>business</mat-icon>
+          <div>
+            <strong>เลือกหน่วยงานที่ Role นี้ดูแลได้</strong>
+            <span>เลือกได้มากกว่าหนึ่งหน่วยงาน แล้วเลือก tab เพื่อกำหนดสิทธิ์</span>
+          </div>
+        </div>
+        <div class="rl-department-tabs" role="tablist">
+          <span class="rl-department-count"> {{ selectedDepartmentIds.length }} เลือกแล้ว </span>
+          <button
+            type="button"
+            class="rl-department-tab"
+            *ngFor="let department of departmentOptions"
+            [class.rl-department-tab--active]="activeDepartmentId === department.id"
+            [class.rl-department-tab--assigned]="selectedDepartmentIds.includes(department.id)"
+            [attr.aria-selected]="activeDepartmentId === department.id"
+            (click)="selectDepartmentTab(department.id)"
+          >
+            <mat-icon *ngIf="selectedDepartmentIds.includes(department.id)">check</mat-icon>
+            {{ department.code || department.name }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Module Permissions -->
+      <div class="rl-section" [class.rl-section--locked]="activeDepartmentId === null">
+        <div class="rl-section-header">
+          <mat-icon>widgets</mat-icon>
+          หมวดหมู่งาน (Module Permissions)
+        </div>
+
+        <!-- Modules come from MODULE_PERMISSION_GROUPS; each department tab
+             shows only the modules that department uses (MODULE_DEPARTMENTS
+             in menu-access.service.ts). -->
+        <div class="rl-section-body">
+          <div class="row g-3">
+            @for (group of visibleModuleGroups; track $index) {
+              <div class="col-md-4">
+                <div class="rl-group-title">{{ group.title }}</div>
+                @for (item of visibleModuleItems(group); track item.key) {
+                  <label class="rl-checkbox-label">
+                    <input
+                      type="checkbox"
+                      [disabled]="activeDepartmentId === null"
+                      [ngModel]="getModule(item.key)"
+                      (ngModelChange)="setModule(item.key, $event)"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
+                    {{ item.label }}
+                  </label>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Operation Permissions -->
+      <div class="rl-section">
+        <div class="rl-section-header">
+          <mat-icon>settings_suggest</mat-icon>
+          หมวดหมู่การปฏิบัติงาน (Operation Permissions)
+        </div>
+
+        <div class="rl-section-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="rl-toggle-row">
+                <div>
+                  <div class="rl-toggle-title">ใช้งานบน Tablet (PWA)</div>
+                  <div class="rl-toggle-desc">
+                    เข้าใช้งานผ่านแอปบนแท็บเล็ต หรือสแกน QR Code หน้างาน
+                  </div>
+                </div>
+                <label class="ul-toggle-label">
+                  <div
+                    class="ul-toggle"
+                    [class.ul-toggle--on]="activePermissions.operation.tabletPwa"
+                    (click)="
+                      activeDepartmentId !== null &&
+                        (activePermissions.operation.tabletPwa =
+                          !activePermissions.operation.tabletPwa)
+                    "
+                  >
+                    <div class="ul-toggle__thumb"></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="rl-toggle-row">
+                <div>
+                  <div class="rl-toggle-title">ใช้งานบน PC (Web)</div>
+                  <div class="rl-toggle-desc">
+                    เข้าใช้งาน Web สำหรับ Boardman จัดการ Job และ Assign งาน
+                  </div>
+                </div>
+                <label class="ul-toggle-label">
+                  <div
+                    class="ul-toggle"
+                    [class.ul-toggle--on]="activePermissions.operation.pcWeb"
+                    (click)="
+                      activeDepartmentId !== null &&
+                        (activePermissions.operation.pcWeb = !activePermissions.operation.pcWeb)
+                    "
+                  >
+                    <div class="ul-toggle__thumb"></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Management -->
+      <div class="rl-section" *ngIf="activePermissions.operation.pcWeb">
+        <div class="rl-section-header">
+          <mat-icon>description</mat-icon>
+          การจัดการข้อมูล (On PC Web)
+        </div>
+
+        <div class="rl-section-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="rl-checkbox-label">
+                <input
+                  type="checkbox"
+                  [disabled]="activeDepartmentId === null"
+                  [(ngModel)]="activePermissions.dataManagement.userManagement"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span>
+                  User Management
+                  <small>จัดการผู้ใช้งานและบทบาท</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="col-md-6">
+              <label class="rl-checkbox-label">
+                <input
+                  type="checkbox"
+                  [disabled]="activeDepartmentId === null"
+                  [(ngModel)]="activePermissions.dataManagement.locationManagement"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span>
+                  Location Management
+                  <small>จัดการสถานที่และระดับความสำคัญของสถานที่</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="col-md-6 m-0">
+              <label class="rl-checkbox-label">
+                <input
+                  type="checkbox"
+                  [disabled]="activeDepartmentId === null"
+                  [(ngModel)]="activePermissions.dataManagement.roleManagement"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span>
+                  Role Management
+                  <small>จัดการบทบาทและสิทธิ์</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="col-md-6 m-0">
+              <label class="rl-checkbox-label">
+                <input
+                  type="checkbox"
+                  [disabled]="activeDepartmentId === null"
+                  [(ngModel)]="activePermissions.dataManagement.truckManagement"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span>
+                  Truck Management
+                  <small>จัดการรถบรรทุกสินค้า</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="col-md-6 m-0">
+              <label class="rl-checkbox-label">
+                <input
+                  type="checkbox"
+                  [disabled]="activeDepartmentId === null"
+                  [(ngModel)]="activePermissions.dataManagement.forkliftManagement"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span>
+                  Forklift Management
+                  <small>จัดการข้อมูลรถโฟล์คลิฟท์</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="col-md-6 m-0">
+              <label class="rl-checkbox-label">
+                <input
+                  type="checkbox"
+                  [disabled]="activeDepartmentId === null"
+                  [(ngModel)]="activePermissions.dataManagement.auditTransactionLog"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span>
+                  Audit / Transaction Log
+                  <small>ดูประวัติการทำรายการทั้งหมด</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="col-md-6 m-0">
+              <label class="rl-checkbox-label">
+                <input
+                  type="checkbox"
+                  [disabled]="activeDepartmentId === null"
+                  [(ngModel)]="activePermissions.dataManagement.palletManagement"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span>
+                  Pallet Management
+                  <small>แก้ไขข้อมูลพาเลท จัดการคัดแยก</small>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu + Action Permissions (EXTRA_PERMISSION_GROUPS in role-list.ts) -->
+      <div class="rl-section" *ngIf="activePermissions.operation.pcWeb">
+        <div class="rl-section-header">
+          <mat-icon>touch_app</mat-icon>
+          สิทธิ์เมนูและปุ่ม (On PC Web)
+        </div>
+
+        <div class="rl-section-body">
+          <div class="rl-perm-grid">
+            @for (group of extraPermissionGroups; track group.title) {
+              @let checkedCount = extraGroupCheckedCount(group);
+              <div
+                class="rl-perm-card"
+                [class.rl-perm-card--active]="checkedCount > 0"
+                [class.rl-perm-card--disabled]="activeDepartmentId === null"
+              >
+                <label class="rl-perm-card__header">
+                  <span class="rl-perm-card__icon">
+                    <mat-icon>{{ group.icon }}</mat-icon>
+                  </span>
+                  <span class="rl-perm-card__title">{{ group.title }}</span>
+                  <span class="rl-perm-card__count">{{ checkedCount }}/{{ group.items.length }}</span>
+                  <input
+                    type="checkbox"
+                    class="rl-perm-card__all"
+                    title="เลือกทั้งหมด"
+                    [disabled]="activeDepartmentId === null"
+                    [checked]="checkedCount === group.items.length"
+                    [indeterminate]="checkedCount > 0 && checkedCount < group.items.length"
+                    (change)="toggleExtraGroup(group, $any($event.target).checked)"
+                  />
+                </label>
+
+                <div class="rl-perm-card__items">
+                  @for (item of group.items; track item.key) {
+                    <label class="rl-perm-item" [title]="item.key">
+                      <input
+                        type="checkbox"
+                        [disabled]="activeDepartmentId === null"
+                        [(ngModel)]="activePermissions.extra[item.key]"
+                        [ngModelOptions]="{ standalone: true }"
+                      />
+                      <span>{{ item.label }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Management -->
+      <div class="rl-section" *ngIf="activePermissions.operation.tabletPwa">
+        <div class="rl-section-header">
+          <mat-icon>description</mat-icon>
+          การเข้าใช้งานฟังก์ชัน (On Tablet PWA)
+        </div>
+
+        <div class="rl-section-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="rl-checkbox-label">
+                <input
+                  type="checkbox"
+                  [disabled]="activeDepartmentId === null"
+                  [(ngModel)]="activePermissions.onFunction.locationInfo"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span>
+                  Location Information
+                  <small>การดูข้อมูลสถานที่</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="col-md-6">
+              <label class="rl-checkbox-label">
+                <input
+                  type="checkbox"
+                  [disabled]="activeDepartmentId === null"
+                  [(ngModel)]="activePermissions.onFunction.truckInfo"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span>
+                  Truck Information
+                  <small>การดูข้อมูลรถบรรทุก</small>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rl-note">
+        <mat-icon>info</mat-icon>
+        <span>
+          หมายเหตุ: การเปลี่ยนแปลงสิทธิ์การใช้งานจะถูกบันทึกทันทีที่กดปุ่ม "บันทึก"
+          และจะมีผลกับผู้ใช้งานทุกคนที่อยู่ในบทบาทนี้
+        </span>
+      </div>
+    </ng-container>
+  </div>
+</ng-template>
+
+<!-- Add Role Modal -->
+<div class="ul-modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+  <div class="ul-modal rl-modal" (click)="$event.stopPropagation()">
+    <div class="ul-modal__header">
+      <div class="ul-modal__title">
+        <span class="material-icons">add_moderator</span>
+        เพิ่มบทบาทใหม่
+      </div>
+      <button class="ul-modal__close" (click)="closeAddModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="ul-modal__body rl-modal__body">
+      <ng-container [ngTemplateOutlet]="rolePermissionForm"></ng-container>
+    </div>
+
+    <div class="ul-modal__footer">
+      <button class="btn modal-btn-cancel" (click)="closeAddModal()">ยกเลิก</button>
+      <button class="btn modal-btn-save" (click)="submitAddRole()">บันทึกบทบาทใหม่</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Role Modal -->
+<div class="ul-modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="ul-modal rl-modal" (click)="$event.stopPropagation()">
+    <div class="ul-modal__header">
+      <div class="ul-modal__title">
+        <span class="material-icons">edit</span>
+        แก้ไขบทบาท: {{ selectedRole?.role_name }}
+      </div>
+      <button class="ul-modal__close" (click)="closeEditModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="ul-modal__body rl-modal__body">
+      <ng-container [ngTemplateOutlet]="rolePermissionForm"></ng-container>
+    </div>
+
+    <div class="ul-modal__footer">
+      <button class="btn modal-btn-cancel" (click)="closeEditModal()">ยกเลิก</button>
+      <button class="btn modal-btn-save" (click)="submitEditRole()">บันทึกการเปลี่ยนแปลง</button>
+    </div>
+  </div>
+</div>

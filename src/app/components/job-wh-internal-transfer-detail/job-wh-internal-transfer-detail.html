@@ -1,0 +1,1144 @@
+<!-- Page Name -->
+<div class="header-section">
+  <ng-container *ngIf="!isLoading; else headerLoading">
+    <div class="header-left">
+      <button class="back-button" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-section-title">
+        <div class="header-section-icon">
+          <mat-icon>swap_horiz</mat-icon>
+        </div>
+        <span>
+          WH03 -
+          {{
+            !isEditMode
+              ? 'สร้างรายการย้ายสินค้า'
+              : readOnlyMode
+                ? 'รายละเอียดงาน'
+                : 'แก้ไขรายการย้ายสินค้า'
+          }}
+        </span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <mat-form-field
+        appearance="outline"
+        subscriptSizing="dynamic"
+        class="cost-center-field"
+        [class.field-invalid]="!selectedCostCenter.value"
+      >
+        <mat-label>Product Cost Center</mat-label>
+        <mat-select
+          [formControl]="selectedCostCenter"
+          [compareWith]="compareCostCenter"
+          placeholder="Product Cost Center"
+        >
+          <mat-option *ngFor="let costCenter of costCenterOptions" [value]="costCenter">
+            {{ costCenter.cc_code }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field
+        appearance="outline"
+        subscriptSizing="dynamic"
+        class="product-type-field"
+        [class.field-invalid]="!selectedProductType.value"
+      >
+        <mat-label>Product Type</mat-label>
+        <mat-select
+          [formControl]="selectedProductType"
+          placeholder="Product Type"
+        >
+          <mat-option *ngFor="let productType of productTypeOptions" [value]="productType">
+            {{ productType.wms_group }} : {{ productType.product_type }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button *hasPermission="'warehouse.internal_transfer'"
+        class="approve-button"
+        (click)="submitTransfer()"
+        [ngClass]="{ 'btn-disabled': !canSave }"
+        [disabled]="!canSave"
+      >
+        <mat-icon>{{ isEditMode ? 'save' : 'swap_horiz' }}</mat-icon>
+        {{ isSubmitting ? 'กำลังบันทึก...' : (isEditMode ? 'บันทึก' : 'สร้างรายการย้ายสินค้า') }}
+      </button>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #headerLoading>
+  <div class="job-detail-header-skeleton">
+    <div class="header-left">
+      <button class="back-button" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-section-title">
+        <div class="header-section-icon">
+          <mat-icon>swap_horiz</mat-icon>
+        </div>
+        <span>WH03 - รายละเอียดงาน</span>
+      </div>
+    </div>
+    <div class="skeleton skeleton-pill skeleton-pill-wide"></div>
+  </div>
+</ng-template>
+
+<ng-container *ngIf="!isLoading; else detailLoading">
+  <div class="main-section">
+    <div class="job-title-card">
+      <div class="job-icon job-icon-transfer">
+        <div class="text-topic-transfer">IT</div>
+      </div>
+
+      <div class="job-content-card">
+        <ng-container *ngIf="header; else newTransferTitle">
+          <div class="job-info">
+            <div class="job-system-no">{{ header.system_no }}</div>
+
+            <!-- Same WMS+ badge as job-detail.html -->
+            <div class="wms_no" *ngIf="header.wms_no || _wmsPlusStatus">
+              <ng-container *ngIf="_wmsPlusStatus as wmsPlusStatus; else plainWmsNo">
+                <div
+                  class="wms-plus-status"
+                  [class.success]="wmsPlusStatus.is_success === 'Y'"
+                  [class.failed]="wmsPlusStatus.is_success !== 'Y'"
+                  title="ดูรายละเอียด WMS+ log"
+                  data-bs-toggle="modal"
+                  data-bs-target="#wmsPlusDetailModal"
+                >
+                  {{ header.wms_no || wmsPlusStatus.mode }}
+                  <mat-icon>{{
+                    wmsPlusStatus.is_success === 'Y' ? 'check_circle' : 'error'
+                  }}</mat-icon>
+                </div>
+                <ng-container *hasPermission="'wms.resend'">
+                  <button
+                    type="button"
+                    class="wms-plus-resend-button"
+                    *ngIf="wmsPlusStatus.is_success !== 'Y'"
+                    [disabled]="_isResendingWmsPlus"
+                    title="ส่งข้อมูลไปยัง WMS+ ซ้ำ"
+                    (click)="sendAdvanceInterface()"
+                  >
+                    <mat-icon [class.spin]="_isResendingWmsPlus">refresh</mat-icon>
+                  </button>
+                </ng-container>
+              </ng-container>
+              <ng-template #plainWmsNo>
+                <div class="wms-plus-status neutral">{{ header.wms_no }}</div>
+              </ng-template>
+            </div>
+
+            <div class="status-badge" [ngClass]="'internal-transfer-status--' + statusClass(header)">
+              {{ header.job_status_name }}
+            </div>
+          </div>
+
+          <div class="job-detail">
+            <span> รหัสงาน : {{ header.id }} </span>
+            <span> • ประเภทงาน : {{ header.job_type_name }} </span>
+            <span>
+              • วันที่สร้างงาน : {{ (parseJobDate(header.job_create_datetime) | date: 'dd/MM/yyyy') || '-' }}
+            </span>
+            <span>
+              • เวลาทำงาน :
+              {{ (parseJobDate(header.job_start_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }}
+            </span>
+            <span *ngIf="header.job_start_datetime">
+              - {{ (parseJobDate(header.job_end_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || 'ปัจจุบัน' }}
+            </span>
+            <span *ngIf="!header.job_start_datetime">
+              - {{ (parseJobDate(header.job_end_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }}
+            </span>
+            <span>
+              • ประเภทสินค้า :<span style="color: black; font-weight: 500; font-size: 14px;">
+                {{ selectedProductType.value?.product_type }}</span
+              >
+            </span>
+          </div>
+        </ng-container>
+        <ng-template #newTransferTitle>
+          <div class="job-system-no">รายการย้ายสินค้าใหม่</div>
+          <div class="new-transfer-description">
+            กรุณาระบุข้อมูลการย้ายสินค้า และเลือกตำแหน่งต้นทางกับปลายทาง
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Completed advance-order job: the send button takes the chip's place (left); the chip is hidden. -->
+      <ng-container *hasPermission="'wms.resend'">
+        <button
+          type="button"
+          class="advance-interface-button"
+          *ngIf="canSendAdvanceInterface"
+          [disabled]="_isResendingWmsPlus"
+          matTooltip="งานสั่งล่วงหน้า: ระบบยังไม่ได้ส่ง WMS261 ไป WMS+ กดเพื่อส่งตอนนี้"
+          matTooltipPosition="below"
+          (click)="sendAdvanceInterface()"
+        >
+          <mat-icon>send</mat-icon>
+          {{ _isResendingWmsPlus ? 'กำลังส่ง...' : 'WMS261' }}
+        </button>
+      </ng-container>
+
+      <button
+        type="button"
+        class="advance-order-chip"
+        *ngIf="!readOnlyMode && (canSetAdvanceOrder || isAdvanceOrder)"
+        [class.active]="isAdvanceOrder"
+        [disabled]="!canSetAdvanceOrder"
+        [attr.aria-pressed]="isAdvanceOrder"
+        title="งานจบแล้วจะยังไม่ส่ง Interface ไป WMS+ จนกว่าจะกดส่งเอง"
+        (click)="onToggleAdvanceOrder()"
+      >
+        <mat-icon>{{ isAdvanceOrder ? 'event_available' : 'event' }}</mat-icon>
+        สั่งงานล่วงหน้า
+      </button>
+
+      <div class="step-toggle">
+        <div class="step-slider" [class.step-2]="transferForm.isMultiForklift === 'Y'"></div>
+
+        <button
+          class="step-btn"
+          [class.active]="transferForm.isMultiForklift === 'N'"
+          type="button"
+          [disabled]="readOnlyMode"
+          (click)="onSetMultiForklift('N')"
+        >
+          1 Step
+        </button>
+
+        <button
+          class="step-btn"
+          [class.active]="transferForm.isMultiForklift === 'Y'"
+          type="button"
+          [disabled]="readOnlyMode"
+          (click)="onSetMultiForklift('Y')"
+        >
+          2 Step
+        </button>
+      </div>
+
+      <button
+        type="button"
+        class="urgent-chip"
+        [class.active]="transferForm.isUrgent === 'Y'"
+        [disabled]="readOnlyMode"
+        [attr.aria-pressed]="transferForm.isUrgent === 'Y'"
+        (click)="onToggleUrgent()"
+      >
+        <mat-icon>{{ transferForm.isUrgent === 'Y' ? 'priority_high' : 'flag' }}</mat-icon>
+        งานเร่งด่วน
+      </button>
+    </div>
+  </div>
+
+  <div class="row m-0 pl-2 pr-2">
+    <div class="col-md-8">
+      <div class="grade-lot-card">
+        <div class="grade-lot-header">
+          รายการเคลื่อนย้ายสินค้า<span class="grade-lot-note"><mat-icon>info_outline</mat-icon>กรุณาระบุตำแหน่งต้นทางและปลายทางให้ครบ</span>
+        </div>
+
+        <div class="grade-lot-content">
+          <form (ngSubmit)="submitTransfer()" novalidate>
+            <div class="transfer-location-flow">
+              <div class="transfer-location-panel">
+                <div
+                  class="wh-location"
+                  [ngClass]="submitted && selectedSourceLocations.length === 0 ? 'validation-error' : ''"
+                >
+                  <div class="wh-location-badge">Manual Warehouse</div>
+                  <div class="wh-location-header">
+                    <div class="wh-location-header-left">
+                      <span class="blue-circle" style="background-color: #22c55e"></span>
+                      <span class="wh-location-text">Step 1: GET</span>
+                      <!-- Hidden until something is picked -- the empty state
+                           below already says nothing is selected. -->
+                      <span class="qty-text full-qty" *ngIf="totalSourceQty > 0">
+                        QTY: {{ totalSourceQty | number: '1.0-0' }} kg
+                      </span>
+                    </div>
+                    <div class="wh-location-header-right">
+                      <button
+                        type="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#sourceWhLocationModal"
+                        [disabled]="readOnlyMode || !selectedCostCenter.value || !selectedProductType.value"
+                        [title]="
+                          readOnlyMode
+                            ? ''
+                            : !selectedCostCenter.value || !selectedProductType.value
+                              ? 'กรุณาเลือก Product Cost Center และ Product Type ก่อน'
+                              : ''
+                        "
+                        (click)="openSourceLocationModal()"
+                      >
+                        <img src="assets/images/add.png" />
+                        <span>เพิ่ม</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="wh-location-content" *ngIf="selectedSourceLocations.length > 0">
+                    <div
+                      class="wh-location-item"
+                      *ngFor="let location of selectedSourceLocations; trackBy: trackByIndex"
+                    >
+                      <div class="wh-location-item-left">
+                        <div class="wh-location-icon">
+                          <img src="assets/images/location.png" />
+                        </div>
+                        <div class="wh-location-item-left-content">
+                          <div class="wh-location-details">
+                            <!--  Same layout as job-wh-location's card: name + Grade/Lot
+                                  pills on one line, qty (actual / confirm, editable) at
+                                  the progress bar's right end. -->
+                            <div class="wh-location-title-row wh-location-title-row--inline">
+                              <span class="wh-location-name">{{ location.locationName }}</span>
+                              <span class="wh-location-stats">
+                                <span *ngIf="location.grade" class="stat-pill stat-pill--grade" [matTooltip]="'Grade: ' + location.grade" matTooltipPosition="above">
+                                  <!-- <span class="stat-pill-label">Grade</span> -->
+                                  <span class="stat-pill-value">{{ location.grade }}</span>
+                                </span>
+                                <span *ngIf="location.lotNo" class="stat-pill stat-pill--lot" [matTooltip]="'Lot No: ' + location.lotNo" matTooltipPosition="above">
+                                  <!-- <span class="stat-pill-label">Lot</span> -->
+                                  <span class="stat-pill-value">{{ location.lotNo }}</span>
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+                          <div class="location-progress">
+                            <div class="pallet-bar">
+                              <div
+                                class="pallet-bar-fill pallet-bar-fill--source"
+                                [style.width.%]="getLocationProgressWidth(location)"
+                              ></div>
+                            </div>
+                            <span class="location-progress-qty">
+                              {{ (location.actualQty || 0) | number: '1.0-0' }} /
+                              {{ (location.confirmQty || 0) | number: '1.0-0' }} kg
+                              <button
+                                type="button"
+                                class="wh-location-edit-button"
+                                title="แก้ไขจำนวน"
+                                *ngIf="!readOnlyMode"
+                                (click)="onEditSourceQty(location)"
+                              >
+                                <img src="assets/images/edit.png" alt="edit-icon" />
+                              </button>
+                            </span>
+                          </div>
+                          <div class="pallet-progress" *ngIf="location.remark">
+                            <span>หมายเหตุ: {{ location.remark }}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="wh-location-item-right" *ngIf="!readOnlyMode">
+                        <button
+                          type="button"
+                          class="delete-wh-location-button"
+                          (click)="onDeleteSourceLocation(location)"
+                          *ngIf="!isLocationCompleted(location)"
+                        >
+                          <img src="assets/images/delete.png" alt="delete-icon" />
+                        </button>
+
+                        <button
+                          type="button"
+                          class="repeat-wh-location-button"
+                          (click)="onFitSourceQty(location)"
+                          *ngIf="isLocationCompleted(location)"
+                        >
+                          <img src="assets/images/repeating.png" alt="repeat-icon" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="no-data-wh-location" *ngIf="selectedSourceLocations.length === 0">
+                    <div *ngIf="submitted" class="validation-error-message">
+                      กรุณาเลือกตำแหน่งต้นทาง
+                    </div>
+                    <ng-container *ngIf="!submitted">
+                      <div class="app-empty-state-icon app-empty-state-icon--sm">
+                        <mat-icon>place</mat-icon>
+                      </div>
+                      <div>ยังไม่ได้เลือกตำแหน่งต้นทาง</div>
+                    </ng-container>
+                  </div>
+
+                  <div class="transfer-form-field wh-location-remark">
+                    <label for="transfer-source-remark">
+                      <mat-icon class="remark-field-icon">edit_note</mat-icon>
+                      หมายเหตุต้นทาง
+                    </label>
+                    <mat-form-field appearance="outline" class="w-100 bg-white" subscriptSizing="dynamic">
+                      <input
+                        id="transfer-source-remark"
+                        matInput
+                        [(ngModel)]="transferForm.sourceRemark"
+                        name="sourceRemark"
+                        placeholder="ระบุหมายเหตุต้นทาง"
+                        [disabled]="readOnlyMode"
+                      />
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+
+              <div class="transfer-location-panel">
+                <div
+                  class="wh-location"
+                  [ngClass]="
+                    (submitted && selectedDestinationLocations.length === 0) ||
+                    (submitted && hasOverlappingLocations) ||
+                    (submitted && selectedDestinationLocations.length > 0 && totalDestinationQty !== totalSourceQty)
+                      ? 'validation-error'
+                      : ''
+                  "
+                >
+                  <div class="wh-location-badge">Manual Warehouse</div>
+                  <div class="wh-location-header">
+                    <div class="wh-location-header-left">
+                      <!-- Same step label/color as job-detail's getStepStyle: PUT is
+                           Step 2 (blue) in 2 Step mode, Step 1 (green) otherwise. -->
+                      <span
+                        class="blue-circle"
+                        [style.background-color]="transferForm.isMultiForklift === 'Y' ? '#1708f5' : '#22c55e'"
+                      ></span>
+                      <span class="wh-location-text">
+                        {{ transferForm.isMultiForklift === 'Y' ? 'Step 2' : 'Step 1' }}: PUT
+                      </span>
+                      <!-- Shown once there is a source total to match. Green only
+                           when exactly balanced (same as job-wh-location): more
+                           than the source total is as wrong as less. -->
+                      <span
+                        class="qty-text"
+                        *ngIf="totalSourceQty > 0"
+                        [ngClass]="{ 'full-qty': totalDestinationQty === totalSourceQty }"
+                      >
+                        QTY: {{ totalDestinationQty | number: '1.0-0' }} / {{ totalSourceQty | number: '1.0-0' }} kg
+                      </span>
+                    </div>
+                    <div class="wh-location-header-right">
+                      <button
+                        type="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#destinationWhLocationModal"
+                        [disabled]="readOnlyMode || selectedSourceLocations.length === 0"
+                        (click)="openDestinationLocationModal()"
+                      >
+                        <img src="assets/images/add.png" />
+                        <span>เพิ่ม</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="wh-location-content" *ngIf="selectedDestinationLocations.length > 0">
+                    <!-- Same place and style as job-wh-location's QTY messages:
+                         over the source total right away, any other mismatch on Save. -->
+                    <div *ngIf="totalDestinationQty > totalSourceQty" class="validation-error-message">
+                      QTY เกินจำนวนต้นทาง — ปรับ qty ของปลายทางก่อน Save
+                    </div>
+
+                    <div *ngIf="submitted && totalDestinationQty < totalSourceQty">
+                      <div class="validation-error-message">จำนวนรวมปลายทางต้องเท่ากับจำนวนรวมต้นทาง</div>
+                    </div>
+
+                    <div *ngIf="submitted && hasOverlappingLocations">
+                      <div class="validation-error-message">ตำแหน่งปลายทางต้องไม่ซ้ำกับต้นทาง</div>
+                    </div>
+
+                    <div
+                      class="wh-location-item"
+                      *ngFor="let location of selectedDestinationLocations; trackBy: trackByIndex"
+                    >
+                      <div class="wh-location-item-left">
+                        <div class="wh-location-icon">
+                          <img src="assets/images/location.png" />
+                        </div>
+                        <div class="wh-location-item-left-content">
+                          <div class="wh-location-details">
+                            <!--  Same layout as the source card above. -->
+                            <div class="wh-location-title-row wh-location-title-row--inline">
+                              <span class="wh-location-name">{{ location.locationName }}</span>
+                              <span class="wh-location-stats">
+                                <span *ngIf="location.grade" class="stat-pill stat-pill--grade" [matTooltip]="'Grade: ' + location.grade" matTooltipPosition="above">
+                                  <!-- <span class="stat-pill-label">Grade</span> -->
+                                  <span class="stat-pill-value">{{ location.grade }}</span>
+                                </span>
+                                <span *ngIf="location.lotNo" class="stat-pill stat-pill--lot" [matTooltip]="'Lot No: ' + location.lotNo" matTooltipPosition="above">
+                                  <!-- <span class="stat-pill-label">Lot</span> -->
+                                  <span class="stat-pill-value">{{ location.lotNo }}</span>
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+                          <div class="location-progress">
+                            <div class="pallet-bar">
+                              <div
+                                class="pallet-bar-fill"
+                                [style.width.%]="getLocationProgressWidth(location)"
+                              ></div>
+                            </div>
+                            <span class="location-progress-qty">
+                              {{ (location.actualQty || 0) | number: '1.0-0' }} /
+                              {{ (location.confirmQty || 0) | number: '1.0-0' }} kg
+                              <button
+                                type="button"
+                                class="wh-location-edit-button"
+                                title="แก้ไขจำนวน"
+                                *ngIf="!readOnlyMode"
+                                (click)="onEditDestinationQty(location)"
+                              >
+                                <img src="assets/images/edit.png" alt="edit-icon" />
+                              </button>
+                            </span>
+                          </div>
+                          <div class="pallet-progress" *ngIf="location.remark">
+                            <span>หมายเหตุ: {{ location.remark }}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="wh-location-item-right" *ngIf="!readOnlyMode">
+                        <button
+                          type="button"
+                          class="delete-wh-location-button"
+                          (click)="onDeleteDestinationLocation(location)"
+                          *ngIf="!isLocationCompleted(location)"
+                        >
+                          <img src="assets/images/delete.png" alt="delete-icon" />
+                        </button>
+
+                        <button
+                          type="button"
+                          class="repeat-wh-location-button"
+                          (click)="onFitDestinationQty(location)"
+                          *ngIf="isLocationCompleted(location)"
+                        >
+                          <img src="assets/images/repeating.png" alt="repeat-icon" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="no-data-wh-location" *ngIf="selectedDestinationLocations.length === 0">
+                    <div *ngIf="submitted" class="validation-error-message">
+                      กรุณาเลือกตำแหน่งปลายทาง
+                    </div>
+                    <ng-container *ngIf="!submitted">
+                      <div class="app-empty-state-icon app-empty-state-icon--sm">
+                        <mat-icon>place</mat-icon>
+                      </div>
+                      <div>
+                        {{
+                          selectedSourceLocations.length === 0
+                            ? 'กรุณาเลือกตำแหน่งต้นทางก่อน'
+                            : 'ยังไม่ได้เลือกตำแหน่งปลายทาง'
+                        }}
+                      </div>
+                    </ng-container>
+                  </div>
+
+                  <div class="transfer-form-field wh-location-remark">
+                    <label for="transfer-destination-remark">
+                      <mat-icon class="remark-field-icon">edit_note</mat-icon>
+                      หมายเหตุปลายทาง
+                    </label>
+                    <mat-form-field appearance="outline" class="w-100 bg-white" subscriptSizing="dynamic">
+                      <input
+                        id="transfer-destination-remark"
+                        matInput
+                        [(ngModel)]="transferForm.destinationRemark"
+                        name="destinationRemark"
+                        placeholder="ระบุหมายเหตุปลายทาง"
+                        [disabled]="readOnlyMode"
+                      />
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!--  GET / PUT totals in the cards' own colours, plus whether they match. -->
+            <div class="transfer-panel-total">
+              <div class="transfer-total-chip transfer-total-chip--get">
+                <span class="transfer-total-dot"></span>
+                <span class="transfer-total-label">รวมต้นทาง</span>
+                <strong>{{ totalSourceQty | number: '1.0-2' }} kg</strong>
+              </div>
+              <mat-icon class="transfer-total-arrow">arrow_forward</mat-icon>
+              <div class="transfer-total-chip transfer-total-chip--put">
+                <span class="transfer-total-dot"></span>
+                <span class="transfer-total-label">รวมปลายทาง</span>
+                <strong>{{ totalDestinationQty | number: '1.0-2' }} kg</strong>
+              </div>
+
+              <span
+                class="transfer-total-status transfer-total-status--ok"
+                *ngIf="totalSourceQty > 0 && totalSourceQty === totalDestinationQty"
+              >
+                <mat-icon>check_circle</mat-icon>
+                ครบ
+              </span>
+              <span
+                class="transfer-total-status transfer-total-status--diff"
+                *ngIf="totalDestinationQty > 0 && totalSourceQty !== totalDestinationQty"
+              >
+                <mat-icon>error_outline</mat-icon>
+                ต่างกัน {{ (totalSourceQty - totalDestinationQty) | number: '1.0-2' }} kg
+              </span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div
+        class="forklift-card"
+        [ngClass]="isEmptyForklifts && submitted ? 'validation-error' : ''"
+      >
+        <div class="forklift-card-header">
+          โฟร์คลิฟท์
+          <button
+            type="button"
+            class="add-forklift-button"
+            [disabled]="readOnlyMode"
+            (click)="openForkliftModal()"
+            data-bs-toggle="modal"
+            data-bs-target="#forkliftModal"
+          >
+            <img src="assets/images/add.png" />
+            <span>เพิ่ม</span>
+          </button>
+        </div>
+
+        <div class="forklift-card-content" *ngIf="selectedForklifts.length > 0">
+          <div class="forklift-item" *ngFor="let forklift of selectedForklifts">
+            <div class="forklift-item-left">
+              <div class="forklift-icon">
+                <img src="assets/images/forklift.png" alt="forklift-icon" />
+                <span
+                  class="forklift-read-badge"
+                  *ngIf="forklift.value.isRead"
+                  [class.is-read]="forklift.value.isRead === 'Y'"
+                >
+                  <mat-icon>{{ forklift.value.isRead === 'Y' ? 'done_all' : 'mark_email_unread' }}</mat-icon>
+                  {{ forklift.value.isRead === 'Y' ? 'อ่านแล้ว' : 'ยังไม่อ่าน' }}
+                </span>
+              </div>
+              <div class="forklift-details">
+                <div class="forklift-text">
+                  <div class="forklift-name">
+                    <span
+                      class="forklift-code"
+                      [matTooltip]="forklift.value.forkliftName"
+                      matTooltipPosition="above"
+                      >{{
+                      forklift.value.forkliftName
+                    }}</span>
+                    <span
+                      class="forklift-section-row"
+                      *ngIf="forklift.value.sectionName"
+                      [matTooltip]="formatSectionName(forklift.value.sectionName)"
+                      matTooltipPosition="above"
+                    >
+                      <span
+                        class="forklift-section-badge"
+                        *ngFor="let section of splitSections(forklift.value.sectionName)"
+                        >{{ section }}</span
+                      >
+                    </span>
+                    <span class="forklift-wh-group" *ngIf="forkliftWhBadge(forklift.value.whCode) as wh">
+                      <span class="forklift-wh-badge">{{ wh.first }}</span>
+                      <span
+                        class="forklift-wh-more"
+                        *ngIf="wh.rest.length > 0"
+                        [matTooltip]="wh.rest.join(', ')"
+                        matTooltipPosition="above"
+                        (click)="$event.stopPropagation()"
+                        >+ อีก {{ wh.rest.length }}</span
+                      >
+                    </span>
+                  </div>
+                  <div class="forklift-meta-row">
+                    <span class="forklift-user">
+                      <mat-icon>account_circle</mat-icon>
+                      <span class="forklift-user-name">{{ forklift.value.currentThaiName || 'ไม่พบผู้ใช้งาน' }}</span>
+                    </span>
+                    <span class="forklift-queue">คิว: {{ forklift.value.jobCount }} งาน</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="forklift-item-right">
+              <button
+                class="delete-forklfit-button"
+                *ngIf="!readOnlyMode"
+                (click)="onDeleteForklift(forklift)"
+              >
+                <img src="assets/images/delete.png" alt="delete-icon" />
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="no-data-forklift" *ngIf="isEmptyForklifts">
+          <ng-container *ngIf="!submitted">
+            <div class="app-empty-state-icon app-empty-state-icon--sm">
+              <mat-icon>local_shipping</mat-icon>
+            </div>
+            <div>ยังไม่ได้เลือกโฟร์คลิฟท์</div>
+          </ng-container>
+          <div *ngIf="submitted" class="validation-error-message">
+            กรุณาเลือกโฟร์คลิฟท์อย่างน้อย 1 คัน
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="forkliftModal"
+    tabindex="-1"
+    aria-labelledby="forkliftModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="forklift-modal-header">
+          <div class="forklift-modal-title-group">
+            <span class="forklift-modal-eyebrow">Forklift Assignment</span>
+            <span class="forklift-modal-title-text" id="forkliftModalLabel">เลือกโฟร์คลิฟท์</span>
+          </div>
+          <button
+            type="button"
+            class="forklift-modal-close"
+            aria-label="Close"
+            (click)="onCloseForkliftModal()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <form [formGroup]="_searchForklift" class="row">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md-5">
+                <mat-label>ชื่อโฟร์คลิฟท์</mat-label>
+                <input matInput formControlName="forkliftName" placeholder="ค้นหาโฟร์คลิฟท์" />
+              </mat-form-field>
+
+              <!-- Multi-selects: same as job-detail.html (panelClass filter-multi-panel) -->
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="col-md">
+                <mat-label>คลังสินค้า</mat-label>
+                <mat-select formControlName="whCodes" multiple placeholder="ทั้งหมด" panelClass="filter-multi-panel">
+                  <mat-select-trigger>
+                    <span class="forklift-filter-trigger" [title]="forkliftWhLabels().join(', ')">{{
+                      forkliftWhLabels().join(', ')
+                    }}</span>
+                  </mat-select-trigger>
+                  <div class="filter-multi-header" (click)="$event.stopPropagation()">
+                    <span class="filter-multi-count">{{
+                      _searchForklift.controls.whCodes.value?.length
+                        ? 'เลือก ' + _searchForklift.controls.whCodes.value?.length + ' รายการ'
+                        : 'ทั้งหมด'
+                    }}</span>
+                    <button
+                      type="button"
+                      class="filter-multi-clear"
+                      *ngIf="_searchForklift.controls.whCodes.value?.length"
+                      (click)="_searchForklift.controls.whCodes.setValue([])"
+                    >
+                      ล้าง
+                    </button>
+                  </div>
+                  <mat-option *ngFor="let wh of whLocationOptions" [value]="wh.wh_code">
+                    {{ wh.wh_name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="col-md">
+                <mat-label>ส่วนงาน</mat-label>
+                <mat-select formControlName="sectionIds" multiple placeholder="ทั้งหมด" panelClass="filter-multi-panel">
+                  <mat-select-trigger>
+                    <span class="forklift-filter-trigger" [title]="forkliftSectionLabels().join(', ')">{{
+                      forkliftSectionLabels().join(', ')
+                    }}</span>
+                  </mat-select-trigger>
+                  <div class="filter-multi-header" (click)="$event.stopPropagation()">
+                    <span class="filter-multi-count">{{
+                      _searchForklift.controls.sectionIds.value?.length === forkliftSectionOptions.length
+                        ? 'ทั้งหมด'
+                        : 'เลือก ' + (_searchForklift.controls.sectionIds.value?.length || 0) + ' รายการ'
+                    }}</span>
+                    <button
+                      type="button"
+                      class="filter-multi-clear"
+                      *ngIf="_searchForklift.controls.sectionIds.value?.length !== forkliftSectionOptions.length"
+                      (click)="selectAllForkliftSections()"
+                    >
+                      เลือกทั้งหมด
+                    </button>
+                  </div>
+                  <mat-option *ngFor="let section of forkliftSectionOptions" [value]="section.id">
+                    {{ section.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </form>
+          </div>
+          <div class="select-forklift-content" *ngIf="currentForklifts.length > 0">
+            <div
+              class="select-forklift-item"
+              [ngClass]="{
+                'checked cursor-default': forklift.value.isChecked,
+                offline: !forklift.value.isOnline,
+              }"
+              (click)="onCheckForklift(forklift)"
+              *ngFor="let forklift of currentForklifts"
+            >
+              <div class="select-forklift-item-left">
+                <div class="select-forklift-icon">
+                  <img src="assets/images/forklift.png" alt="forklift-icon" />
+                </div>
+                <div class="select-forklift-details">
+                  <div class="select-forklift-name">
+                    <span class="forklift-title">
+                      <span class="forklift-code">{{ forklift.value.forkliftName }}</span>
+                      <span class="forklift-section-badge" *ngIf="forklift.value.sectionName" [title]="forklift.value.sectionName">{{
+                        forklift.value.sectionName
+                      }}</span>
+                    </span>
+                    <span class="forklift-wh-group" *ngIf="forkliftWhBadge(forklift.value.whCode) as wh">
+                      <span class="forklift-wh-badge">{{ wh.first }}</span>
+                      <span
+                        class="forklift-wh-more"
+                        *ngIf="wh.rest.length > 0"
+                        [matTooltip]="wh.rest.join(', ')"
+                        matTooltipPosition="above"
+                        (click)="$event.stopPropagation()"
+                        >+ อีก {{ wh.rest.length }}</span
+                      >
+                    </span>
+                  </div>
+                  <div class="forklift-meta-row">
+                    <span class="forklift-user">
+                      <mat-icon class="forklift-status-icon" [class.is-online]="forklift.value.isOnline"
+                        >account_circle</mat-icon
+                      >
+                      <span class="forklift-user-name">{{
+                        forklift.value.currentThaiName || 'ไม่พบผู้ใช้งาน'
+                      }}</span>
+                      <span
+                        class="forklift-status-tag"
+                        [class.is-online]="forklift.value.isOnline"
+                        >{{ forklift.value.isOnline ? 'ออนไลน์' : 'ออฟไลน์' }}</span
+                      >
+                    </span>
+                    <span class="select-forklift-queue">
+                      คิว: {{ forklift.value.jobCount }} งาน
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="select-forklift-item-right">
+                <button
+                  type="button"
+                  class="delete-forklift-button"
+                  *ngIf="forklift.value.isChecked"
+                  (click)="$event.stopPropagation(); onUnCheckForklift(forklift)"
+                >
+                  <img src="assets/images/remove.png" alt="remove-icon" />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="no-data-select-forklift" *ngIf="currentForklifts.length === 0">
+            <div class="app-empty-state-icon app-empty-state-icon--sm">
+              <mat-icon>local_shipping</mat-icon>
+            </div>
+            <div>ไม่มี Forklift ว่าง</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" data-bs-dismiss="modal" (click)="onSaveForklift()">บันทึก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="forkliftConfirmModal"
+    tabindex="-1"
+    aria-hidden="true"
+    data-bs-backdrop="static"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content confirm-modal-content">
+        <div class="confirm-icon">
+          <img src="assets/images/forklift.png" alt="forklift" />
+        </div>
+        <h5 class="confirm-title">บันทึกการเปลี่ยนแปลง?</h5>
+        <p class="confirm-body">ต้องการบันทึกการเปลี่ยนแปลงหรือไม่</p>
+        <div class="confirm-footer">
+          <button class="confirm-btn confirm-btn-save" (click)="onSaveForklift()">บันทึก</button>
+          <button class="confirm-btn confirm-btn-cancel" (click)="onNotSaveForklift()">
+            ยกเลิก
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #detailLoading>
+  <div class="main-section job-detail-loading">
+    <div class="job-title-card job-title-card-skeleton">
+      <div class="skeleton skeleton-job-icon"></div>
+
+      <div class="job-content-card job-content-card-skeleton">
+        <div class="skeleton skeleton-line skeleton-line-lg"></div>
+        <div class="skeleton skeleton-line skeleton-line-sm"></div>
+        <div class="skeleton skeleton-line skeleton-line-xs"></div>
+      </div>
+
+      <div class="step-toggle step-toggle-skeleton">
+        <div class="skeleton skeleton-pill"></div>
+        <div class="skeleton skeleton-pill"></div>
+      </div>
+
+      <div class="urgent-section urgent-section-skeleton">
+        <div class="skeleton skeleton-urgent-box"></div>
+      </div>
+    </div>
+
+    <div class="row m-0 job-detail-body-skeleton">
+      <div class="col-md-8 pl-0">
+        <div class="grade-lot-card grade-lot-card-skeleton">
+          <div class="grade-lot-header">
+            รายการเคลื่อนย้ายสินค้า<span class="grade-lot-note"><mat-icon>info_outline</mat-icon>กรุณาระบุตำแหน่งต้นทางและปลายทางให้ครบ</span>
+          </div>
+          <div class="grade-lot-content skeleton-grade-lot-content">
+            <div class="transfer-location-flow">
+              <div class="transfer-location-panel">
+                <div class="grade-lot-item skeleton-grade-lot-item">
+                  <div class="grade-lot-item-header">
+                    <div class="grade-lot-item-header-left">
+                      <div class="skeleton skeleton-icon-round mr-2"></div>
+                      <div class="skeleton skeleton-line skeleton-line-lg"></div>
+                    </div>
+                    <div class="grade-lot-item-header-right">
+                      <div class="skeleton skeleton-line skeleton-line-sm"></div>
+                    </div>
+                  </div>
+                  <div class="grade-lot-item-content skeleton-grade-lot-item-content">
+                    <div class="skeleton skeleton-pane"></div>
+                    <div class="skeleton skeleton-pane"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="transfer-location-panel">
+                <div class="grade-lot-item skeleton-grade-lot-item">
+                  <div class="grade-lot-item-header">
+                    <div class="grade-lot-item-header-left">
+                      <div class="skeleton skeleton-icon-round mr-2"></div>
+                      <div class="skeleton skeleton-line skeleton-line-lg"></div>
+                    </div>
+                    <div class="grade-lot-item-header-right">
+                      <div class="skeleton skeleton-line skeleton-line-sm"></div>
+                    </div>
+                  </div>
+                  <div class="grade-lot-item-content skeleton-grade-lot-item-content">
+                    <div class="skeleton skeleton-pane"></div>
+                    <div class="skeleton skeleton-pane"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 pr-0">
+        <div class="forklift-card forklift-card-skeleton">
+          <div class="forklift-card-header">
+            โฟร์คลิฟท์
+            <span class="skeleton skeleton-button-inline"></span>
+          </div>
+          <div class="forklift-card-content skeleton-forklift-content">
+            <div class="forklift-item skeleton-forklift-item" *ngFor="let item of skeletonItems">
+              <div class="forklift-item-left">
+                <div class="skeleton skeleton-forklift-icon"></div>
+                <div class="forklift-details">
+                  <div class="skeleton skeleton-line skeleton-line-lg"></div>
+                </div>
+              </div>
+              <div class="skeleton skeleton-delete-button"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<app-select-internal-transfer-location
+  [modalId]="'sourceWhLocationModal'"
+  [confirmModalId]="'sourceWhLocationConfirmModal'"
+  [title]="'เพิ่มตำแหน่งรับสินค้า'"
+  [itemData]="sourceItem"
+  [locations]="$any(sourceLocations)"
+  [selectedItemId]="sourceItem.id"
+  [warehouseCode]="'MWH'"
+  [whLocationOptions]="whLocationOptions"
+  [wmsCcCodeOptions]="costCenterOptions"
+  [costCenter]="selectedCostCenter.value?.cc_code ?? ''"
+  [isRequiredStock]="true"
+  [requireExistingStock]="true"
+  [openRequestId]="sourceLocationRequestId"
+  [qtyUnit]="'kg'"
+></app-select-internal-transfer-location>
+
+<app-select-internal-transfer-location
+  [modalId]="'destinationWhLocationModal'"
+  [confirmModalId]="'destinationWhLocationConfirmModal'"
+  [title]="'เพิ่มตำแหน่งส่งสินค้า'"
+  [itemData]="destinationItem"
+  [locations]="$any(destinationLocations)"
+  [selectedItemId]="destinationItem.id"
+  [warehouseCode]="'MWH'"
+  [whLocationOptions]="whLocationOptions"
+  [wmsCcCodeOptions]="costCenterOptions"
+  [costCenter]="selectedCostCenter.value?.cc_code ?? ''"
+  [isRequiredStock]="true"
+  [requireExistingStock]="false"
+  [targetTotalQty]="totalSourceQty"
+  [openRequestId]="destinationLocationRequestId"
+  [qtyUnit]="'kg'"
+  [defaultGrade]="defaultDestinationGrade"
+  [defaultLotNo]="defaultDestinationLotNo"
+></app-select-internal-transfer-location>
+
+<!-- WMS+ Interface Log Detail -->
+<div class="modal fade" id="wmsPlusDetailModal" tabindex="-1" aria-labelledby="wmsPlusDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content wms-plus-detail-content">
+      <div class="modal-header wms-plus-detail-header">
+        <div>
+          <div class="system-eyebrow">{{ header?.system_no || '-' }}</div>
+          <h5 class="modal-title" id="wmsPlusDetailModalLabel">รายละเอียดการส่งข้อมูล</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="wms-plus-detail-tabs" *ngIf="(_wmsPlusLogs?.length ?? 0) > 1">
+        <button
+          type="button"
+          class="wms-plus-detail-tab"
+          *ngFor="let log of _wmsPlusLogs; let i = index"
+          [class.success]="log.is_success === 'Y'"
+          [class.failed]="log.is_success !== 'Y'"
+          [class.active]="_wmsPlusLogPage === i + 1"
+          (click)="_wmsPlusLogPage = i + 1"
+        ></button>
+      </div>
+      <div class="modal-body" *ngIf="_wmsPlusLogs?.length; else noWmsPlusLogs">
+        <div class="wms-plus-detail-entry" *ngFor="let wmsPlusLog of pagedWmsPlusLogs">
+          <div class="wms-plus-detail-entry-header">
+            <span
+              class="wms-plus-detail-entry-badge"
+              [class.success]="wmsPlusLog.is_success === 'Y'"
+              [class.failed]="wmsPlusLog.is_success !== 'Y'"
+            >
+              <mat-icon>{{
+                wmsPlusLog.is_success === 'Y' ? 'check_circle' : 'error'
+              }}</mat-icon>
+              {{ wmsPlusLog.is_success === 'Y' ? 'Success' : 'Failed' }}
+            </span>
+            <span class="wms-plus-detail-entry-mode">{{ wmsPlusLog.mode || '-' }}</span>
+            <span class="wms-plus-detail-entry-time">{{ (wmsPlusLog.create_datetime | date:'dd/MM/yyyy HH:mm:ss') || '-' }}</span>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              Method
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusLog.method)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ wmsPlusLog.method || '-' }}</pre>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              Route
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusLog.route)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ wmsPlusLog.route || '-' }}</pre>
+          </div>
+          <div class="wms-plus-detail-row wms-plus-detail-row-payload">
+            <span class="wms-plus-detail-label">
+              Payload
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusLog.param)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ formatJsonPayload(wmsPlusLog.param) }}</pre>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              Message
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusLog.message)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ formatWmsMessage(wmsPlusLog.message) }}</pre>
+          </div>
+          <div class="wms-plus-detail-row">
+            <span class="wms-plus-detail-label">
+              เวลา
+              <button
+                type="button"
+                class="wms-plus-detail-copy-button"
+                (click)="copyToClipboard(wmsPlusLog.create_datetime)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </span>
+            <pre class="wms-plus-detail-payload">{{ wmsPlusLog.create_datetime || '-' }}</pre>
+          </div>
+        </div>
+      </div>
+      <ng-template #noWmsPlusLogs>
+        <div class="modal-body">
+          <div class="wms-plus-detail-empty">ไม่พบข้อมูลการส่ง</div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

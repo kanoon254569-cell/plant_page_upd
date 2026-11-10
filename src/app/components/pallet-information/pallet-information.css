@@ -1,0 +1,1160 @@
+﻿/* ═══════════════════════════════════════════════════
+   HEADER (back button) -- same as job-detail
+   ═══════════════════════════════════════════════════ */
+.header-left,
+.header-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-button {
+  width: 36px;
+  height: 36px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #475569;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.back-button:hover {
+  background: #e2e8f0;
+  color: #1d4ed8;
+}
+
+/* ═══════════════════════════════════════════════════
+   PALLET INFO CARD
+   ═══════════════════════════════════════════════════ */
+.pi-card {
+  margin: 16px;
+  padding: 28px 32px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pi-card__icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c7d2fe;
+
+  img {
+    width: 48px;
+    height: auto;
+    opacity: 0.85;
+  }
+}
+
+.pi-card__fields {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+/* Pallet Number headline, split from the detail tiles by a divider */
+.pi-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding-right: 24px;
+  border-right: 1px solid #e2e8f0;
+}
+
+.pi-hero__value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+
+.pi-grid {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.pi-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid #eef2f7;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.pi-tile--highlight {
+  border-color: #dbeafe;
+  background: #eff6ff;
+}
+
+.pi-field__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pi-field__value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pi-field__value--highlight {
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.pi-unit {
+  margin-left: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.pi-sub {
+  margin-left: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.pi-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pi-btn {
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.pi-btn--primary {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.24);
+}
+
+.pi-btn--primary:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  box-shadow: 0 8px 18px rgba(29, 78, 216, 0.32);
+}
+
+.pi-btn--outline {
+  background: #fff;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(71, 85, 105, 0.1);
+}
+
+.pi-btn--outline:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 3px 10px 3px 6px;
+  border-radius: 999px;
+
+  mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.badge-chip--blue {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* ═══════════════════════════════════════════════════
+   TABLE
+   ═══════════════════════════════════════════════════ */
+.display-table {
+  margin: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.display-table-header {
+  height: 62px;
+  font-size: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 20px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+/* Bag List / Pallet History tabs (inside the gradient header) */
+.pi-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.pi-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .table-count {
+    margin-left: 2px;
+  }
+}
+
+.pi-tab:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.pi-tab.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.table-count {
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.table-container {
+  width: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+  padding: 12px;
+  height: calc(100vh - 430px);
+}
+
+.table-container table {
+  table-layout: fixed;
+}
+
+.table-container th {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%) !important;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 12px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-container td {
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 14px 16px;
+  color: #1e293b;
+  border-bottom: 1px solid #eef1f5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-container tr:nth-child(odd) { background-color: #fff !important; }
+.table-container tr:nth-child(even) { background-color: #fafbfc !important; }
+.table-container tr.mat-mdc-row:hover { background-color: #f1f5f9 !important; }
+.table-container tr.mat-mdc-row { transition: background-color 0.15s ease; }
+.table-container td, .table-container th { vertical-align: middle; }
+
+/* Center columns */
+.mat-column-no,
+.mat-column-edit,
+.mat-column-delete {
+  text-align: center;
+}
+
+::ng-deep .table-container th.mat-column-no,
+::ng-deep .table-container th.mat-column-edit,
+::ng-deep .table-container th.mat-column-delete {
+  text-align: center;
+  justify-content: center;
+}
+
+.mat-column-no {
+  width: 7%;
+}
+
+.mat-column-bagNumber {
+  width: 20%;
+}
+
+/* =====================================================================
+   Skeleton loading -- same shimmer as pallet-adjustment (.pa-skel).
+   Bag List shows skeleton rows while process/bag loads; the header card
+   shimmers only when it has no router state yet (isBagListLoading in .ts).
+   ===================================================================== */
+.pi-skel {
+  display: block;
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e9eef5 25%, #f6f8fb 37%, #e9eef5 63%);
+  background-size: 400% 100%;
+  animation: pi-shimmer 1.4s ease infinite;
+}
+
+.skel-table {
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.skel-table tbody td {
+  height: 73px;
+}
+
+.pi-card.is-loading .pi-hero__value,
+.pi-card.is-loading .pi-field__value {
+  display: block;
+  min-width: 90px;
+  color: transparent;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e9eef5 25%, #f6f8fb 37%, #e9eef5 63%);
+  background-size: 400% 100%;
+  animation: pi-shimmer 1.4s ease infinite;
+}
+
+.pi-card.is-loading .pi-hero__value {
+  min-width: 200px;
+}
+
+@keyframes pi-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* Mode chip: 1 Auto (green), 2 Manual (amber), 3 Test (grey) */
+.mode-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.mode-chip--1 {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.mode-chip--2 {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.mode-chip--3 {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+/* Bag QR text + copy button */
+.bag-qr {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.bag-qr__text {
+  color: #334155;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bag-qr__copy {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bag-qr__copy mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.bag-qr__copy:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.bag-qr__copy.copied {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.mat-column-costCenter {
+  width: 11.8%;
+}
+
+.mat-column-runningNo {
+  width: 11.8%;
+}
+
+.mat-column-mode {
+  width: 8%;
+}
+
+/* Bag No. -- position of the bag on the pallet */
+.bag-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.ton-no {
+  margin-left: 2px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* Bag Running / Ton No. -- two chips: running (grey, like Bag No.) and ton (blue) */
+.run-ton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.run-ton__run,
+.run-ton__ton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.run-ton__run {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.run-ton__ton {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.run-ton__sep {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.mat-column-grade {
+  width: 11.8%;
+}
+
+.mat-column-lot {
+  width: 11.8%;
+}
+
+.mat-column-createDateTime {
+  width: 11.8%;
+}
+
+.mat-column-edit,
+.mat-column-delete {
+  width: 80px;
+}
+
+.last-update-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.last-update-date {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.last-update-time {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.empty-state {
+  height: calc(100vh - 430px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.empty-state h5 { margin-bottom: 8px; font-weight: 600; }
+.empty-state p { margin: 0; font-size: 14px; }
+
+/* history tab has no paginator, so match .ph-container height */
+.empty-state--history {
+  height: calc(100vh - 374px);
+}
+
+.edit-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(29, 78, 216, 0.3);
+  transition: all 0.25s ease;
+
+  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+}
+
+.edit-button:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 0 6px 14px rgba(29, 78, 216, 0.4);
+}
+
+.delete-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(220, 38, 38, 0.24);
+  transition: all 0.25s ease;
+
+  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+}
+
+.delete-button:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.32);
+}
+
+/* ═══════════════════════════════════════════════════
+   PALLET HISTORY (timeline)
+   ═══════════════════════════════════════════════════ */
+.ph-container {
+  /* no paginator under the timeline, so it takes that room too */
+  height: calc(100vh - 374px);
+  overflow: auto;
+  scrollbar-width: thin;
+  padding: 16px 24px 8px;
+}
+
+/* Summary strip */
+.ph-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.ph-summary__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid #eef2f7;
+  border-radius: 10px;
+  background: #f8fafc;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #64748b;
+  }
+}
+
+.ph-summary__label {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.ph-summary__value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Day header -- sticks to the top while scrolling that day */
+.ph-day + .ph-day {
+  margin-top: 8px;
+}
+
+.ph-day__header {
+  position: sticky;
+  top: -16px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 -24px 10px;
+  padding: 8px 24px;
+  background: rgba(248, 250, 252, 0.96);
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid #eef2f7;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #334155;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #64748b;
+  }
+}
+
+.ph-day__count {
+  margin-left: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* One row per step: time | rail | card */
+.ph-row {
+  display: grid;
+  grid-template-columns: 72px 34px minmax(0, 1fr);
+  column-gap: 12px;
+  --ph-color: #64748b;
+  --ph-bg: #f1f5f9;
+}
+
+/* Color per ct_process.id: Get Pallet / Put Away / Prepare Pallet / Store Bag */
+.ph-row--p1 { --ph-color: #1d4ed8; --ph-bg: #eff6ff; }
+.ph-row--p2 { --ph-color: #047857; --ph-bg: #ecfdf5; }
+.ph-row--p3 { --ph-color: #b45309; --ph-bg: #fffbeb; }
+.ph-row--p4 { --ph-color: #6d28d9; --ph-bg: #f5f3ff; }
+
+.ph-time {
+  padding-top: 15px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.ph-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
+}
+
+.ph-dot {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ph-bg);
+  color: var(--ph-color);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #e2e8f0;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.ph-row--latest .ph-dot {
+  background: var(--ph-color);
+  color: #fff;
+  box-shadow: 0 0 0 4px var(--ph-bg), 0 0 0 5px #e2e8f0;
+}
+
+.ph-line {
+  flex: 1;
+  width: 2px;
+  min-height: 12px;
+  margin-top: 4px;
+  background: #e2e8f0;
+}
+
+.ph-card {
+  min-width: 0;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid var(--ph-color);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.ph-card:hover {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.ph-row--latest .ph-card {
+  background: linear-gradient(90deg, var(--ph-bg) 0%, #fff 60%);
+}
+
+.ph-card__main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+
+.ph-process {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ph-color);
+}
+
+.ph-arrow {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+}
+
+.ph-location {
+  min-width: 0;
+  max-width: 100%;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Job status + "ล่าสุด" on the right of the step line */
+.ph-card__badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.ph-latest {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--ph-color);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Job / operator / forklift -- three labelled columns */
+.ph-info {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 10px;
+  border: 1px solid #eef2f7;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.ph-info__col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px 14px;
+}
+
+.ph-info__col + .ph-info__col {
+  border-left: 1px solid #eef2f7;
+}
+
+.ph-info__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+
+  > mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: #94a3b8;
+  }
+}
+
+.ph-info__value {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ph-info__sub {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.ph-job-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px 1px 5px;
+  border-radius: 5px;
+  background: #1e293b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+
+  mat-icon {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+    color: #cbd5e1;
+  }
+}
+
+/* Job document no -- the number people search for */
+.ph-system-no {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Narrow screens: stack the three columns */
+@media (max-width: 900px) {
+  .ph-info {
+    grid-template-columns: 1fr;
+  }
+
+  .ph-info__col + .ph-info__col {
+    border-left: none;
+    border-top: 1px solid #eef2f7;
+  }
+}
+
+/* Job status chip by ct_job_status.id */
+.ph-status {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ph-status--s1 { background: #f1f5f9; color: #475569; }  /* Pending */
+.ph-status--s2 { background: #eef2ff; color: #4338ca; }  /* WH Approved */
+.ph-status--s3 { background: #eef2ff; color: #4338ca; }  /* SP Approve */
+.ph-status--s4 { background: #fffbeb; color: #b45309; }  /* In Progress */
+.ph-status--s5 { background: #ecfdf5; color: #047857; }  /* Complete */
+.ph-status--s6 { background: #f0f9ff; color: #0369a1; }  /* Mapping Do */
+
+/* Location Type badge -- same colors as pallet-management */
+.badge-chip--loc {
+  background: #f1f5f9;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.badge-chip--loc-BG-PLANT { background: #fffbeb; color: #b45309; }
+.badge-chip--loc-MWH { background: #f5f3ff; color: #6d28d9; }
+.badge-chip--loc-RQ-PLANT { background: #f0fdfa; color: #0f766e; }
+.badge-chip--loc-PRE-ZONE { background: #f0f9ff; color: #0369a1; }
+.badge-chip--loc-SPC-ZONE { background: #fdf2f8; color: #be185d; }
+.badge-chip--loc-DOCK { background: #eef2ff; color: #4338ca; }
+.badge-chip--loc-VEHICLE { background: #f0fdf4; color: #15803d; }
+
+/* ═══════════════════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════════════════ */
+.ul-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  animation: ul-fade-in 0.15s ease;
+}
+
+@keyframes ul-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ul-modal {
+  background: #fff;
+  border-radius: 8px;
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: ul-slide-up 0.18s ease;
+}
+
+@keyframes ul-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.ul-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 2px solid #1a1a2e;
+}
+
+.ul-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1a1a2e;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ul-modal__title .material-icons { font-size: 20px; color: #000; }
+
+.ul-modal__close {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.ul-modal__close:hover { color: #1a1a2e; }
+.ul-modal__close .material-icons { font-size: 20px; }
+
+.ul-modal__body {
+  padding: 20px 20px 12px;
+}
+
+.ul-modal__body input.form-control,
+.ul-modal__body select.form-control {
+  height: 50px !important;
+  font-size: 16px;
+  padding: 0 14px !important;
+}
+
+.ul-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid #dee2e6;
+}
+
+.ul-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+/* ถุงที่สร้างจากปุ่ม "เพิ่มข้อมูล" -- สีเดียวกับหน้า Pallet Adjustment */
+.table-container tr.pi-row--manual-added,
+.table-container tr.pi-row--manual-added:hover {
+  background-color: #f5f3ff !important;
+}
+.table-container tr.pi-row--manual-added td,
+.table-container tr.pi-row--manual-added .bag-no,
+.table-container tr.pi-row--manual-added .bag-qr__text {
+  color: #6d28d9;
+}
+
+/* ช่องว่างที่ไม่มีข้อมูลการพิมพ์ -- สีเดียวกับช่องว่างของหน้า Pallet Adjustment */
+.table-container tr.pi-row--missing,
+.table-container tr.pi-row--missing:hover {
+  background-color: #fef2f2 !important;
+}
+.table-container tr.pi-row--missing td {
+  color: #dc2626;
+}
+.pi-missing-bag {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.pi-missing-bag__label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.pi-missing-bag__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  cursor: pointer;
+}
+.pi-missing-bag__btn:hover {
+  background: #dbeafe;
+}
+.pi-missing-bag__btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.pi-spin {
+  animation: pi-spin 1s linear infinite;
+}
+@keyframes pi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.pi-missing-bag__btn mat-icon {
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+}

@@ -1,0 +1,66 @@
+/*  Wrapper for <app-empty-state> -- same height as .job-list-container so
+    the pane doesn't jump between empty and filled. */
+.transfer-wh-empty-state {
+  height: calc(100vh - 390px);
+  min-height: 360px;
+}
+
+/*  Same ct_job_status palette as job-wh-internal-transfer-list.css. */
+.transfer-wh-status--pending {
+  color: #8a6a00;
+  background: #fff7d6;
+  border-color: #e5c85c;
+}
+
+.transfer-wh-status--wh-approved {
+  color: #310044;
+  background: #f2dfff;
+  border-color: #6011aa;
+}
+
+.transfer-wh-status--in-progress {
+  color: #0958d9;
+  background: #e6f4ff;
+  border-color: #91caff;
+}
+
+.transfer-wh-status--complete {
+  color: #389e0d;
+  background: #f6ffed;
+  border-color: #95de64;
+}
+
+.transfer-wh-status--mapping-do {
+  color: #c41d7f;
+  background: #fff0f6;
+  border-color: #ffadd2;
+}
+
+.transfer-wh-status--cancelled {
+  color: #cf1322;
+  background: #fff1f0;
+  border-color: #ff7875;
+}
+
+/*  Keep "IT-TW-20260005" on one line -- in the 18%-wide .system-info next to
+    the status badge it otherwise breaks at the hyphen. */
+.system-header .data-no .system-no {
+  white-space: nowrap;
+}
+
+.location .location-detail span {
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* WH Transfer job icon: sky blue so TW stands apart from inbound (green), outbound (red) and internal transfer (violet). */
+.job-icon.job-icon-wh-transfer {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+}
+
+.job-icon .text-topic-wh-transfer {
+  font-size: 24px;
+  font-weight: 600;
+  color: #0284c7;
+}

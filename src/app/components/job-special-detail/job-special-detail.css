@@ -1,0 +1,878 @@
+﻿.header-section {
+  justify-content: space-between;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.back-button {
+  width: 36px;
+  height: 36px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #475569;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+.back-button:hover {
+  background: #e2e8f0;
+  color: #1d4ed8;
+}
+.save-button {
+  height: 44px;
+  padding: 8px 22px;
+  border: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #22c358 0%, #16a34a 100%);
+  cursor: pointer;
+  box-shadow:
+    0 6px 16px rgba(34, 195, 88, 0.22),
+    0 1px 4px rgba(34, 195, 88, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+.save-button mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+.save-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  box-shadow: 0 10px 24px rgba(34, 195, 88, 0.28);
+  transform: translateY(-2px);
+}
+.save-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+.save-button:disabled {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+  transform: none;
+}
+.detail-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 80px 16px;
+  color: #64748b;
+  font-size: 14px;
+}
+.not-found-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 80px 16px;
+  color: #94a3b8;
+}
+.not-found-state mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+.not-found-state p {
+  margin: 0;
+  font-size: 15px;
+}
+.back-button-plain {
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #374151;
+  margin-top: 4px;
+}
+.back-button-plain:hover {
+  background: #f3f4f6;
+}
+.main-section {
+  padding: 16px 20px 0;
+}
+.detail-row {
+  padding: 16px;
+  gap: 0;
+  align-items: flex-start;
+}
+.job-title-card {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  gap: 0;
+}
+.job-icon {
+  width: 65px;
+  height: 65px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff1f1 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+.job-icon-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #dc2626;
+  letter-spacing: -0.5px;
+}
+.job-content-card {
+  flex: 1;
+  min-width: 0;
+}
+.job-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.job-system-no {
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+}
+.status-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  padding: 3px 12px;
+}
+
+/*  Modifier classes match job-special-list.ts's replaceWhiteSpaceWithDash()
+    output (e.g. "SPC Approve" -> "spc-approve") so both pages colour the
+    same status_name the same way instead of this page's badge always
+    staying flat gray. */
+.status-badge.pending {
+  background: #fff7d6;
+  border-color: #e5c85c;
+  color: #8a6a00;
+}
+.status-badge.spc-approve {
+  background: #f2dfff;
+  border-color: #6011aa;
+  color: #310044;
+}
+.status-badge.in-progress {
+  background: #e6f4ff;
+  border-color: #91caff;
+  color: #0958d9;
+}
+.status-badge.completed,
+.status-badge.complete {
+  background: #f6ffed;
+  border-color: #95de64;
+  color: #389e0d;
+}
+.status-badge.cancelled {
+  background: #fff1f0;
+  border-color: #ff7875;
+  color: #cf1322;
+}
+.job-detail-meta {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 4px;
+  font-size: 12px;
+  color: #777;
+}
+.job-summary-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100px;
+  gap: 2px;
+}
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+.stat-label {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.stat-divider {
+  width: 1px;
+  height: 30px;
+  background: #e2e8f0;
+}
+.detail-body {
+  padding: 12px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.arriving-lock-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #e6f4ff;
+  border: 1px solid #91caff;
+  color: #0958d9;
+  font-size: 14px;
+  font-weight: 600;
+}
+.arriving-lock-banner mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+.detail-card {
+  border: 1px solid #bababa;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.detail-card-header {
+  height: 62px;
+  font-size: 16px;
+  border-bottom: 1px solid #bababa;
+  padding: 12px 20px;
+  font-weight: 500;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.detail-card-header mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  opacity: 0.85;
+}
+.detail-card-body {
+  padding: 18px 22px;
+}
+.pallet-list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pallet-count-badge {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+/* ── Form header row (job-no badge + เลขที่เอกสาร + checkboxes) ────────── */
+.form-section {
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fafbfc;
+  margin-bottom: 10px;
+}
+.form-section-last {
+  margin-bottom: 0;
+}
+.form-section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+.jobno-display {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 11px;
+  background: #eef3ff;
+  color: #1d4ed8;
+  border: 1px solid #c7d7fd;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.form-checkboxes {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  padding: 0 14px;
+  height: 50px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  align-self: flex-end;
+  margin-bottom: 0;
+}
+.cb-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  margin: 0;
+  white-space: nowrap;
+}
+.cb-label input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  accent-color: #1d4ed8;
+}
+
+/* ── Form rows ──────────────────────────────────────────────────────────── */
+.form-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Form field ─────────────────────────────────────────────────────────── */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.form-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.form-field input {
+  height: 50px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0 11px;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  min-width: 0;
+  width: 100%;
+}
+.form-field input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+.form-field input:disabled {
+  background: #f9fafb;
+  color: #9ca3af;
+}
+.form-field input.field-invalid {
+  border-color: #ef4444 !important;
+  background: #fff5f5 !important;
+}
+
+/* ── Field size variants ────────────────────────────────────────────────── */
+.form-field-xs {
+  width: 90px;
+  flex-shrink: 0;
+}
+.form-field-sm {
+  width: 130px;
+  flex-shrink: 0;
+}
+.form-field-md {
+  width: 180px;
+  flex-shrink: 0;
+}
+.form-field-lg {
+  width: 240px;
+  flex-shrink: 0;
+}
+.form-field-xl {
+  width: 250px;
+  flex-shrink: 0;
+}
+.form-field-flex {
+  flex: 1;
+}
+
+/* ── Datepicker inside .form-field ──────────────────────────────────────── */
+.job-meta-date-field {
+  /* width: 100%; */
+  width: 250px;
+}
+::ng-deep
+  app-job-special-detail
+  .job-meta-date-field.mat-mdc-form-field
+  .mat-mdc-text-field-wrapper {
+  height: 50px !important;
+  background-color: #fff !important;
+  border-radius: 8px !important;
+}
+::ng-deep app-job-special-detail .job-meta-date-field .mat-mdc-form-field-flex {
+  align-items: center;
+  height: 50px;
+}
+::ng-deep app-job-special-detail .job-meta-date-field .mat-mdc-form-field-infix {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  min-height: unset !important;
+}
+::ng-deep app-job-special-detail .job-meta-date-field input.mat-mdc-input-element {
+  font-size: 13px;
+  padding: 0 !important;
+}
+::ng-deep app-job-special-detail .job-meta-date-field .mat-mdc-icon-button {
+  width: 26px;
+  height: 26px;
+  padding: 2px;
+  margin-right: 8px;
+}
+::ng-deep app-job-special-detail .job-meta-date-field.field-invalid .mdc-notched-outline__leading,
+::ng-deep app-job-special-detail .job-meta-date-field.field-invalid .mdc-notched-outline__notch,
+::ng-deep app-job-special-detail .job-meta-date-field.field-invalid .mdc-notched-outline__trailing {
+  border-color: #ef4444 !important;
+}
+
+/* ── Pallet blocks ──────────────────────────────────────────────────────── */
+.no-pallets-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: #94a3b8;
+}
+.no-pallets-state mat-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+}
+.no-pallets-state p {
+  margin: 0;
+  font-size: 14px;
+}
+.pallet-block {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+.pallet-block:last-child {
+  margin-bottom: 0;
+}
+.pallet-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.pallet-block-header span {
+  font-weight: 700;
+  font-size: 16px;
+  color: #1f2937;
+}
+.pallet-block-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.add-button {
+  height: 40px;
+  background-color: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.add-button:hover {
+  background-color: #128040;
+}
+.duplicate-button {
+  height: 40px;
+  background-color: #f1e9ff;
+  color: #7c3aed;
+  border: 1px solid #d9c6ff;
+  border-radius: 10px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.duplicate-button mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+.duplicate-button:hover {
+  background-color: #e6d9ff;
+}
+.print-button {
+  height: 40px;
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.print-button mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+.print-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.print-button:hover {
+  background-color: #cdeafe;
+}
+.remove-pallet-button {
+  border: none;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  padding: 4px;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.remove-pallet-button:hover {
+  color: #dc2626;
+  background: #fee2e2;
+}
+.pallet-empty-state {
+  padding: 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+  border: 1px dashed #e2e8f0;
+  border-radius: 8px;
+}
+
+/* ── Bag table ──────────────────────────────────────────────────────────── */
+/*  table-layout: fixed + shared col-* width classes so the WH withdrawal
+    summary table (Section 4) lines up column-for-column with the Pallet
+    List's bag-table, instead of each auto-sizing to its own content. */
+.bag-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.bag-table th,
+.bag-table td {
+  border: 1px solid #e5e7eb;
+  padding: 7px 10px;
+  text-align: center;
+}
+.bag-table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  font-size: 12px;
+  color: #374151;
+}
+.bag-table td:nth-child(2),
+.bag-table td:nth-child(3) {
+  text-align: left;
+}
+.bag-table tbody tr:hover td {
+  background-color: #f0f7ff;
+}
+/*  No explicit widths below -- table-layout: fixed with every column
+    left unsized splits the table evenly across all of them, so every
+    column in a bag-table (and between the Pallet List / WH summary
+    tables, since both have 6 columns) ends up the same width. */
+.col-no {
+  color: #94a3b8;
+}
+/*  WH withdrawal summary table's own trailing column -- how much of this
+    grade+lot has actually been sent, once the API exposes that per
+    grade/lot (see whWithdrawalSummary() in job-special-detail.ts). */
+.col-actual {
+  color: #94a3b8;
+}
+.table-cell-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  padding: 12px 16px;
+  font-size: 14px;
+  background-color: transparent;
+  font-family: inherit;
+  color: inherit;
+  text-align: inherit;
+}
+.table-cell-input:hover {
+  border-color: #d0d0d0;
+  background-color: #fff;
+}
+.table-cell-input:focus {
+  outline: none;
+  border-color: #1d4ed8;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+}
+.table-cell-input.field-invalid {
+  background-color: #fff5f5 !important;
+}
+.delete-icon-button {
+  border: none;
+  border-radius: 6px;
+  width: 35px;
+  height: 35px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #cbd5e1;
+  background: transparent;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+.delete-icon-button mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+.delete-icon-button:hover {
+  color: #dc2626;
+  background: #fee2e2;
+}
+.required-mark {
+  color: #ef4444;
+  font-weight: 700;
+}
+.field-invalid {
+  border-color: #ef4444 !important;
+  background-color: #fff5f5 !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   PRINT SECTION (pallet label cards + windows preview)
+   ═══════════════════════════════════════════════════ */
+#print-special-area {
+  display: none;
+}
+
+@page {
+  size: auto;
+  margin: 0mm;
+}
+
+@media print {
+  body * { visibility: hidden !important; }
+  #print-special-area, #print-special-area ::ng-deep * { visibility: visible !important; }
+  #print-special-area {
+    display: flex !important;
+    /*  position:fixed + height:100vh pins this box to exactly one page's
+        height, which clips every pallet card after the first once each
+        .label-card fills a full page - printAllPallets() then only ever
+        produces one printed page no matter how many pallets there are.
+        Normal flow (no fixed height) lets the browser's own pagination
+        (page-break-after: always on .label-card + .label-card) slice
+        multiple full-page cards into separate pages like it's meant to. */
+    position: static !important;
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 10mm !important;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+}
+
+/* The card markup below is injected via el.innerHTML (raw DOM, not Angular
+   template), so it never receives Angular's view-encapsulation attribute -
+   ::ng-deep is required for these rules to reach it. */
+#print-special-area {
+  font-family: 'Tahoma', 'Segoe UI', sans-serif;
+  color: #111;
+}
+
+/*  All font-sizes/padding/gaps/dimensions below are the original small-
+    label values x~1.95 (rounded), matching .label-card's own jump from a
+    fixed 420px width to the full printed page - keeps every element's
+    proportions the same as before instead of leaving them label-sized on
+    a page-sized card. */
+/*  A pallet mixing several grades (see job-special-list.ts's
+    buildPalletsForGroup leftover combining) can have more item rows than a
+    single-grade pallet ever did. Tried making .label-card a FIXED one-page
+    height + overflow: hidden so it could never occupy more than one page -
+    but "fixed height" meant any row count the shrink math (see
+    renderLabelCard() in job-special-detail.ts) underestimated got silently
+    clipped off, losing real data. Losing data is worse than an occasional
+    second page, so back to min-height (a floor, not a cap) with no
+    overflow: hidden -- content that's genuinely too much for one page now
+    flows onto a second page (each row kept whole by the page-break-inside:
+    avoid below) instead of vanishing. The font-size shrink is kept as a
+    best-effort reduction of how often that spillover happens, not as the
+    only thing standing between this and clipped data.
+
+    display: flex + .item-table-wrap's flex: 1 was tried again here to push
+    .label-footer down to the card's bottom edge for a short pallet instead
+    of leaving a gap under a short table -- but it reintroduced the same
+    blank-page pagination bug flex caused before, so it's reverted. A gap
+    above a short pallet's footer is a real but purely cosmetic imperfection;
+    a spurious blank page (or a re-split table) is not, so plain block flow
+    wins here. .label-footer is instead pinned to the bottom via
+    position: absolute (see below) -- unlike flex-grow, this doesn't ask
+    print pagination to reason about distributing space across an
+    overflowing box, so it shouldn't carry the same risk; kept an eye out
+    for it anyway since print + absolute positioning isn't entirely
+    risk-free either. padding-bottom here reserves room so a short
+    pallet's table never visually collides with the pinned footer. */
+#print-special-area ::ng-deep .label-card {
+  width: 100%;
+  min-height: calc(100vh - 20mm);
+  background: #fff;
+  border: 3px solid #111;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  padding-bottom: 60px;
+}
+#print-special-area ::ng-deep .label-card + .label-card {
+  margin-top: 24px;
+  page-break-after: always;
+}
+#print-special-area ::ng-deep .label-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 36px;
+  border-bottom: 3px solid #111;
+}
+#print-special-area ::ng-deep .brand-name { font-size: 31px; font-weight: 800; letter-spacing: 1px; }
+#print-special-area ::ng-deep .brand-sub { font-size: 22px; color: #555; margin-top: 4px; }
+#print-special-area ::ng-deep .label-header-right { text-align: right; }
+#print-special-area ::ng-deep .print-date-lbl { font-size: 17px; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+#print-special-area ::ng-deep .print-date-val { font-size: 23px; font-weight: 700; }
+/*  This row (ข้อมูลใบงาน/PALLET # + ข้อมูลเพิ่มเติม/ขายวันที่) is
+    fixed-height overhead regardless of pallet row count -- tightened
+    padding/margins/line-height here (font-sizes left alone, still
+    readable) free up more of the page for .item-table-wrap, which is what
+    actually needs the room on a multi-grade pallet. */
+#print-special-area ::ng-deep .label-row { display: flex; border-bottom: 3px solid #111; }
+#print-special-area ::ng-deep .label-box { padding: 10px 31px; font-size: 23px; }
+#print-special-area ::ng-deep .label-box--wide { flex: 1.6; }
+#print-special-area ::ng-deep .label-box--narrow { flex: 1; border-left: 3px solid #111; }
+#print-special-area ::ng-deep .box-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+#print-special-area ::ng-deep .box-line { margin-bottom: 2px; line-height: 1.25; }
+#print-special-area ::ng-deep .box-line-lbl { color: #666; margin-right: 6px; }
+#print-special-area ::ng-deep .accent-title { font-size: 30px; font-weight: 800; margin-bottom: 6px; }
+#print-special-area ::ng-deep .accent-line { margin-bottom: 2px; }
+#print-special-area ::ng-deep .flag-row { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 8px; }
+#print-special-area ::ng-deep .flag-chip { font-size: 20px; font-weight: 600; background: #f3f4f6; border: 2px solid #d1d5db; border-radius: 999px; padding: 4px 16px; }
+#print-special-area ::ng-deep .box-line-sm { margin-bottom: 8px; font-size: 22px; color: #666; }
+#print-special-area ::ng-deep .box-line-sm strong { display: block; font-size: 25px; color: #111; margin-top: 2px; }
+#print-special-area ::ng-deep .label-code-row { display: flex; align-items: center; gap: 28px; padding: 31px 36px; border-bottom: 3px solid #111; }
+#print-special-area ::ng-deep .code-tag { width: 78px; height: 78px; flex-shrink: 0; background: #f3f4f6; border: 3px solid #111; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 28px; }
+#print-special-area ::ng-deep .code-main { flex: 1; min-width: 0; }
+#print-special-area ::ng-deep .code-sub { font-size: 22px; color: #666; margin-bottom: 4px; }
+#print-special-area ::ng-deep .code-big { font-size: 39px; font-weight: 800; letter-spacing: 1px; word-break: break-all; }
+#print-special-area ::ng-deep .code-qr { width: 196px; height: 196px; flex-shrink: 0; }
+#print-special-area ::ng-deep .cut-line { position: relative; margin: 0 36px; border-top: 3px dashed #999; }
+#print-special-area ::ng-deep .cut-line span { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 12px; font-size: 23px; color: #999; }
+#print-special-area ::ng-deep .item-table-wrap { padding: 28px 36px 12px; }
+#print-special-area ::ng-deep .item-table { width: 100%; border-collapse: collapse; font-size: 23px; }
+#print-special-area ::ng-deep .item-table th,
+#print-special-area ::ng-deep .item-table td {
+  border: 2px solid #999;
+  /*  em, not px -- so shrinking the table's own inline font-size (see
+      renderLabelCard()) shrinks cell padding proportionally too, instead
+      of oversized padding eating into the space the smaller text bought.
+      0.45em/0.7em preserve the original 10px/16px ratio at the base 23px. */
+  padding: 0.45em 0.7em;
+  text-align: center;
+  /*  If a table still needs a second page despite the font-size shrink,
+      this keeps one grade's row from being cut in half across that page
+      boundary -- the header repeating above the continuation is the
+      accepted (standard, browser-native) trade-off for never losing a row
+      outright. */
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+#print-special-area ::ng-deep .item-table th { background: #f3f4f6; font-weight: 700; }
+#print-special-area ::ng-deep .label-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 36px;
+  border-top: 3px solid #111;
+  font-size: 23px;
+  background: #fff;
+}
+#print-special-area ::ng-deep .label-footer strong { font-size: 25px; }

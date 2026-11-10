@@ -1,0 +1,109 @@
+<div
+  class="pre-zone-location"
+  [ngClass]="validationErrors && !isEnoughLocations ? 'validation-error' : ''"
+>
+  <div class="pre-zone-location-badge" *ngIf="badgeText">{{ badgeText }}</div>
+  <div class="pre-zone-location-header">
+    <div class="pre-zone-location-header-left">
+      <span class="blue-circle" [ngStyle]="{ 'background-color': stepStyle?.color }"></span>
+      <span class="pre-zone-location-text"
+        >{{ stepStyle?.name }}: {{ stepStyle?.header_text }}</span
+      >
+      <span *ngIf="enableQty" class="qty-text" [ngClass]="{ 'full-qty': qtyLocations === itemQty }">
+        QTY: {{ qtyLocations }} / {{ itemQty }} kg
+      </span>
+    </div>
+    <div class="pre-zone-location-header-right">
+      <button
+        type="button"
+        (click)="onAddLocation()"
+        data-bs-toggle="modal"
+        [attr.data-bs-target]="modalTarget"
+        [disabled]="readOnly"
+        *ngIf="!disableModifyLocation"
+      >
+        <img src="assets/images/add.png" />
+        <span>เพิ่ม</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="pre-zone-location-content" *ngIf="locations.length > 0">
+    <div *ngIf="enableQty && qtyLocations > itemQty" class="validation-error-message">
+      QTY เกินจำนวนของ item — ปรับ qty ของ location ก่อน Save
+    </div>
+
+    <div *ngIf="validationErrors && !isEnoughLocations">
+      <div class="validation-error-message">กรุณากรอกจำนวนของ location ให้ครบ</div>
+    </div>
+
+    <div class="pre-zone-location-item" *ngFor="let location of locations">
+      <div class="pre-zone-location-item-left">
+        <div class="pre-zone-location-icon">
+          <img src="assets/images/location.png" />
+        </div>
+        <div class="pre-zone-location-item-left-content">
+          <div class="pre-zone-location-text">
+            <div class="location-name" [ngStyle]="{ 'border-right': disableModifyLocation ? 'none' : '1px solid #e2e8f0' }">
+              <span>{{ location.value.locationName }}</span>
+              <button
+                type="button"
+                class="edit-wh-location-button"
+                (click)="onEditLocation(location)"
+                data-bs-toggle="modal"
+                [attr.data-bs-target]="modalTarget"
+                *ngIf="!disableModifyLocation && !IsLocationComplete(location) && !IsPalletComplete(location)"
+              >
+                <img src="assets/images/edit.png" alt="edit-icon" />
+              </button>
+            </div>
+            <div *ngIf="enableQty && !disableModifyLocation" class="location-qty">
+              <span>Qty: {{ location.value.qty }} kg</span>
+              <button
+                type="button"
+                class="edit-wh-location-button"
+                (click)="onAssignLocationQty(location)"
+                *ngIf="!IsLocationComplete(location) && !IsPalletComplete(location)"
+              >
+                <img src="assets/images/edit.png" alt="edit-icon" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!disableModifyLocation" class="pre-zone-location-item-right">
+        <button
+          type="button"
+          class="delete-pre-zone-location-button"
+          (click)="onDeleteLocation(location)"
+          *ngIf="!IsPalletComplete(location)"
+        >
+          <img src="assets/images/delete.png" alt="delete-icon" />
+        </button>
+
+        <button
+          type="button"
+          class="repeat-pre-zone-location-button"
+          (click)="onFitQtyLocation(location)"
+          *ngIf="IsPalletComplete(location)"
+        >
+          <img src="assets/images/repeating.png" alt="repeat-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-data-pre-zone-location" *ngIf="locations.length === 0">
+    <div *ngIf="validationErrors" class="validation-error-message">
+      กรุณาเลือก location อย่างน้อย 1 รายการ
+    </div>
+    <ng-container *ngIf="!validationErrors">
+      <div class="app-empty-state-icon app-empty-state-icon--sm">
+        <mat-icon>{{ disableModifyLocation ? 'info_outline' : 'place' }}</mat-icon>
+      </div>
+      <div *ngIf="!disableModifyLocation">ยังไม่ได้เลือกตำแหน่ง</div>
+      <div *ngIf="disableModifyLocation">Preparing Location is not required.</div>
+    </ng-container>
+  </div>
+</div>

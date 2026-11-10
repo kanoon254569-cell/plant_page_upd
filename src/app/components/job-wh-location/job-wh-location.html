@@ -1,0 +1,144 @@
+<div
+  class="wh-location"
+  [ngClass]="validationErrors && !isEnoughLocations ? 'validation-error' : ''"
+>
+  <div class="wh-location-badge" *ngIf="badgeText">{{ badgeText }}</div>
+  <div class="wh-location-header">
+    <div class="wh-location-header-left">
+      <span class="blue-circle" [ngStyle]="{ 'background-color': stepStyle?.color }"></span>
+      <span class="wh-location-text">{{ stepStyle?.name }}: {{ stepStyle?.header_text }}</span>
+      <!-- Green only when exactly full: more than the item (its qty was cut in
+           the source after approve) stays red like "not enough". -->
+      <span class="qty-text" [ngClass]="{ 'full-qty': qtyLocations === itemQty }">
+        QTY: {{ qtyLocations | number: '1.0-0' }} / {{ itemQty | number: '1.0-0' }} {{ qtyUnit }}
+      </span>
+    </div>
+    <div class="wh-location-header-right">
+      <button
+        type="button"
+        (click)="onAddLocation()"
+        data-bs-toggle="modal"
+        [attr.data-bs-target]="modalTarget"
+        [disabled]="readOnly || !!addDisabledReason"
+        [title]="readOnly ? '' : addDisabledReason"
+      >
+        <img src="assets/images/add.png" />
+        <span>เพิ่ม</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="wh-location-content" *ngIf="locations.length > 0">
+    <div *ngIf="qtyLocations > itemQty" class="validation-error-message">
+      QTY เกินจำนวนของ item — ปรับ qty ของ location ก่อน Save
+    </div>
+
+    <div *ngIf="validationErrors && !isEnoughLocations">
+      <div class="validation-error-message">กรุณากรอกจำนวนของ location ให้ครบ</div>
+    </div>
+
+    <div class="wh-location-item" *ngFor="let location of locations">
+      <div class="wh-location-item-left">
+        <div class="wh-location-icon">
+          <img src="assets/images/location.png" />
+        </div>
+        <div class="wh-location-item-left-content">
+          <div class="wh-location-details">
+            <!--  Name + Grade/Lot pills on one line; the location qty lives
+                  in the progress row below (actual / qty) instead of a
+                  separate "Qty:" label. -->
+            <div class="wh-location-title-row wh-location-title-row--inline">
+              <span class="wh-location-name">
+                {{ location.value.locationName }}
+                <button
+                  type="button"
+                  class="wh-location-edit-button"
+                  (click)="onEditLocation(location)"
+                  *ngIf="!IsLocationComplete(location) && !IsPalletComplete(location)"
+                >
+                  <!-- <img src="assets/images/edit.png" alt="edit-icon" /> -->
+                </button>
+              </span>
+
+              <span class="wh-location-stats">
+                <span
+                  *ngIf="locationGrade(location)"
+                  class="stat-pill stat-pill--grade"
+                  [matTooltip]="'Grade: ' + locationGrade(location)"
+                  matTooltipPosition="above"
+                >
+                  <!-- <span class="stat-pill-label">Grade</span> -->
+                  <span class="stat-pill-value">{{ locationGrade(location) }}</span>
+                </span>
+                <span
+                  *ngIf="locationLot(location)"
+                  class="stat-pill stat-pill--lot"
+                  [matTooltip]="'Lot No: ' + locationLot(location)"
+                  matTooltipPosition="above"
+                >
+                  <!-- <span class="stat-pill-label">Lot</span> -->
+                  <span class="stat-pill-value">{{ locationLot(location) }}</span>
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="pallet-progress">
+            <div class="pallet-bar">
+              <div
+                class="pallet-bar-fill"
+                [class.pallet-bar-fill--get]="progressStep === 'get'"
+                [ngStyle]="{ width: getPalletProgressWidth(location) + '%' }"
+              ></div>
+            </div>
+            <span class="pallet-progress-qty">
+              {{ (location.value.actualQty || 0) | number: '1.0-0' }} /
+              {{ (location.value.qty || 0) | number: '1.0-0' }} {{ qtyUnit }}
+              <button
+                type="button"
+                class="wh-location-edit-button"
+                title="แก้ไขจำนวน"
+                (click)="onAssignLocationQty(location)"
+                *ngIf="!readOnly && !IsLocationComplete(location)"
+              >
+                <img src="assets/images/edit.png" alt="edit-icon" />
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wh-location-item-right">
+        <button
+          type="button"
+          class="delete-wh-location-button"
+          (click)="onDeleteLocation(location)"
+          *ngIf="!IsPalletComplete(location)"
+        >
+          <img src="assets/images/delete.png" alt="delete-icon" />
+        </button>
+
+        <button
+          type="button"
+          class="repeat-wh-location-button"
+          (click)="onFitQtyLocation(location)"
+          *ngIf="IsPalletComplete(location)"
+        >
+          <img src="assets/images/repeating.png" alt="repeat-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-data-wh-location" *ngIf="locations.length === 0">
+    <div *ngIf="validationErrors" class="validation-error-message">
+      กรุณาเลือก location ต้นทางอย่างน้อย 1 รายการ
+    </div>
+    <ng-container *ngIf="!validationErrors">
+      <div class="app-empty-state-icon app-empty-state-icon--sm">
+        <mat-icon>place</mat-icon>
+      </div>
+      <div>ยังไม่ได้เลือกตำแหน่ง</div>
+    </ng-container>
+  </div>
+</div>

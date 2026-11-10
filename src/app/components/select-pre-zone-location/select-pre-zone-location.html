@@ -1,0 +1,270 @@
+<div
+  class="modal fade pre-zone-location-modal"
+  [id]="modalId"
+  tabindex="-1"
+  [attr.aria-labelledby]="modalId + 'Label'"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="location-modal-header">
+        <div class="location-modal-title-group">
+          <span class="location-modal-eyebrow">Preparing Zone</span>
+          <div class="location-modal-title-row">
+            <span class="location-modal-title-text" [id]="modalId + 'Label'">{{ title }}</span>
+            <span class="location-modal-item-tag" *ngIf="headerGrade">
+              <span class="location-modal-item-tag-label">Grade:</span> {{ headerGrade }}
+            </span>
+            <span class="location-modal-item-tag" *ngIf="headerLotNo">
+              <span class="location-modal-item-tag-label">Lot:</span> {{ headerLotNo }}
+            </span>
+          </div>
+        </div>
+        <button type="button" class="location-modal-close" aria-label="Close" (click)="onClose()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div
+          class="stock-filter-title"
+          (click)="_isExplandStockInquiry = !_isExplandStockInquiry"
+          *ngIf="!isHidenTitleFilter"
+        >
+          <h6>ค้นหาสต็อก</h6>
+          <img
+            class="{{ _isExplandStockInquiry ? 'down' : 'up' }}-arrow"
+            src="assets/images/right-arrow.png"
+          />
+        </div>
+        <div>
+          <form
+            [formGroup]="stockInquiryForm"
+            class="row stock-form"
+            *ngIf="_isExplandStockInquiry && !isHidenStockFilter"
+          >
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>Cost Center</mat-label>
+              <mat-select formControlName="ccCode" placeholder="Select Cost Center">
+                <mat-option *ngFor="let cc of wmsCcCodeOptions" [value]="cc.sap_cc_code">
+                  {{ cc.cc_code }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="col-md grade-form">
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                [ngClass]="isGradeCorrect ? '' : 'validation-error'"
+              >
+                <mat-label>Grade</mat-label>
+                <input matInput formControlName="grade" placeholder="Search Grade" />
+              </mat-form-field>
+              <div *ngIf="!isGradeCorrect" class="validation-error-message">
+                <img src="assets/images/incorrect.png" alt="validation-error-icon" />
+                <span>ไม่พบข้อมูลเกรด</span>
+              </div>
+            </div>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>Lot No</mat-label>
+              <input matInput formControlName="lotNo" placeholder="Search Lot No" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>Inv Date</mat-label>
+              <input
+                matInput
+                [matDatepicker]="picker"
+                formControlName="invDate"
+                placeholder="เลือกวันที่"
+                readonly
+              />
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </form>
+        </div>
+
+        <div>
+          <div
+            class="search-filter-title"
+            (click)="_isExplandSearch = !_isExplandSearch"
+            *ngIf="!isHidenTitleFilter"
+          >
+            <h6>ค้นหาตำแหน่ง</h6>
+            <img
+              class="{{ _isExplandSearch ? 'down' : 'up' }}-arrow"
+              src="assets/images/right-arrow.png"
+            />
+          </div>
+          <form [formGroup]="searchForm" class="row search-form" *ngIf="_isExplandSearch">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>Warehouse</mat-label>
+              <mat-select formControlName="whCode" placeholder="Select Warehouse">
+                <mat-option *ngFor="let wh of whLocationOptions" [value]="wh.wh_code">
+                  {{ wh.wh_name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>Area</mat-label>
+              <mat-select formControlName="areaCode" placeholder="Select Area">
+                <mat-option *ngFor="let area of areaLocationOptions" [value]="area.careacode">
+                  {{ area.careacode }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>Level</mat-label>
+              <mat-select formControlName="levelCode" placeholder="Select Level">
+                <mat-option *ngFor="let level of levelLocationOptions" [value]="level.clevelcode">
+                  {{ level.clevelcode }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="col-md clear-btn">
+              <button type="button" class="clear-button" (click)="onResetSearch()">
+                <img src="assets/images/clear.png" alt="clear-icon" />
+                Clear
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="select-wh-location">
+          <div class="select-wh-location-header">
+            <div class="select-wh-location-header-left">
+              <div class="select-wh-location-qty">
+                <img src="assets/images/box.png" alt="box-icon" />
+                <span
+                  *ngIf="enableQty"
+                  [ngClass]="{
+                    green: confirmQtyWhLocations(selectedItemId ?? 0) >= currentItemQty,
+                    red: confirmQtyWhLocations(selectedItemId ?? 0) < currentItemQty,
+                  }"
+                  >Qty: {{ confirmQtyWhLocations(selectedItemId ?? 0) }} /
+                  {{ currentItemQty }} (kg)</span
+                >
+              </div>
+            </div>
+            <div class="select-wh-location-header-right">
+              <div *ngFor="let location of checkedWhLocation(selectedItemId ?? 0)">
+                <div class="select-wh-location-checked">
+                  <span class="location-name">{{ location.value.locationName }}</span>
+                  <span *ngIf="enableQty" class="confirm-qty-number">{{ location.value.confirmQty }} (kg)</span>
+                  <button
+                    type="button"
+                    class="delete-checked-location-button"
+                    *ngIf="!hasActualQty(location)"
+                    (click)="onUncheckLocation(location)"
+                  >
+                    <img src="assets/images/remove.png" alt="remove-icon" (click)="onDeleteWhLocation(location)"/>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="select-wh-location-content" *ngIf="currentWhLocations.length > 0">
+            <div
+              class="select-wh-location-item"
+              [ngClass]="{
+                checked: location?.value?.isChecked,
+                disable: isDisabledLocation(location),
+              }"
+              *ngFor="let location of currentWhLocations"
+            >
+              <div
+                class="select-wh-location-item-left"
+                (click)="onCheckLocation(location)"
+                [ngClass]="
+                  (location?.value?.isChecked ? 'cursor-default' : '') +
+                  (isDisabledLocation(location) ? ' disable' : '')
+                "
+              >
+                <div class="select-wh-location-icon">
+                  <img src="assets/images/location.png" alt="location-icon" />
+                </div>
+                <div class="select-wh-location-details">
+                  <div class="select-wh-location-details-content">
+                    <span class="location-name">{{ location.value.locationName }}</span>
+                    <span class="available-qty" *ngIf="!isHiddenAvailableQty(location)">
+                      <span>Available: </span>
+                      <span class="available-number">{{ location.value.availableQty }} (kg)</span>
+                    </span>
+                    <span class="qty-lock" *ngIf="!isHiddenLockQty(location)">
+                      <span>Lock: </span>
+                      <span class="lock-number">{{ location.value.qtyLock }} (kg)</span>
+                    </span>
+                    <span
+                      class="confirm-qty"
+                      *ngIf="location.value.confirmQty && location.value.confirmQty > 0"
+                    >
+                      <span>Qty: </span>
+                      <span class="confirm-qty-number">{{ location.value.confirmQty }} (kg)</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="select-wh-location-item-right">
+                <button
+                  type="button"
+                  class="delete-wh-location-button"
+                  *ngIf="location?.value?.isChecked && !hasActualQty(location)"
+                  (click)="onUncheckLocation(location)"
+                >
+                  <img src="assets/images/remove.png" alt="remove-icon" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-data-select-wh-location" *ngIf="currentWhLocations.length === 0">
+            <div class="app-empty-state-icon app-empty-state-icon--sm">
+              <mat-icon>place</mat-icon>
+            </div>
+            <div>No wh location available</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" data-bs-dismiss="modal" (click)="onSave()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade pre-zone-location-confirm-modal"
+    [id]="confirmModalId"
+    tabindex="-1"
+    aria-hidden="true"
+    data-bs-backdrop="static"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content confirm-modal-content">
+        <div class="confirm-icon">
+          <img src="assets/images/location.png" alt="location" />
+        </div>
+        <h5 class="confirm-title">Save changes?</h5>
+        <p class="confirm-body">Do you want to save your changes?</p>
+        <div class="confirm-footer">
+          <button class="confirm-btn confirm-btn-save" (click)="onSave()" data-bs-dismiss="modal">
+            Save
+          </button>
+          <button
+            class="confirm-btn confirm-btn-cancel"
+            (click)="onCancel()"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

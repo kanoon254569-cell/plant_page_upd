@@ -1,0 +1,2226 @@
+.header-section {
+  justify-content: space-between;
+}
+
+.header-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.create-button {
+  height: 44px;
+  width: auto;
+  padding: 8px 22px;
+  background: linear-gradient(135deg, #16a34a 0%, #128040 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow:
+    0 6px 16px rgba(22, 163, 74, 0.22),
+    0 1px 4px rgba(22, 163, 74, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  img {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+  }
+}
+
+.create-button:hover {
+  background: linear-gradient(135deg, #128040 0%, #0f6633 100%);
+  box-shadow:
+    0 10px 24px rgba(22, 163, 74, 0.3),
+    0 2px 6px rgba(22, 163, 74, 0.15);
+  transform: translateY(-2px);
+}
+
+/* .create-button:hover img {
+  transform: scale(1.15) rotate(-8deg);
+} */
+
+.create-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.18);
+}
+
+/* ===================== Search Filter ===================== */
+
+.search-filter {
+  margin: 16px 0;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  border: 1px solid #e2e8f0;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+  overflow: visible;
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+
+  label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+  }
+}
+
+.search-filter:hover {
+  border-color: #cbd5e1;
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.1),
+    0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+::ng-deep .search-filter .mdc-text-field {
+  background-color: #f5f8fb !important;
+  border-radius: 8px;
+}
+
+::ng-deep .search-filter .mdc-text-field:hover {
+  background-color: #f0f4f9 !important;
+}
+
+::ng-deep .search-filter .mat-mdc-form-field.mat-focused .mdc-text-field {
+  background-color: #ffffff !important;
+  box-shadow: inset 0 0 0 1.5px #1d4ed8 !important;
+}
+
+.search-filter-row {
+  align-items: stretch;
+  row-gap: 12px;
+}
+
+.search-filter-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-filter-action-col {
+  justify-content: flex-end;
+}
+
+.search-icon-button {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  padding: 0;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow:
+    0 8px 20px rgba(29, 78, 216, 0.2),
+    0 2px 6px rgba(29, 78, 216, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-icon-button:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  box-shadow:
+    0 12px 28px rgba(29, 78, 216, 0.28),
+    0 4px 10px rgba(29, 78, 216, 0.16);
+}
+
+.search-icon-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.16);
+}
+
+.search-button-group {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.clear-button {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow:
+    0 6px 16px rgba(71, 85, 105, 0.14),
+    0 1px 3px rgba(71, 85, 105, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clear-button img {
+  width: 18px;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.clear-button:hover {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  box-shadow:
+    0 10px 22px rgba(71, 85, 105, 0.2),
+    0 2px 6px rgba(71, 85, 105, 0.14);
+}
+
+.clear-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(71, 85, 105, 0.14);
+}
+
+.job-section {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfe 100%);
+  border-top: 1px solid #e2e8f0;
+}
+
+.job-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.job-header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.job-header-left strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+}
+
+.job-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  height: calc(100vh - 390px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.job-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 6px 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfe 100%);
+  border-top: 1px solid #cbd5e1;
+}
+
+.job-pagination mat-paginator {
+  background: transparent;
+  width: 100%;
+}
+
+::ng-deep .job-pagination .mat-mdc-paginator-container {
+  min-height: 46px;
+  padding: 0;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow: hidden;
+}
+
+::ng-deep .job-pagination .mat-mdc-paginator-page-size,
+::ng-deep .job-pagination .mat-mdc-paginator-range-label,
+::ng-deep .job-pagination .mat-mdc-paginator-range-actions {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+::ng-deep .job-pagination .mat-mdc-paginator-page-size {
+  align-items: center;
+  margin-right: 16px;
+}
+
+::ng-deep .job-pagination .mat-mdc-paginator-page-size-label {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+::ng-deep .job-pagination .mat-mdc-paginator-page-size-select {
+  margin: 0 8px;
+  width: 78px;
+}
+
+::ng-deep .job-pagination .mat-mdc-paginator-page-size-select .mat-mdc-text-field-wrapper,
+::ng-deep .job-pagination .mat-mdc-paginator-page-size-select .mat-mdc-form-field-flex {
+  align-items: center;
+}
+
+::ng-deep .job-pagination .mat-mdc-paginator-page-size-select .mat-mdc-form-field-infix {
+  display: flex;
+  align-items: center;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+::ng-deep .job-pagination .mat-mdc-paginator-page-size-select .mdc-notched-outline > div {
+  border-color: #cbd5e1 !important;
+  border-radius: 8px !important;
+}
+
+::ng-deep
+  .job-pagination
+  .mat-mdc-paginator-page-size-select:hover
+  .mdc-notched-outline
+  > div {
+  border-color: #93c5fd !important;
+}
+
+::ng-deep
+  .job-pagination
+  .mat-mdc-paginator-page-size-select.mat-focused
+  .mdc-notched-outline
+  > div {
+  border-color: #1d4ed8 !important;
+  border-width: 1.5px !important;
+}
+
+::ng-deep .job-pagination .mat-mdc-select-value,
+::ng-deep .job-pagination .mat-mdc-select-arrow {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+::ng-deep .job-pagination .mat-mdc-paginator-range-label {
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 16px;
+}
+
+::ng-deep .job-pagination .mat-mdc-paginator-range-actions {
+  gap: 2px;
+}
+
+::ng-deep .job-pagination .mat-mdc-icon-button {
+  width: 34px;
+  height: 34px;
+  padding: 5px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  color: #1d4ed8;
+}
+
+::ng-deep .job-pagination .mat-mdc-icon-button:not([disabled]):hover {
+  background: rgba(29, 78, 216, 0.1);
+}
+
+::ng-deep .job-pagination .mat-mdc-icon-button[disabled] {
+  color: #cbd5e1;
+}
+
+.job-list-card {
+  display: flex;
+  align-items: stretch;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.job-list-card:hover {
+  border-color: #94a3b8;
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.1),
+    0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.job-list-card > *:not(:first-child):not(:last-child) {
+  display: flex;
+  align-self: stretch;
+  padding-right: 16px;
+  margin-right: 16px;
+  border-right: 1px solid #cbd5e1;
+}
+
+.job-icon {
+  width: 85px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #fff1f1 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+}
+
+.text-topic-special {
+  font-size: 24px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.system-info {
+  display: flex;
+  justify-content: space-between;
+  width: 18%;
+}
+
+.system-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.system-header .system-no {
+  display: flex;
+  align-items: center;
+
+  div {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1e293b;
+  }
+}
+
+.system-header .date {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+
+  .status {
+    width: fit-content;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid;
+  }
+
+  .pending {
+    background: #fff7d6;
+    border-color: #e5c85c;
+    color: #8a6a00;
+  }
+
+  .spc-approve {
+    background: #f2dfff;
+    border-color: #6011aa;
+    color: #310044;
+  }
+
+  .in-progress {
+    background: #e6f4ff;
+    border-color: #91caff;
+    color: #0958d9;
+  }
+
+  .completed,
+  .complete {
+    background: #f6ffed;
+    border-color: #95de64;
+    color: #389e0d;
+  }
+
+  .wait-location {
+    background: #fffbe6;
+    border-color: #ffd666;
+    color: #ad6800;
+  }
+
+  .cancelled {
+    background: #fff1f0;
+    border-color: #ff7875;
+    color: #cf1322;
+  }
+}
+
+.grade-lot-progress {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.document-job {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1e293b;
+  max-width: 350px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+    height: 0;
+  }
+
+  .lot-location-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid #d9dee7;
+    color: #475467;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  .lot-location-label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #737b88;
+  }
+
+  .lot-location-code {
+    font-weight: 600;
+    color: #475467;
+  }
+}
+
+.document-job-qty {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.job-items-more-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1d4ed8;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.job-items-more-button:hover {
+  color: #1e40af;
+  text-decoration: underline;
+}
+
+.job-items-table {
+  width: 100%;
+  border-collapse: separate;
+  /*  Small vertical gap so a pallet's own rows (header + items) read as
+      tightly-packed while adjacent groups still have visible daylight
+      between them -- see .pallet-group-header/.pallet-item-row-first below
+      for the border/radius treatment that makes each group read as one
+      continuous capsule despite the gap between its own rows. */
+  border-spacing: 0 3px;
+
+  th,
+  td {
+    padding: 10px 12px;
+    text-align: left;
+  }
+
+  th {
+    color: #475467;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  td {
+    background: #f8fafc;
+    border-top: 1px solid #e4e7ec;
+    border-bottom: 1px solid #e4e7ec;
+    color: #344054;
+    font-size: 14px;
+  }
+
+  td:first-child {
+    border-left: 1px solid #e4e7ec;
+  }
+
+  td:last-child {
+    border-right: 1px solid #e4e7ec;
+  }
+
+  .job-item-grade {
+    width: 35%;
+    color: #101828;
+    font-weight: 500;
+  }
+
+  .job-item-lot {
+    width: 30%;
+    color: #475467;
+  }
+
+  .job-item-qty {
+    width: 17.5%;
+    color: #1d4ed8;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  /*  Every row belonging to one pallet group (see groupedSelectedJobPallets())
+      -- header row plus its item rows -- shares this same indigo left/right
+      border so the group reads as one continuous capsule even though
+      border-spacing puts a small gap between its own rows; only the
+      group's FIRST row (the header) and LAST row get corner radius, so
+      rows in between butt up against it edge-to-edge instead of each
+      looking like its own separate pill. */
+  .pallet-group-header,
+  .pallet-item-row td {
+    border-left: 1px solid #c7d2fe !important;
+    border-right: 1px solid #c7d2fe !important;
+    border-radius: 0 !important;
+  }
+
+  .pallet-item-row-last td:first-child {
+    border-radius: 0 0 0 8px !important;
+  }
+
+  .pallet-item-row-last td:last-child {
+    border-radius: 0 0 8px 0 !important;
+  }
+
+  /*  One per pallet group -- a full-width row ahead of that pallet's
+      grade/lot/qty/bag rows, distinct from them so a pallet built from
+      more than one grade still reads as one physical pallet instead of
+      several unrelated rows. Always the sole td in its row (colspan="4"),
+      so it's simultaneously the group's first and last cell -- rounds all
+      four top/bottom-left/right corners are handled by the shared
+      border-radius: 0 rule above except the top two, reinstated here. */
+  .pallet-group-header {
+    background: #eef2ff;
+    border-top: 1px solid #c7d2fe;
+    border-radius: 8px 8px 0 0 !important;
+    color: #4338ca;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .pallet-item-row td {
+    border-top: none;
+  }
+
+  .pallet-item-row-last td {
+    border-bottom: 1px solid #c7d2fe !important;
+  }
+}
+
+.job-items-modal-dialog {
+  max-width: 780px;
+}
+
+.job-items-modal-content {
+  overflow: hidden;
+  border: 1px solid #d9dee7;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+}
+
+.job-items-modal-header {
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e4e7ec;
+}
+
+.system-eyebrow {
+  margin-bottom: 2px;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.job-items-modal-header .modal-title {
+  color: #101828;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.job-items-modal-body {
+  padding: 16px 18px 18px;
+  max-height: 70vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.job-items-modal-summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: #667085;
+  font-size: 16px;
+  font-weight: 600;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.job-items-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+  color: #667085;
+  font-size: 14px;
+  text-align: center;
+}
+
+.pallet-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pallet-text {
+  font-size: 14px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.progress-wrapper {
+  width: 100%;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #34d399 0%, #16a34a 100%);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.percent {
+  min-width: 40px;
+  text-align: left;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.job-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.job-totals-item {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e4e7ec;
+}
+
+.job-totals-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #667085;
+}
+
+.job-totals-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #101828;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: 12px;
+}
+
+.get-location {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #bbf7d0;
+  padding: 12px;
+  border-radius: 10px;
+  min-width: 200px;
+  max-width: 200px;
+}
+
+.get-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.put-location {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  padding: 12px;
+  border-radius: 10px;
+  min-width: 200px;
+  max-width: 200px;
+}
+
+.put-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.special-zone-location {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: linear-gradient(135deg, #f5f0ff 0%, #ede4ff 100%);
+  border: 1px solid #d9c6ff;
+  padding: 12px;
+  border-radius: 10px;
+  min-width: 200px;
+  max-width: 200px;
+}
+
+.special-zone-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.arrival-badge {
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.arrival-badge.arrived {
+  background: #f6ffed;
+  border-color: #95de64;
+  color: #389e0d;
+}
+
+.arrival-badge.arriving {
+  background: #e6f4ff;
+  border-color: #91caff;
+  color: #0958d9;
+}
+
+.arrival-badge.not-arriving {
+  background: #fff7ed;
+  border-color: #fb923c;
+  color: #c2410c;
+}
+
+.special-zone-location .location-detail mat-icon {
+  color: #7c3aed;
+}
+
+.location .location-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #94a3b8;
+  }
+
+  span {
+    font-size: 14px;
+    color: #475569;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.arrow {
+  font-size: 24px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.job-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inspect-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  gap: 8px;
+  padding: 10.5px 24.5px;
+  border: 1.5px solid #1d4ed8;
+  border-radius: 10px;
+  background: #fff;
+  color: #1d4ed8;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .inspect-icon {
+    width: 16px;
+    height: 16px;
+    color: currentColor;
+    transition:
+      transform 0.25s ease,
+      color 0.25s ease;
+  }
+}
+
+.inspect-button:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow:
+    0 10px 24px rgba(29, 78, 216, 0.28),
+    0 2px 6px rgba(29, 78, 216, 0.14);
+  transform: translateY(-2px);
+
+  .inspect-icon {
+    transform: translateX(2px);
+  }
+}
+
+.inspect-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.18);
+}
+
+.kebab-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-job-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: calc(100vh - 290px);
+  color: #64748b;
+  text-align: center;
+}
+
+.no-job-data h5 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.no-job-data p {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.job-list-loading {
+  gap: 12px;
+}
+
+.job-list-skeleton-card {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.skeleton-system-info {
+  width: 18%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.skeleton-grade-lot-progress {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #e9edf2;
+  border-radius: 12px;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(233, 237, 242, 0) 0%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(233, 237, 242, 0) 100%
+  );
+  animation: jobSkeletonShimmer 1.3s infinite;
+}
+
+.skeleton-job-icon {
+  width: 85px;
+  height: 100%;
+  min-height: 65px;
+  border-radius: 10px;
+  flex: 0 0 75px;
+}
+
+.skeleton-line {
+  height: 14px;
+  border-radius: 999px;
+}
+
+.skeleton-line-lg {
+  width: 140px;
+  height: 20px;
+}
+
+.skeleton-line-md {
+  width: 180px;
+}
+
+.skeleton-line-sm {
+  width: 120px;
+}
+
+.skeleton-line-xs {
+  width: 90px;
+}
+
+.skeleton-progress {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.skeleton-location-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+}
+
+.skeleton-location-box {
+  width: 200px;
+  height: 68px;
+  border-radius: 10px;
+}
+
+.skeleton-arrow {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  flex: 0 0 24px;
+}
+
+.skeleton-button {
+  align-self: center;
+  width: 130px;
+  height: 54px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+@keyframes jobSkeletonShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ===================== Create Special Job : shared ===================== */
+
+#createSpecialJobManualModal .modal-dialog.create-modal-dialog,
+#createSpecialJobUploadModal .modal-dialog.create-modal-dialog,
+#inspectSpecialJobModal .modal-dialog.create-modal-dialog {
+  max-width: 98vw;
+  width: 98vw;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/*  angular.json loads src/assets/dist/css/adminlte.min.css after
+    node_modules/bootstrap's css, so at equal selector specificity AdminLTE's
+    plain "border-radius: 0.3rem" on .modal-content/.modal-header/.modal-footer
+    wins the cascade over Bootstrap 5's var(--bs-modal-border-radius) - it
+    never reads that variable, so overriding it here has no effect. Setting
+    border-radius directly (this selector's id+class specificity beats both
+    stylesheets' bare .modal-content) plus overflow: hidden to clip every
+    child - including the Upload modal's custom .upload-modal-header, which
+    has no radius of its own - is what actually rounds the shell. */
+#createSpecialJobManualModal .modal-dialog.create-modal-dialog .modal-content,
+#createSpecialJobUploadModal .modal-dialog.create-modal-dialog .modal-content,
+#inspectSpecialJobModal .modal-dialog.create-modal-dialog .modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+#inspectSpecialJobModal .modal-title {
+  color: #101828;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/*  Upload modal's header -- eyebrow + title instead of the plain default
+    Bootstrap modal-header, matching job-list.html's Upload Shipment modal. */
+.upload-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.upload-modal-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upload-modal-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.upload-modal-title-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.upload-modal-close {
+  width: 32px;
+  height: 32px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: background 0.2s ease;
+}
+
+.upload-modal-close:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+/*  Inspect modal's job-info section -- mirrors job-special-detail.html's
+    .detail-body/.detail-card/.form-section layout (icon+title card header,
+    labeled form-sections, sized form-fields). The Upload modal's per-job
+    blocks (.upload-job-block) reuse the same .form-section/.form-row/
+    .form-field-* classes for their fields, just without an outer
+    .detail-card wrapper since .upload-job-block already provides one. */
+.detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detail-card {
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.detail-card-header {
+  min-height: 62px;
+  font-size: 16px;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 12px 20px;
+  font-weight: 500;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    opacity: 0.85;
+  }
+}
+
+.detail-card-body {
+  padding: 18px 22px;
+}
+
+.pallet-count-badge {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.pallet-list-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-section {
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fafbfc;
+  margin-bottom: 10px;
+}
+
+.form-section-last {
+  margin-bottom: 0;
+}
+
+.form-section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.jobno-display {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 11px;
+  background: #eef3ff;
+  color: #1d4ed8;
+  border: 1px solid #c7d7fd;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.form-checkboxes {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  padding: 0 14px;
+  height: 50px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  align-self: flex-end;
+  margin-bottom: 0;
+}
+
+.cb-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  margin: 0;
+  white-space: nowrap;
+
+  input[type='checkbox'] {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: #1d4ed8;
+  }
+}
+
+.form-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  input {
+    height: 50px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 0 11px;
+    font-size: 16px;
+    color: #111827;
+    background: #fff;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+    min-width: 0;
+    width: 100%;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  }
+
+  input:disabled {
+    background: #f9fafb;
+    color: #9ca3af;
+  }
+
+  input.field-invalid {
+    border-color: #dc2626 !important;
+    background: #fff5f5 !important;
+  }
+}
+
+.form-field-xs {
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.form-field-sm {
+  width: 130px;
+  flex-shrink: 0;
+}
+
+.form-field-md {
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.form-field-lg {
+  width: 240px;
+  flex-shrink: 0;
+}
+
+.form-field-xl {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.form-field-flex {
+  flex: 1;
+}
+
+.form-date-field {
+  width: 250px;
+}
+
+::ng-deep #inspectSpecialJobModal .form-date-field.mat-mdc-form-field .mat-mdc-text-field-wrapper,
+::ng-deep
+  #createSpecialJobUploadModal
+  .form-date-field.mat-mdc-form-field
+  .mat-mdc-text-field-wrapper {
+  height: 50px !important;
+  background-color: #fff !important;
+  border-radius: 8px !important;
+}
+
+::ng-deep #inspectSpecialJobModal .form-date-field .mat-mdc-form-field-flex,
+::ng-deep #createSpecialJobUploadModal .form-date-field .mat-mdc-form-field-flex {
+  align-items: center;
+  height: 50px;
+}
+
+::ng-deep #inspectSpecialJobModal .form-date-field .mat-mdc-form-field-infix,
+::ng-deep #createSpecialJobUploadModal .form-date-field .mat-mdc-form-field-infix {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  min-height: unset;
+}
+
+::ng-deep #inspectSpecialJobModal .form-date-field input.mat-mdc-input-element,
+::ng-deep #createSpecialJobUploadModal .form-date-field input.mat-mdc-input-element {
+  font-size: 16px;
+}
+
+::ng-deep #inspectSpecialJobModal .form-date-field .mat-mdc-icon-button,
+::ng-deep #createSpecialJobUploadModal .form-date-field .mat-mdc-icon-button {
+  width: 26px;
+  height: 26px;
+  padding: 2px;
+  margin-right: 8px;
+}
+
+::ng-deep #inspectSpecialJobModal .form-date-field.field-invalid .mdc-notched-outline__leading,
+::ng-deep #inspectSpecialJobModal .form-date-field.field-invalid .mdc-notched-outline__notch,
+::ng-deep #inspectSpecialJobModal .form-date-field.field-invalid .mdc-notched-outline__trailing,
+::ng-deep #createSpecialJobUploadModal .form-date-field.field-invalid .mdc-notched-outline__leading,
+::ng-deep #createSpecialJobUploadModal .form-date-field.field-invalid .mdc-notched-outline__notch,
+::ng-deep
+  #createSpecialJobUploadModal
+  .form-date-field.field-invalid
+  .mdc-notched-outline__trailing {
+  border-color: #dc2626 !important;
+}
+
+/*  JOB No is plain text (a running number from the system, not
+    user-editable -- see nextJobNo() on the component), sitting right next
+    to เลขที่เอกสาร instead of its own boxed field. */
+.job-no-text {
+  font-weight: 700;
+  font-size: 18px;
+  color: #1d4ed8;
+  white-space: nowrap;
+}
+
+.create-modal-columns {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.create-modal-main {
+  flex: 1;
+  min-width: 0;
+  max-height: 65vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-right: 4px;
+}
+
+.pallet-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  margin-bottom: 12px;
+
+  span {
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.add-button {
+  height: 40px;
+  background-color: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.add-button:hover {
+  background-color: #128040;
+}
+
+.duplicate-button {
+  height: 40px;
+  background-color: #f1e9ff;
+  color: #7c3aed;
+  border: 1px solid #d9c6ff;
+  border-radius: 10px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.duplicate-button:hover {
+  background-color: #e6d9ff;
+}
+
+.pallet-block {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background-color: #fff;
+}
+
+.pallet-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+
+  span {
+    font-weight: 600;
+  }
+}
+
+.pallet-block-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remove-pallet-button {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pallet-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  border: 1px dashed #e2e8f0;
+  border-radius: 8px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.bag-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    border: 1px solid #cbd5e1;
+    padding: 6px 8px;
+    text-align: center;
+  }
+
+  th {
+    background-color: #f8fafc;
+  }
+
+  td:nth-child(2),
+  td:nth-child(3) {
+    text-align: left;
+  }
+}
+
+/*  Item rows are edited inline now (see .table-cell-input below) -- there's
+    no more "selected for edit" state to highlight a row with. */
+
+.delete-icon-button {
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  background-color: #dc2626;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.delete-icon-button:hover {
+  background-color: #b91c1c;
+}
+
+/*  Each bag-table cell (Grade/Lot/Qty/Bag) is now directly editable in
+    place -- borderless so it reads as part of the table row rather than a
+    separate boxed field, with a visible focus/hover state so it's still
+    clear the cell is editable. */
+.table-cell-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 12px 16px;
+  font-size: 16px;
+  background-color: transparent;
+  text-align: inherit;
+  font-family: inherit;
+  color: inherit;
+}
+
+.table-cell-input:hover {
+  border-color: #cbd5e1;
+  background-color: #fff;
+}
+
+.table-cell-input:focus {
+  outline: none;
+  border-color: #1d4ed8;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+}
+
+.table-cell-input.field-invalid {
+  background-color: #fff5f5 !important;
+}
+
+/* ===================== Create Special Job : Upload ===================== */
+
+/*  Two side-by-side cards -- "เพิ่มด้วยตนเอง" (manual: just the + Add
+    Pallet trigger) and "อัปโหลดไฟล์ Excel" (file picker) -- so the two ways
+    of populating _uploadJobs read as distinct choices instead of being
+    crammed into one unlabeled row. */
+.upload-method-row {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.upload-method-card {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.upload-method-icon {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.upload-method-icon-manual {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.upload-method-icon-excel {
+  background: #e6f4ff;
+  color: #1d4ed8;
+}
+
+.upload-method-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.upload-method-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.upload-method-desc {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.upload-method-card .add-button {
+  flex-shrink: 0;
+}
+
+.upload-method-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.upload-sheet-picker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #fff 0%, #f8fbff 100%);
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.upload-sheet-picker-icon {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6f4ff;
+  color: #1d4ed8;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.upload-sheet-picker-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.upload-sheet-picker-body label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.upload-sheet-select-wrap {
+  position: relative;
+}
+
+.upload-sheet-select {
+  width: 100%;
+  height: 38px;
+  padding: 0 34px 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+  background: #fff;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.upload-sheet-select:hover {
+  border-color: #93c5fd;
+}
+
+.upload-sheet-select:focus {
+  outline: none;
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+}
+
+.upload-sheet-select-caret {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.upload-sheet-picker-badge {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.upload-summary-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.upload-stat-box {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.upload-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1d4ed8;
+  line-height: 1.1;
+  margin-right: 4px;
+}
+
+.upload-stat-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.upload-toolbar-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.toolbar-link-button {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.toolbar-link-button:hover {
+  background: #f1f5f9;
+  color: #1d4ed8;
+}
+
+.upload-file-label {
+  height: 40px;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  color: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.22);
+  transition: all 0.2s ease;
+  user-select: none;
+
+  input[type='file'] {
+    display: none;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.upload-file-label:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  transform: translateY(-1px);
+}
+
+.upload-file-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+
+  .upload-file-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.upload-file-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.upload-file-name {
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .upload-method-row {
+    flex-direction: column;
+  }
+
+  .upload-method-divider {
+    padding: 2px 0;
+  }
+}
+
+.upload-jobs-wrapper {
+  max-height: 50vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.upload-job-block {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 22px 16px 10px 16px;
+  margin-bottom: 16px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/*  Marks a job as missing a required field (see isJobIncomplete(), which
+    blocks canCreateUpload()) even while its card is COLLAPSED, so it's not
+    necessary to expand every card in a long import to find the one
+    stopping Create -- the per-field red outlines inside the form (see
+    .field-invalid) only ever show once a card is already expanded. */
+.upload-job-block.job-block-invalid {
+  background-color: #fff5f5;
+}
+
+/*  The whole top bar is clickable to toggle collapse/expand (see the
+    (click) on this element in the template) -- the toggle icon sits as
+    its own fixed-size flex item here (NOT nested inside
+    upload-job-header-left) so the wrapping/growing fields next to it can
+    never crowd it out or cover it. */
+.upload-job-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 10px;
+  cursor: pointer;
+}
+
+/*  Collapse/expand icon button for a job card (see toggleJobCollapsed()) --
+    purely visual/click-target; the actual toggle happens via the click
+    bubbling up to upload-job-header, so this has no click handler of its
+    own (avoids double-toggling). */
+.collapse-toggle-button {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.collapse-toggle-button:hover {
+  background-color: #f1f5f9;
+  color: #1d4ed8;
+}
+
+/*  Wraps the meta-grid + pallet/item tables so the whole block can be
+    hidden at once via *ngIf="!job.collapsed" while the header row above
+    (JOB No/เลขที่เอกสาร/สถานะการจัดทำสินค้า/Delete) stays put. */
+.upload-job-body {
+  margin-top: 4px;
+}
+
+/*  Holds JOB No (plain text) between the fixed toggle icon and Delete
+    button so those two never get pushed around. (Named
+    upload-job-header-left, NOT job-header-left, to avoid colliding with the
+    unrelated .job-header-left used by the page's "JOB LIST" section
+    header.) */
+.upload-job-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+/*  Quick-glance summary shown after JOB No while a card is collapsed (see
+    *ngIf="job.collapsed" in the template) -- lets the important fields
+    (เลขที่เอกสาร/ลูกค้า/วันที่/ตัน/Pallet count) stay visible even though the
+    form-sections underneath are hidden. */
+.job-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.job-summary-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #eef3ff;
+  border: 1px solid #c7d7fd;
+  color: #1d4ed8;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.delete-job-button {
+  height: 40px;
+  background-color: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.delete-job-button:hover {
+  background-color: #b91c1c;
+}
+
+.upload-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 56px 32px;
+  color: #94a3b8;
+
+  mat-icon {
+    font-size: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+/*  Cancel/Save/Create were plain default-sized Bootstrap .btns -- tiny and
+    inconsistent next to add-button/duplicate-button/delete-job-button/
+    toolbar-link-button, which all now share one 40px/10px-radius/14px-600
+    shape. Sized to match both modals' footers so every labeled button on
+    this page reads as one family (color still varies by function). */
+#createSpecialJobUploadModal .modal-footer,
+#inspectSpecialJobModal .modal-footer {
+  padding: 14px 20px;
+  gap: 10px;
+}
+
+#createSpecialJobUploadModal .modal-footer .btn,
+#inspectSpecialJobModal .modal-footer .btn {
+  height: 40px;
+  min-width: 120px;
+  padding: 0 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+::ng-deep #createSpecialJobManualModal .mat-mdc-text-field-wrapper,
+::ng-deep #createSpecialJobUploadModal .mat-mdc-text-field-wrapper,
+::ng-deep #inspectSpecialJobModal .mat-mdc-text-field-wrapper {
+  height: 50px !important;
+  background-color: #fff !important;
+}
+
+::ng-deep .search-filter .mat-mdc-text-field-wrapper {
+  height: 50px !important;
+  background-color: #fff !important;
+}
+
+::ng-deep .search-filter .mat-mdc-form-field-flex {
+  align-items: center;
+  height: 50px;
+}
+
+::ng-deep .search-filter .mat-mdc-form-field-infix {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  min-height: unset !important;
+}
+
+/* ===================== Required-field validation ===================== */
+/*  Marks the "green header" columns from the Special Package prep sheet
+    (special_upload1.PNG) as required: an asterisk on the label, and a red
+    outline on the input / table cell while the value is null or blank. */
+
+.required-mark {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.field-invalid {
+  border-color: #dc2626 !important;
+  background-color: #fff5f5 !important;
+}
+
+.field-invalid:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
+}
