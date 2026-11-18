@@ -6,7 +6,6 @@ import { PageEvent } from '@angular/material/paginator';
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../environments/environment';
 
 //  One PALLET == one ตัน (ton). ตัน/คัน/Qty(kg) รวม live on JobBlockVM (the
 //  job "header"); the header's ตัน (read from the "รวม" column) is what
@@ -193,14 +192,11 @@ export class JobSpecialList {
   //  is parsed -- blocks Create so a job can't be submitted with bag counts
   //  still mid-calculation.
   _isCalculatingBags: boolean = false;
-  private mockSpecialJobs: Type.ResultProcessSpecialJobListData[] = [];
 
   constructor(
     private restService: CrudService,
     private router: Router,
-  ) {
-    this.mockSpecialJobs = this.createMockSpecialJobs();
-  }
+  ) {}
 
   async ngOnInit() {
     this.resetFilter();
@@ -411,23 +407,6 @@ export class JobSpecialList {
     fromDate: Date,
     toDate: Date,
   ): Promise<Type.ResultProcessSpecialJobListData[]> {
-    if (environment.mockAuth) {
-      const fromTime = fromDate.getTime();
-      const toTime = new Date(
-        toDate.getFullYear(),
-        toDate.getMonth(),
-        toDate.getDate(),
-        23,
-        59,
-        59,
-        999,
-      ).getTime();
-      return this.mockSpecialJobs.filter((job) => {
-        const jobDate = this.parseJobDate(job.job_date || job.create_datetime);
-        return jobDate !== null && jobDate.getTime() >= fromTime && jobDate.getTime() <= toTime;
-      });
-    }
-
     const pageSize = 100;
     const dateFrom = this.formatDateValue(fromDate);
     const dateTo = this.formatDateValue(toDate);
@@ -494,44 +473,6 @@ export class JobSpecialList {
   }
 
   fetchSpecialJobData(): Promise<Type.ResponseProcessSpecialJobListData> {
-    if (environment.mockAuth) {
-      const docNo = (this.filter.docNo || '').trim().toLowerCase();
-      const customer = (this.filter.customer || '').trim().toLowerCase();
-      const dateFrom = this.parseDateValue(this.filter.dateFrom);
-      const dateTo = this.parseDateValue(this.filter.dateTo);
-      const fromTime = dateFrom
-        ? new Date(dateFrom.getFullYear(), dateFrom.getMonth(), dateFrom.getDate()).getTime()
-        : null;
-      const toTime = dateTo
-        ? new Date(dateTo.getFullYear(), dateTo.getMonth(), dateTo.getDate(), 23, 59, 59, 999).getTime()
-        : null;
-
-      const filtered = this.mockSpecialJobs.filter((job) => {
-        const jobDate = this.parseJobDate(job.job_date);
-        const jobTime = jobDate
-          ? new Date(jobDate.getFullYear(), jobDate.getMonth(), jobDate.getDate()).getTime()
-          : null;
-
-        return (
-          (!docNo || (job.doc_no || '').toLowerCase().includes(docNo)) &&
-          (!customer || (job.customer || '').toLowerCase().includes(customer)) &&
-          (!this.filter.jobStatus || job.status_id === this.filter.jobStatus) &&
-          (fromTime === null || (jobTime !== null && jobTime >= fromTime)) &&
-          (toTime === null || (jobTime !== null && jobTime <= toTime))
-        );
-      });
-
-      const page = this.filter.page || 1;
-      const pageSize = this.filter.pageSize || 25;
-      const start = (page - 1) * pageSize;
-      return Promise.resolve({
-        status: 'success',
-        message: 'Mock special job data loaded',
-        data: filtered.slice(start, start + pageSize),
-        total_count: filtered.length,
-      });
-    }
-
     return new Promise((resolve, reject) => {
       this.restService
         .processGetSpecialJobList(
@@ -558,150 +499,12 @@ export class JobSpecialList {
   //  this may need correcting once the real status set for Special jobs is
   //  known. Failures are swallowed in ngOnInit so this never blocks the page.
   fetchOptionJobStatus(boardManType: number): Promise<Type.ResponseProcessGetOptionsJobStatus> {
-    if (environment.mockAuth) {
-      return Promise.resolve({
-        status: 'success',
-        message: 'Mock special job statuses loaded',
-        data: [
-          { id: 1, name: 'Pending' },
-          { id: 2, name: 'In Progress' },
-          { id: 3, name: 'Completed' },
-        ],
-      });
-    }
-
     return new Promise((resolve, reject) => {
       this.restService.ProcessGetOptionsJobStatus(boardManType).subscribe(
         (response: Type.ResponseProcessGetOptionsJobStatus) => resolve(response),
         (error) => reject(error),
       );
     });
-  }
-
-  private createMockSpecialJobs(): Type.ResultProcessSpecialJobListData[] {
-    const now = new Date();
-    const jobDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const createDate = (hoursAgo: number) => new Date(Date.now() - hoursAgo * 60 * 60 * 1000).toISOString();
-
-    return [
-      {
-        job_main_id: 9001,
-        id: 9001,
-        system_no: 'SP-DEMO-001',
-        status_id: 1,
-        status_name: 'Pending',
-        total_pallet: 3,
-        complete_pallet: 1,
-        total_bag: 12,
-        complete_bag: 4,
-        special_zone: 'SP-A01',
-        has_location: true,
-        prepare_zone: 'PRE-A',
-        is_arriving: false,
-        is_arrived: false,
-        create_datetime: createDate(1),
-        doc_no: 'DOC-DEMO-001',
-        no: '1',
-        job_date: jobDate,
-        customer: 'Demo Customer One',
-        seq: '01',
-        pallet_size: '110 x 110',
-        is_arranged: true,
-        is_wrap_film: false,
-        is_taped: true,
-        sale_date: jobDate,
-        remark: 'Mock record for pending status',
-        invoice: 'INV-DEMO-001',
-        ordered_by: 'Demo User',
-        prep_status: 'รอจัดเตรียม',
-        incomplete_detail: 'รอจัดเตรียมพาเลทที่เหลือ',
-        total_ton: 3,
-        cart_qty: 3,
-        details: [
-          { id: 9101, pallet_no: 1, item_id: 1, grade: 'PP', qty: 1000, bag: 4, lots: [{ lot: 'LOT-DEMO-01', qty: 1000 }] },
-          { id: 9102, pallet_no: 2, item_id: 2, grade: 'HDPE', qty: 1000, bag: 4, lots: [{ lot: 'LOT-DEMO-02', qty: 1000 }] },
-          { id: 9103, pallet_no: 3, item_id: 3, grade: 'PP', qty: 1000, bag: 4, lots: [{ lot: 'LOT-DEMO-03', qty: 1000 }] },
-        ],
-      },
-      {
-        job_main_id: 9002,
-        id: 9002,
-        system_no: 'SP-DEMO-002',
-        status_id: 2,
-        status_name: 'In Progress',
-        total_pallet: 4,
-        complete_pallet: 2,
-        total_bag: 16,
-        complete_bag: 8,
-        special_zone: 'SP-B02',
-        has_location: true,
-        prepare_zone: 'PRE-B',
-        is_arriving: true,
-        is_arrived: false,
-        create_datetime: createDate(3),
-        doc_no: 'DOC-DEMO-002',
-        no: '2',
-        job_date: jobDate,
-        customer: 'Demo Customer Two',
-        seq: '02',
-        pallet_size: '120 x 100',
-        is_arranged: false,
-        is_wrap_film: true,
-        is_taped: false,
-        sale_date: jobDate,
-        remark: 'Mock record in progress',
-        invoice: 'INV-DEMO-002',
-        ordered_by: 'Demo User',
-        prep_status: 'กำลังจัดเตรียม',
-        incomplete_detail: 'เหลือ 2 พาเลท',
-        total_ton: 4,
-        cart_qty: 4,
-        details: [
-          { id: 9201, pallet_no: 1, item_id: 1, grade: 'PP', qty: 1000, bag: 4, lots: [{ lot: 'LOT-DEMO-04', qty: 1000 }] },
-          { id: 9202, pallet_no: 2, item_id: 2, grade: 'HDPE', qty: 1000, bag: 4, lots: [{ lot: 'LOT-DEMO-05', qty: 1000 }] },
-          { id: 9203, pallet_no: 3, item_id: 3, grade: 'PP', qty: 1000, bag: 4, lots: [{ lot: 'LOT-DEMO-06', qty: 1000 }] },
-          { id: 9204, pallet_no: 4, item_id: 4, grade: 'HDPE', qty: 1000, bag: 4, lots: [{ lot: 'LOT-DEMO-07', qty: 1000 }] },
-        ],
-      },
-      {
-        job_main_id: 9003,
-        id: 9003,
-        system_no: 'SP-DEMO-003',
-        status_id: 3,
-        status_name: 'Completed',
-        total_pallet: 2,
-        complete_pallet: 2,
-        total_bag: 8,
-        complete_bag: 8,
-        special_zone: 'SP-C03',
-        has_location: true,
-        prepare_zone: 'PRE-C',
-        is_arriving: false,
-        is_arrived: true,
-        create_datetime: createDate(5),
-        doc_no: 'DOC-DEMO-003',
-        no: '3',
-        job_date: jobDate,
-        customer: 'Demo Customer Three',
-        seq: '03',
-        pallet_size: '100 x 100',
-        is_arranged: true,
-        is_wrap_film: true,
-        is_taped: true,
-        sale_date: jobDate,
-        remark: 'Mock completed record',
-        invoice: 'INV-DEMO-003',
-        ordered_by: 'Demo User',
-        prep_status: 'จัดเตรียมเสร็จสิ้น',
-        incomplete_detail: '',
-        total_ton: 2,
-        cart_qty: 2,
-        details: [
-          { id: 9301, pallet_no: 1, item_id: 1, grade: 'PP', qty: 1000, bag: 4, lots: [{ lot: 'LOT-DEMO-08', qty: 1000 }] },
-          { id: 9302, pallet_no: 2, item_id: 2, grade: 'HDPE', qty: 1000, bag: 4, lots: [{ lot: 'LOT-DEMO-09', qty: 1000 }] },
-        ],
-      },
-    ];
   }
 
   //  Inspect opens an EDITABLE modal built from the exact same job-meta-grid

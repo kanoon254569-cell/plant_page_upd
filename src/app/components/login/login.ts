@@ -30,7 +30,6 @@ export class Login {
   _mPassword = new FormControl('');
   _showPassword = false;
   readonly _version = environment.version;
-  readonly environment = environment;
 
   onClickSubmit() {
     if (!this._mUsername.value?.trim()) {

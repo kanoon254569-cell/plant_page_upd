@@ -132,28 +132,32 @@
         </div>
 
         <div class="system-info">
-          <div class="system-header">
-            <!-- Shows เลขที่เอกสาร (doc_no) instead of the running JOB No
-                 (system_no) -- system_no is still shown inside the Inspect
-                 modal's "JOB No {{ job.jobNo }}" title. -->
+          <div class="system-info-top">
             <div class="system-no">
               <div>{{ job?.doc_no || '-' }}</div>
             </div>
-            <div class="date">
-              {{ (parseJobDate(job?.create_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }}
+
+            <div class="badge">
+              <div [ngClass]="'status ' + replaceWhiteSpaceWithDash(job?.status_name || '')">
+                {{ job?.status_name || '-' }}
+              </div>
+              <span
+                class="arrival-badge"
+                [ngClass]="job?.is_arrived ? 'arrived' : (job?.is_arriving ? 'arriving' : 'not-arriving')"
+              >
+                {{ job?.is_arrived ? 'ถึงแล้ว' : (job?.is_arriving ? 'กำลังเดินทาง' : 'ยังไม่ถึง') }}
+              </span>
+              <div class="job-no-display job-totals-item">
+                <span class="job-totals-label">WH</span>
+                <span class="job-totals-value">{{ job?.no || '-' }}</span>
+              </div>
             </div>
           </div>
 
-          <div class="badge">
-            <div [ngClass]="'status ' + replaceWhiteSpaceWithDash(job?.status_name || '')">
-              {{ job?.status_name || '-' }}
+          <div class="system-info-bottom">
+            <div class="date">
+              {{ (parseJobDate(job?.create_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }}
             </div>
-            <span
-              class="arrival-badge"
-              [ngClass]="job?.is_arrived ? 'arrived' : (job?.is_arriving ? 'arriving' : 'not-arriving')"
-            >
-              {{ job?.is_arrived ? 'ถึงแล้ว' : (job?.is_arriving ? 'กำลังเดินทาง' : 'ยังไม่ถึง') }}
-            </span>
           </div>
         </div>
 
