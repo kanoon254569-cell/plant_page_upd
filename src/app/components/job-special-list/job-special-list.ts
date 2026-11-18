@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { PageEvent } from '@angular/material/paginator';
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
+import { firstValueFrom } from 'rxjs';
 
 //  One PALLET == one ตัน (ton). ตัน/คัน/Qty(kg) รวม live on JobBlockVM (the
 //  job "header"); the header's ตัน (read from the "รวม" column) is what
@@ -160,6 +161,7 @@ export class JobSpecialList {
   _specialJobTotalCount: number = 0;
   _isLoading: boolean = false;
   _isCreating: boolean = false;
+  _isExportingExcel = false;
   _optionJobStatus: Type.ResultProcessGetOptionsJobStatus[] | null = null;
   //  NOTE: mirrors job-list.ts's own _optionJobType, which is likewise never
   //  populated from an API today -- there's no "job type" options endpoint
@@ -280,6 +282,194 @@ export class JobSpecialList {
       this._filterDateToObj = value;
       this.filter.dateTo = this.formatDateValue(value);
     }
+  }
+
+  async exportToExcel(): Promise<void> {
+    if (this._isExportingExcel) return;
+
+    const fromDate = this._filterDateFromObj;
+    const toDate = this._filterDateToObj;
+    if (!fromDate || !toDate || isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+      this.SweetAlert('warning', 'กรุณาเลือกวันที่เริ่มต้นและวันที่สิ้นสุด');
+      return;
+    }
+
+    const startDate = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+    const endDate = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
+    if (startDate > endDate) {
+      this.SweetAlert('warning', 'วันที่เริ่มต้นต้องไม่อยู่หลังวันที่สิ้นสุด');
+      return;
+    }
+
+    this._isExportingExcel = true;
+    try {
+      const jobs = await this.fetchAllSpecialJobsForExport(startDate, endDate);
+      const jobsByDate = new Map<string, Type.ResultProcessSpecialJobListData[]>();
+      for (const job of jobs) {
+        const jobDate = this.parseJobDate(job.job_date || job.create_datetime);
+        if (!jobDate) continue;
+        const dateKey = this.toDateKey(jobDate);
+        const dateJobs = jobsByDate.get(dateKey) ?? [];
+        dateJobs.push(job);
+        jobsByDate.set(dateKey, dateJobs);
+      }
+
+      const workbook = XLSX.utils.book_new();
+      const headers = [
+        'JOB No',
+        'เลขที่เอกสาร',
+        'วันที่',
+        'ลูกค้า',
+        'สถานะ',
+        'Special Zone',
+        'Prepare Zone',
+        'NO.',
+        'ลำดับ',
+        'ขนาดพาเลท',
+        'จัดเรียง',
+        'พันฟิล์ม',
+        'รัดเทป',
+        'วันที่ขาย',
+        'หมายเหตุ',
+        'INVOICE',
+        'ผู้สั่งงาน',
+        'สถานะการจัดทำสินค้า',
+        'รายละเอียดที่ยังไม่เสร็จ',
+        'จำนวน (ตัน)',
+        'จำนวน (คัน)',
+        'จำนวนพาเลท',
+        'พาเลทที่เสร็จ',
+        'จำนวนถุง',
+        'ถุงที่เสร็จ',
+        'พาเลท',
+        'Item ID',
+        'เกรด',
+        'จำนวน (กก.)',
+        'จำนวนถุง',
+        'Lot',
+      ];
+
+      for (const date of this.eachDate(startDate, endDate)) {
+        const dateKey = this.toDateKey(date);
+        const rows = (jobsByDate.get(dateKey) ?? []).flatMap((job) => {
+          const details = job.details?.length ? job.details : [null];
+          return details.map((detail) => [
+            job.system_no || '-',
+            job.doc_no || '-',
+            this.formatExcelDate(job.job_date),
+            job.customer || '-',
+            job.status_name || '-',
+            job.special_zone || '-',
+            job.prepare_zone || '-',
+            job.no || '-',
+            job.seq || '-',
+            job.pallet_size || '-',
+            job.is_arranged ? 'ใช่' : 'ไม่ใช่',
+            job.is_wrap_film ? 'ใช่' : 'ไม่ใช่',
+            job.is_taped ? 'ใช่' : 'ไม่ใช่',
+            this.formatExcelDate(job.sale_date),
+            job.remark || '-',
+            job.invoice || '-',
+            job.ordered_by || '-',
+            job.prep_status || '-',
+            job.incomplete_detail || '-',
+            job.total_ton ?? 0,
+            job.cart_qty ?? 0,
+            job.total_pallet,
+            job.complete_pallet,
+            job.total_bag,
+            job.complete_bag,
+            detail?.pallet_no ?? '-',
+            detail?.item_id ?? '-',
+            detail?.grade || '-',
+            detail?.qty ?? 0,
+            detail?.bag ?? 0,
+            detail?.lots?.map((lot) => `${lot.lot} (${lot.qty})`).join(', ') || '-',
+          ]);
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        worksheet['!cols'] = headers.map((header) => ({ wch: Math.min(Math.max(header.length + 2, 12), 32) }));
+        XLSX.utils.book_append_sheet(workbook, worksheet, dateKey);
+      }
+
+      const filename = `special-job_${this.toDateKey(startDate)}_${this.toDateKey(endDate)}.xlsx`;
+      XLSX.writeFile(workbook, filename);
+    } catch (error) {
+      console.error('Error exporting special job data to Excel:', error);
+      this.SweetAlert('error', 'ไม่สามารถส่งออกข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
+    } finally {
+      this._isExportingExcel = false;
+    }
+  }
+
+  private async fetchAllSpecialJobsForExport(
+    fromDate: Date,
+    toDate: Date,
+  ): Promise<Type.ResultProcessSpecialJobListData[]> {
+    const pageSize = 100;
+    const dateFrom = this.formatDateValue(fromDate);
+    const dateTo = this.formatDateValue(toDate);
+    const fetchPage = (page: number) =>
+      firstValueFrom(
+        this.restService.processGetSpecialJobList(
+          0,
+          '',
+          dateFrom,
+          dateTo,
+          0,
+          0,
+          page,
+          pageSize,
+          '',
+          '',
+        ),
+      );
+
+    const firstPage = await fetchPage(1);
+    if (firstPage.status !== 'success') {
+      throw new Error(firstPage.message || 'Failed to load special job export data');
+    }
+
+    const jobs = [...(firstPage.data ?? [])];
+    const totalCount = Math.max(firstPage.total_count ?? 0, jobs.length);
+    for (let page = 2; jobs.length < totalCount; page += 1) {
+      const response = await fetchPage(page);
+      if (response.status !== 'success') {
+        throw new Error(response.message || `Failed to load special job export page ${page}`);
+      }
+      if (!response.data?.length) {
+        throw new Error(`Special job export stopped before all records were loaded (page ${page})`);
+      }
+      jobs.push(...response.data);
+    }
+
+    return jobs;
+  }
+
+  private eachDate(fromDate: Date, toDate: Date): Date[] {
+    const dates: Date[] = [];
+    for (
+      const date = new Date(fromDate);
+      date <= toDate;
+      date.setDate(date.getDate() + 1)
+    ) {
+      dates.push(new Date(date));
+    }
+    return dates;
+  }
+
+  private toDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private formatExcelDate(value: string | null | undefined): string {
+    if (!value) return '-';
+    const date = this.parseJobDate(value);
+    return date ? date.toLocaleDateString('th-TH') : value;
   }
 
   fetchSpecialJobData(): Promise<Type.ResponseProcessSpecialJobListData> {

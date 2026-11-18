@@ -13,6 +13,33 @@
   gap: 12px;
 }
 
+.export-button {
+  height: 44px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.2);
+}
+
+.export-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+}
+
+.export-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .create-button {
   height: 44px;
   width: auto;

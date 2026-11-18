@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent, HttpHeaders, HttpRequest } from '@angular/common/http';
-import { Observable, throwError, interval } from 'rxjs';
+import { Observable, interval } from 'rxjs';
 import * as Type from '../../../src/models/variables-type';
 import { environment } from '../../../src/environments/environment';
 import { JwtTokenService } from './jwt-token.service';

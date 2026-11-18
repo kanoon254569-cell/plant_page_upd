@@ -7,6 +7,15 @@
     <span>SPC01 - Job Special List</span>
   </div>
   <div class="header-actions">
+    <button
+      type="button"
+      class="export-button"
+      [disabled]="_isExportingExcel || _isLoading"
+      (click)="exportToExcel()"
+    >
+      <mat-icon>download</mat-icon>
+      {{ _isExportingExcel ? 'กำลังส่งออก...' : 'ส่งออก Excel' }}
+    </button>
     <button *hasPermission="'outbound.special_package'"
       type="button"
       class="create-button"
@@ -143,7 +152,7 @@
               class="arrival-badge"
               [ngClass]="job?.is_arrived ? 'arrived' : (job?.is_arriving ? 'arriving' : 'not-arriving')"
             >
-              {{ job?.is_arrived ? 'Arrived' : (job?.is_arriving ? 'Arriving' : 'Not Arrived') }}
+              {{ job?.is_arrived ? 'ถึงแล้ว' : (job?.is_arriving ? 'กำลังเดินทาง' : 'ยังไม่ถึง') }}
             </span>
           </div>
         </div>
@@ -237,7 +246,7 @@
 
         <div class="job-actions">
           <button class="inspect-button" [routerLink]="['/job-special-detail', job.id]">
-            Detail
+            รายละเอียด
             <svg
               class="inspect-icon"
               viewBox="0 0 24 24"
