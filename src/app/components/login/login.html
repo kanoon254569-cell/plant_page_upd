@@ -29,6 +29,10 @@
             <!-- Divider -->
             <div class="login-divider"></div>
 
+            <div class="login-demo-hint" *ngIf="!environment.production && environment.mockAuth">
+                โหมดทดลอง: Username <strong>demo</strong> / Password <strong>demo</strong>
+            </div>
+
             <!-- Login Form -->
             <div class="login-from">
 

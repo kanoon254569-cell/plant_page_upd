@@ -1,5 +1,6 @@
 export const environment = {
     production: false,
+    mockAuth: true,
     baseAPIURL: 'http://localhost:5100',
     // baseAPIURL: 'https://qtrack.irpc.co.th/service',
     //  WMS+ report service (TS / RC documents)

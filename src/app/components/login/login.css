@@ -109,6 +109,16 @@
   margin: 18px auto;
 }
 
+.login-demo-hint {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 13px;
+}
+
 /* ── Form ── */
 .login-from {
   padding: 4px 0 8px;

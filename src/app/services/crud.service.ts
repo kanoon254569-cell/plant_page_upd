@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent, HttpHeaders, HttpRequest } from '@angular/common/http';
-import { Observable, interval } from 'rxjs';
+import { Observable, throwError, interval, of } from 'rxjs';
 import * as Type from '../../../src/models/variables-type';
 import { environment } from '../../../src/environments/environment';
 import { JwtTokenService } from './jwt-token.service';
@@ -47,6 +47,36 @@ export class CrudService {
 
   /*------------------ Auth ---------------------*/
   Login(data: any): Observable<Type.ResponseLogin> {
+    if (environment.mockAuth) {
+      if (data?.userId !== 'demo' || data?.hash !== btoa('demo:demo')) {
+        return throwError(() => ({
+          error: { message: { Message: 'บัญชีทดลองใช้ Username และ Password เป็น demo' } },
+        }));
+      }
+
+      const encode = (value: object) =>
+        btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+      const header = encode({ alg: 'none', typ: 'JWT' });
+      const payload = encode({
+        id: 1,
+        user_id: 'demo',
+        user_name: 'Demo User',
+        emp_id: 'DEMO',
+        department_id: 1,
+        department: 'IT',
+        role_id: 1,
+        role: 'Mock Admin',
+        exp: Math.floor(Date.now() / 1000) + 8 * 60 * 60,
+      });
+
+      return of({
+        status: 'success',
+        message: 'Mock login successful',
+        token: `${header}.${payload}.mock`,
+        refreshToken: 'mock-refresh-token',
+      });
+    }
+
     return this.httpClient.post<Type.ResponseLogin>(`${this.authUrl + 'login'}`, data, {
       headers: this.getAuthHeaders(),
     });
@@ -817,6 +847,30 @@ export class CrudService {
   //  Permission keys of the logged-in user (their role in their department),
   //  read live from ct_role_permission -- see permission.service.ts.
   ProcessGetMyPermission(): Observable<Type.ResponseProcessGetMyPermission> {
+    if (environment.mockAuth) {
+      return of({
+        status: 'success',
+        message: 'Mock permissions loaded',
+        data: [
+          'operation.pc_web',
+          'inbound.transfer_slip',
+          'inbound.receive',
+          'outbound.request',
+          'outbound.picking',
+          'warehouse.internal_transfer',
+          'outbound.shipping',
+          'outbound.special_package',
+          'data.pallet_management',
+          'data.location_management',
+          'data.user_management',
+          'data.role_management',
+          'data.forklift_management',
+          'data.truck_management',
+          'data.audit_transaction_log',
+        ],
+      });
+    }
+
     return this.httpClient.get<Type.ResponseProcessGetMyPermission>(
       `${this.masterUrl + 'me/permission'}`,
       { headers: this.getAuthHeaders() },

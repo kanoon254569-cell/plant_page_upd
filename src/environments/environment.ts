@@ -1,5 +1,6 @@
 export const environment = {
     production: false,
+    mockAuth: false,
     // Local
     // baseAPIURL: 'http://localhost:5001',
 
