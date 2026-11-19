@@ -989,6 +989,16 @@ export class CrudService {
     });
   }
 
+  //  GET job/loading -- SP02 Loading List (job-loading-list). wh is optional
+  //  (eg. W38: only jobs whose dock starts with 38). Not paged on the API.
+  processGetLoadingJobList(wh: string): Observable<Type.ResponseProcessLoadingJobList> {
+    let url = `${this.processUrl}job/loading`;
+    if (wh) url += `?wh=${encodeURIComponent(wh)}`;
+    return this.httpClient.get<Type.ResponseProcessLoadingJobList>(url, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
   //  PATCH job/map-shipment-special -- shipment-list's "Map DO Special" action.
   processMapShipmentSpecial(
     data: Type.RequestMapShipmentSpecial,

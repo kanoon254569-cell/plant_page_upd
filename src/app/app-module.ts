@@ -22,6 +22,7 @@ import { JobWhInternalTransferDetail } from './components/job-wh-internal-transf
 import { JobWhTransferList } from './components/job-wh-transfer-list/job-wh-transfer-list';
 import { JobWhTransferDetail } from './components/job-wh-transfer-detail/job-wh-transfer-detail';
 import { JobShippingList } from './components/job-shipping-list/job-shipping-list';
+import { JobLoadingList } from './components/job-loading-list/job-loading-list';
 import { JobWhLocation } from './components/job-wh-location/job-wh-location';
 import { JobPlantLocation } from './components/job-plant-location/job-plant-location';
 import { JobAutoWhLocation } from './components/job-auto-wh-location/job-auto-wh-location';
@@ -97,6 +98,7 @@ import { SkeletonWidthsFromDirective, SkeletonWidthsToDirective } from './servic
     JobWhTransferList,
     JobWhTransferDetail,
     JobShippingList,
+    JobLoadingList,
     JobWhLocation,
     JobPlantLocation,
     JobAutoWhLocation,

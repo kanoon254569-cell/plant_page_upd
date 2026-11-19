@@ -2026,3 +2026,60 @@ export interface RequestCreateSpecialJobItem {
 export interface RequestUpdateSpecialJobItem extends RequestCreateSpecialJobItem {
   id: number;
 }
+
+//  SP02 - Loading List: GET process/job/loading?wh= (pProcessGetLoadingJobs
+//  list mode, sql/119). One row per Loading job (job_type_id 9), status
+//  2/4/5. Shape = JobService.BuildLoadingJobResponse on the API.
+export interface LoadingJobPallet {
+  id: number;
+  grade: string | null;
+  lot: string | null;
+  qty: number;
+  text: string | null;
+}
+
+export interface LoadingJobItem {
+  id: number;
+  do_no: string | null;
+  document_job: string | null;
+  grade: string | null;
+  lot_no: string | null;
+  qty: number;
+  receive_qty: number;
+  complete_qty: number;
+  total_qty: number;
+  movement_unit: string | null;
+  locations?: { from_locations?: any[]; to_locations?: any[] };
+}
+
+export interface LoadingJob {
+  id: number;
+  system_no: string | null;
+  wms_no: string | null;
+  type_id: number;
+  type_topic: string | null;
+  type_name: string | null;
+  is_urgent: string | null;
+  is_multi_fl: string | null;
+  from_location_type: string | null;
+  from_location_cc_code: string | null;
+  from_location_cc_desc: string | null;
+  to_location_type: string | null;
+  to_vehicle_desc: string | null;
+  receive_qty: number;
+  complete_qty: number;
+  total_qty: number;
+  movement_unit: string | null;
+  status_id: number;
+  status_name: string | null;
+  remark: string | null;
+  start_datetime: string | null;
+  end_datetime: string | null;
+  create_datetime: string | null;
+  pallets: { receive_pallet: LoadingJobPallet[]; complete_pallet: LoadingJobPallet[] };
+  items: LoadingJobItem[];
+}
+
+export interface ResponseProcessLoadingJobList {
+  status: string;
+  message: string;

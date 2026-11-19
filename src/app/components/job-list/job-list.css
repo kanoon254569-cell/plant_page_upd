@@ -1764,6 +1764,13 @@
   color: #1d4ed8;
 }
 
+.document-job-lot {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .document-job-qty {
   background: #f8fafc;
   border-color: #e2e8f0;

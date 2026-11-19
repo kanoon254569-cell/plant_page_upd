@@ -1,0 +1,434 @@
+<!-- Page Name (same header as job-list) -->
+<div class="header-section">
+  <div class="header-section-title">
+    <div class="header-section-icon">
+      <mat-icon>list_alt</mat-icon>
+    </div>
+    <span>SP02 - Loading List</span>
+  </div>
+</div>
+
+<!-- Search Filter (same layout as job-list) -->
+<div class="search-filter">
+  <div class="row search-filter-row">
+    <!-- Shipment No (system_no) -->
+    <div class="col-md search-filter-col">
+      <label>Shipment NO.</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <input
+          matInput
+          [(ngModel)]="filter.shipmentNo"
+          placeholder="พิมพ์ Shipment NO."
+          (keyup.enter)="onClickSearch()"
+        />
+      </mat-form-field>
+    </div>
+
+    <!-- DO No (any item of the job) -->
+    <div class="col-md search-filter-col">
+      <label>DO NO.</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <input
+          matInput
+          [(ngModel)]="filter.doNo"
+          placeholder="พิมพ์ DO NO."
+          (keyup.enter)="onClickSearch()"
+        />
+      </mat-form-field>
+    </div>
+
+    <!-- Date (job create date, same range picker as job-list) -->
+    <div class="col-md search-filter-col search-filter-col--date">
+      <label>วันที่</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-date-range-input [rangePicker]="rangePicker">
+          <input
+            matStartDate
+            [(ngModel)]="filter.dateFrom"
+            placeholder="วันที่เริ่มต้น"
+            readonly
+            (click)="rangePicker.open()"
+          />
+          <input
+            matEndDate
+            [(ngModel)]="filter.dateTo"
+            placeholder="สิ้นสุด"
+            readonly
+            (click)="rangePicker.open()"
+          />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
+        <mat-date-range-picker #rangePicker></mat-date-range-picker>
+      </mat-form-field>
+    </div>
+
+    <!-- Dock (GET location = ct_strorage_dock.dock_name, eg. 38D01) -->
+    <div class="col-md-2 search-filter-col">
+      <label>หน้าท่า</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-select
+          [(ngModel)]="filter.docks"
+          multiple
+          placeholder="ทั้งหมด"
+          panelClass="filter-multi-panel"
+        >
+          <mat-select-trigger>
+            <span class="filter-trigger" [title]="filter.docks.join(', ')">{{
+              filter.docks.join(', ')
+            }}</span>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{
+              filter.docks.length ? 'เลือก ' + filter.docks.length + ' รายการ' : 'ทั้งหมด'
+            }}</span>
+            <button
+              type="button"
+              class="filter-multi-clear"
+              *ngIf="filter.docks.length"
+              (click)="filter.docks = []"
+            >
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let dock of dockOptions" [value]="dock">
+            <span class="filter-option-name">{{ dock }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Status -->
+    <div class="col-md-2 search-filter-col">
+      <label>สถานะ</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-select
+          [(ngModel)]="filter.statusIds"
+          multiple
+          placeholder="ทั้งหมด"
+          panelClass="filter-multi-panel"
+        >
+          <mat-select-trigger>
+            <span class="filter-trigger" [title]="statusLabels().join(', ')">{{
+              statusLabels().join(', ')
+            }}</span>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{
+              filter.statusIds.length ? 'เลือก ' + filter.statusIds.length + ' รายการ' : 'ทั้งหมด'
+            }}</span>
+            <button
+              type="button"
+              class="filter-multi-clear"
+              *ngIf="filter.statusIds.length"
+              (click)="filter.statusIds = []"
+            >
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let option of statusOptions" [value]="option.id">
+            <span [ngClass]="'filter-status-dot ' + jobStatusClass(option.id)"></span>
+            <span class="filter-option-name">{{ option.name_th || option.name }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Search Button -->
+    <div class="col-md-auto search-filter-col search-filter-action-col">
+      <div class="search-button-group">
+        <button class="clear-button" (click)="resetFilter()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button class="search-button" (click)="onClickSearch()">
+          <mat-icon>search</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Job List Container -->
+<div class="job-section">
+  <div class="job-header">
+    <div class="job-header-left">
+      <strong>รายการใบงาน</strong>
+      <span class="job-count-badge">{{ filteredJobs.length }} งาน</span>
+    </div>
+
+    <div class="job-header-right">
+      <!-- Sort (same menu as job-list) -- picking an option re-sorts right away. -->
+      <button
+        type="button"
+        class="header-filter"
+        [class.active]="!!sortValue"
+        [matMenuTriggerFor]="sortMenu"
+        #sortTrigger="matMenuTrigger"
+        [class.open]="sortTrigger.menuOpen"
+        [title]="sortLabel"
+      >
+        <mat-icon class="header-filter-icon">swap_vert</mat-icon>
+        <span class="header-filter-label">เรียงตาม</span>
+        <span class="header-filter-value">{{ sortLabel }}</span>
+        <mat-icon class="header-filter-caret">expand_more</mat-icon>
+      </button>
+
+      <mat-menu #sortMenu="matMenu" xPosition="before" class="product-cc-menu">
+        <div class="product-cc-menu-title">เรียงตาม</div>
+        <button
+          mat-menu-item
+          class="product-cc-menu-item"
+          *ngFor="let option of sortOptions"
+          [class.selected]="sortValue === option.value"
+          (click)="onSelectSort(option.value)"
+        >
+          <span>{{ option.label }}</span>
+          <mat-icon *ngIf="sortValue === option.value">check</mat-icon>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!isLoading; else jobListLoading">
+    <div class="job-list-container" *ngIf="pagedJobs.length > 0; else noJobData">
+      <div class="job-list-entry" *ngFor="let job of pagedJobs">
+        <div class="job-list-card">
+          <div class="job-icon job-icon-outbound">
+            <div class="text-topic-outbound">LD</div>
+          </div>
+
+          <div class="system-info">
+            <div class="system-header">
+              <div class="data-no">
+                <div class="system-no">{{ job.system_no || '-' }}</div>
+                <div class="wms_no" *ngIf="doNumbers(job) !== '-'">
+                  <div class="wms-plus-status neutral" [title]="doNumbers(job)">
+                    DO {{ doNumbers(job) }}
+                  </div>
+                </div>
+              </div>
+              <div class="date">
+                {{ (parseJobDate(job.create_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }}
+              </div>
+            </div>
+
+            <div class="badge">
+              <div [ngClass]="'status ' + jobStatusClass(job.status_id)">
+                {{ job.status_name }}
+              </div>
+              <div class="status step" *ngIf="job.is_multi_fl === 'Y'">2 Step</div>
+              <div class="status is-urgent" *ngIf="job.is_urgent === 'Y'">ด่วน</div>
+            </div>
+          </div>
+
+          <div class="grade-lot-progress">
+            <div class="document-job">
+              <span class="document-job-segments">
+                <span class="document-job-grade">{{ job.items[0]?.grade || '-' }}</span>
+                <span class="document-job-tag document-job-lot" *ngIf="job.items[0]?.lot_no">{{
+                  job.items[0]?.lot_no
+                }}</span>
+                <span class="document-job-tag document-job-qty">
+                  {{ (job.items[0]?.qty | number: '1.0-0') || 0 }} kg
+                </span>
+              </span>
+              <button
+                type="button"
+                class="job-items-more-button"
+                *ngIf="job.items.length > 1"
+                (click)="toggleExpand(job)"
+              >
+                + อีก {{ job.items.length - 1 }} รายการ
+              </button>
+            </div>
+
+            <div class="pallet-progress">
+              <div class="pallet-text">
+                {{ (job.complete_qty | number: '1.0-0') || 0 }}/{{
+                  (job.total_qty | number: '1.0-0') || 0
+                }}
+                {{ job.movement_unit || 'Pallet' }}
+              </div>
+
+              <!-- Blue = taken at GET so far, green on top = loaded on the vehicle. -->
+              <div
+                class="progress-wrapper progress-wrapper--stacked"
+                matTooltipClass="tooltip-nowrap"
+                [matTooltip]="
+                  'รับ ' + (job.receive_qty | number: '1.0-0') + ' · ขึ้นรถ ' + (job.complete_qty | number: '1.0-0')
+                "
+                matTooltipPosition="above"
+              >
+                <div class="progress-bar progress-bar--receive" [style.width.%]="receivePercent(job)"></div>
+                <div class="progress-bar" [style.width.%]="completePercent(job)"></div>
+              </div>
+
+              <div class="percent">{{ completePercent(job) | number: '1.0-0' }}%</div>
+            </div>
+
+            <div class="start-end-datetime">
+              {{ (parseJobDate(job.start_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }} -
+              {{ formatDateEnd(job.start_datetime, job.end_datetime) }} <span>|</span>
+              {{ formatDuration(job.start_datetime, job.end_datetime) }}
+            </div>
+          </div>
+
+          <div class="location">
+            <div class="get-location">
+              <div class="get-header">
+                <span style="color: #1d4ed8"><strong>GET</strong></span>
+                <div class="cc-info" *ngIf="job.from_location_cc_code || job.from_location_cc_desc">
+                  <span class="cc-code" *ngIf="job.from_location_cc_code">{{
+                    job.from_location_cc_code
+                  }}</span>
+                  <span class="cc-desc" *ngIf="job.from_location_cc_desc">{{
+                    job.from_location_cc_desc
+                  }}</span>
+                </div>
+              </div>
+              <div class="location-detail">
+                <img src="assets/images/location.png" alt="location-icon" />
+                <span>{{ dockName(job) }}</span>
+              </div>
+            </div>
+
+            <div class="arrow">→</div>
+
+            <div class="put-location">
+              <div class="put-header">
+                <span style="color: #14a318"><strong>PUT</strong></span>
+                <div class="cc-info" *ngIf="job.to_vehicle_desc">
+                  <span class="cc-desc">{{ job.to_vehicle_desc }}</span>
+                </div>
+              </div>
+              <div class="location-detail">
+                <img src="assets/images/location.png" alt="location-icon" />
+                <span>{{ vehicleName(job) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="job-card-actions">
+            <button class="inspect-button" (click)="toggleExpand(job)">
+              {{ expandedJobId === job.id ? 'ซ่อน' : 'รายละเอียด' }}
+              <svg
+                class="inspect-icon"
+                [class.inspect-icon--open]="expandedJobId === job.id"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M9 6l6 6-6 6"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Detail under the card: DO items + pallets (no job-detail page for Loading yet) -->
+        <div class="loading-detail" *ngIf="expandedJobId === job.id">
+          <table class="job-items-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>DO</th>
+                <th>เกรด</th>
+                <th>ล็อต</th>
+                <th>จำนวน</th>
+                <th>พาเลท รับ / เสร็จ / ทั้งหมด</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of job.items; let index = index">
+                <td class="job-item-index">{{ index + 1 }}</td>
+                <td>{{ item.do_no || '-' }}</td>
+                <td class="job-item-grade">{{ item.grade || '-' }}</td>
+                <td class="job-item-lot">{{ item.lot_no || '-' }}</td>
+                <td class="job-item-qty">{{ item.qty || 0 | number: '1.0-0' }} kg</td>
+                <td class="job-item-pallet">
+                  {{ item.receive_qty || 0 }} / {{ item.complete_qty || 0 }} / {{ item.total_qty || 0 }}
+                </td>
+              </tr>
+              <tr *ngIf="!job.items.length">
+                <td colspan="6" class="loading-detail-muted">ไม่มีรายการ DO</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="loading-pallet-groups">
+            <div class="loading-pallet-group">
+              <div class="loading-pallet-title">
+                กำลังขน <span>{{ job.pallets.receive_pallet.length }}</span>
+              </div>
+              <span class="loading-pallet-chip" *ngFor="let p of job.pallets.receive_pallet">{{
+                p.text
+              }}</span>
+              <span class="loading-detail-muted" *ngIf="!job.pallets.receive_pallet.length">-</span>
+            </div>
+            <div class="loading-pallet-group">
+              <div class="loading-pallet-title">
+                ขึ้นรถแล้ว <span>{{ job.pallets.complete_pallet.length }}</span>
+              </div>
+              <span
+                class="loading-pallet-chip loading-pallet-chip--done"
+                *ngFor="let p of job.pallets.complete_pallet"
+                >{{ p.text }}</span
+              >
+              <span class="loading-detail-muted" *ngIf="!job.pallets.complete_pallet.length">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #jobListLoading>
+    <div class="job-list-container job-list-loading">
+      <div class="job-list-skeleton-card" *ngFor="let row of skeletonRows">
+        <div class="skeleton skeleton-job-icon"></div>
+        <div class="skeleton-group skeleton-system-info">
+          <div class="skeleton skeleton-line skeleton-line-lg"></div>
+          <div class="skeleton skeleton-line skeleton-line-sm"></div>
+        </div>
+        <div class="skeleton-group skeleton-grade-lot-progress">
+          <div class="skeleton skeleton-line skeleton-line-md"></div>
+          <div class="skeleton skeleton-progress"></div>
+          <div class="skeleton skeleton-line skeleton-line-xs"></div>
+        </div>
+        <div class="skeleton-group skeleton-location-group">
+          <div class="skeleton skeleton-location-box"></div>
+          <div class="skeleton skeleton-arrow"></div>
+          <div class="skeleton skeleton-location-box"></div>
+        </div>
+        <div class="skeleton skeleton-button"></div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Pagination (client side) -->
+  <div class="job-pagination" *ngIf="!isLoading && pagedJobs.length > 0">
+    <mat-paginator
+      [length]="filteredJobs.length"
+      [pageIndex]="filter.page - 1"
+      [pageSize]="filter.pageSize"
+      [pageSizeOptions]="[25, 50, 75, 100]"
+      [showFirstLastButtons]="true"
+      (page)="onPageEvent($event)"
+    >
+    </mat-paginator>
+  </div>
+</div>
+
+<ng-template #noJobData>
+  <div class="no-job-data">
+    <app-empty-state
+      variant="job"
+      title="ไม่พบข้อมูลใบงาน"
+      message="ลองปรับเงื่อนไขการค้นหาใหม่อีกครั้ง"
+    ></app-empty-state>
+  </div>
+</ng-template>

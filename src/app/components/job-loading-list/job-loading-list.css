@@ -1,0 +1,87 @@
+/* SP02 Loading List: page look comes from ../job-list/job-list.css
+   (styleUrls). Only the detail panel under a card is defined here. */
+
+/* All 5 filters + buttons on one row (job-list.css wraps them). Columns
+   share the width from a 0 basis: Shipment No, DO No and วันที่ are the
+   same width. */
+@media (min-width: 992px) {
+  .search-filter-row {
+    flex-wrap: nowrap;
+  }
+
+  .search-filter-col,
+  .search-filter-col:first-child,
+  .search-filter-col:nth-child(2),
+  .search-filter-col.col-md-2 {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .search-filter-col.col-md-auto {
+    flex: 0 0 auto;
+  }
+}
+
+.inspect-icon--open {
+  transform: rotate(90deg);
+}
+
+.loading-detail {
+  margin: -4px 0 12px;
+  padding: 14px 20px 16px;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  background: #f8fafc;
+}
+
+.loading-detail .job-items-table {
+  width: 100%;
+}
+
+.loading-detail-muted {
+  color: #94a3b8;
+}
+
+.loading-pallet-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 14px;
+}
+
+.loading-pallet-group {
+  flex: 1 1 280px;
+}
+
+.loading-pallet-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.loading-pallet-title span {
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.loading-pallet-chip {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.loading-pallet-chip--done {
+  background: #ecfdf5;
+  color: #047857;
+}

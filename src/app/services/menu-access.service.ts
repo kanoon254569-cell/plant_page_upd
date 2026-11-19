@@ -108,6 +108,7 @@ export const MENU_GROUPS: MenuGroup[] = [
     section: 'main',
     items: [
       { path: 'job-shipping-list', label: 'SP01 - Shipping List', icon: 'assets/images/list.png', access: ACCESS.shipping },
+      { path: 'job-loading-list', label: 'SP02 - Loading List', icon: 'assets/images/list.png', access: ACCESS.shipping },
     ],
   },
   {
