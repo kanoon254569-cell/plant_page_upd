@@ -135,6 +135,7 @@
             <th class="mat-column-warehouse">Warehouse</th>
             <th class="mat-column-section">Section</th>
             <th class="mat-column-status">สถานะ</th>
+            <th class="mat-column-currentUserName">ผู้ใช้รถ</th>
             <th class="mat-column-lastForkliftUsed">วันที่ใช้งานล่าสุด</th>
             <th class="mat-column-lastEditForklift">วันที่แก้ไขล่าสุด</th>
             <th class="mat-column-print" style="width: 80px; text-align: center">พิมพ์</th>
@@ -153,6 +154,7 @@
             <td><span class="adm-skel adm-skel--pill" style="width: 90px"></span></td>
             <td><span class="adm-skel adm-skel--pill" style="width: 100px"></span></td>
             <td><span class="adm-skel adm-skel--pill" style="width: 72px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 100px"></span></td>
             <td>
               <span class="adm-skel" style="width: 78px"></span>
               <span class="adm-skel adm-skel--sub" style="width: 52px"></span>
@@ -271,6 +273,29 @@
             <span class="fm-status-badge" [class.fm-status-badge--on]="row.statusActive === 'Y'">
               {{ row.statusActive === 'Y' ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
             </span>
+          </td>
+        </ng-container>
+
+        <!-- Current Forklift User -->
+        <ng-container matColumnDef="currentUserName">
+          <th mat-header-cell *matHeaderCellDef>ผู้ใช้รถ</th>
+          <td mat-cell *matCellDef="let row" style="text-align:left">
+            <div class="current-user-cell">
+              <span class="fm-status-badge" [class.fm-status-badge--on]="!!row.currentUserName">
+                {{ row.currentUserName || 'ไม่มีผู้ใช้' }}
+              </span>
+              <a
+                *ngIf="row.currentUserId != null"
+                class="forklift-user-link"
+                [href]="forkliftUserUrl(row.currentUserId)"
+                target="_blank"
+                rel="noopener noreferrer"
+                matTooltip="เปิดหน้า Forklift ของผู้ใช้ในแท็บใหม่"
+                aria-label="เปิดหน้า Forklift ของผู้ใช้ในแท็บใหม่"
+              >
+                <mat-icon>open_in_new</mat-icon>
+              </a>
+            </div>
           </td>
         </ng-container>
 

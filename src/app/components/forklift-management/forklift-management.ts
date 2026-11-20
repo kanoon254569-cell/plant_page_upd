@@ -14,6 +14,8 @@ import * as QRCode from 'qrcode';
   styleUrl: './forklift-management.css',
 })
 export class ForkliftManagement implements OnDestroy {
+  readonly forkliftUserBaseUrl = '/service/api/v1/Process/job/forklift/';
+
   //  Direct handle to this instance's own #print-forklift-area node - see
   //  user-list.ts's printUserAreaRef for why this is looked up via ViewChild
   //  rather than document.getElementById (so cleanupOrphanedPrintAreas below
@@ -35,6 +37,7 @@ export class ForkliftManagement implements OnDestroy {
     'warehouse',
     'section',
     'status',
+    'currentUserName',
     'lastForkliftUsed',
     'lastEditForklift',
     'print',
@@ -241,6 +244,11 @@ export class ForkliftManagement implements OnDestroy {
                 sectionId: item.section_id ?? '',
                 status: item.forklift_statu ?? '-',
                 statusActive: item.status_active ?? 'N',
+                currentUserId: item.current_user_id ?? null,
+                currentUserName:
+                  item.current_user_thai_name ||
+                  item.current_user_name ||
+                  (item.current_user_id != null ? `ผู้ใช้ #${item.current_user_id}` : ''),
                 remark: item.remark ?? '',
                 qty: item.qty ?? 0,
                 lastForkliftUsed: item.lasted_used_datetime ?? '-',
@@ -576,6 +584,10 @@ export class ForkliftManagement implements OnDestroy {
     this.selectedForkliftIds = new Set(
       checked ? (this._forkliftListTableData || []).map((row: any) => row.id) : [],
     );
+  }
+
+  forkliftUserUrl(userId: number): string {
+    return `${this.forkliftUserBaseUrl}${encodeURIComponent(userId)}`;
   }
 
   async printSelectedForklifts(): Promise<void> {

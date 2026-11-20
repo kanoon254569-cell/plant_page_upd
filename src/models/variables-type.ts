@@ -1344,6 +1344,9 @@ export interface ResultProcessForkliftListData {
   license_plate: any;
   warehouse_code: string;
   forklift_status: string;
+  current_user_id?: number | null;
+  current_user_name?: string | null;
+  current_user_thai_name?: string | null;
   lasted_used_datetime: string;
   updated_datetime: string;
 }
