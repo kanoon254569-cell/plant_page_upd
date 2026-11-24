@@ -442,7 +442,7 @@
           <div class="system-header">
             <div class="data-no">
               <div class="system-no">{{ job?.system_no }}</div>
-              <div class="wms_no" *ngIf="job?.wms_no || getWmsPlusStatus(job.id)">
+              <div class="wms_no" *ngIf="job?.wms_no || getWmsPlusStatus(job.id) || (pageCode === 'WH02' && job.type_id === 4)">
                 <ng-container *ngIf="getWmsPlusStatus(job.id) as wmsPlusStatus; else plainWmsNo">
                   <div
                     class="wms-plus-status"
@@ -485,6 +485,16 @@
                 >
                   <mat-icon>description</mat-icon>
                 </a>
+                <button
+                  type="button"
+                  class="picking-document-button"
+                  *ngIf="pageCode === 'WH02' && job.type_id === 4"
+                  (click)="printPickingDocument(job)"
+                  title="พิมพ์หรือบันทึก Loading Slip เป็น PDF"
+                >
+                  <mat-icon>picture_as_pdf</mat-icon>
+                  PDF Slip
+                </button>
               </div>
             </div>
             <div class="date">
@@ -884,6 +894,8 @@
     </mat-paginator>
   </div>
 </div>
+
+<div id="print-picking-document-area" #printPickingDocumentArea></div>
 
 <div
   class="modal fade"

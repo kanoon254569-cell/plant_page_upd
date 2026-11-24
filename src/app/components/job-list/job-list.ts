@@ -1,4 +1,4 @@
-import { Component, Injectable, OnDestroy } from '@angular/core';
+import { Component, ElementRef, Injectable, OnDestroy, ViewChild } from '@angular/core';
 import { CrudService } from '../../services/crud.service';
 import * as Type from '../../../models/variables-type';
 import { MatPaginatorIntl, PageEvent } from '@angular/material/paginator';
@@ -63,6 +63,10 @@ interface ExcelDoFilter {
   providers: [{ provide: MatPaginatorIntl, useClass: JobListPaginatorIntl }],
 })
 export class JobList implements OnDestroy {
+  @ViewChild('printPickingDocumentArea', { static: true })
+  printPickingDocumentAreaRef!: ElementRef<HTMLDivElement>;
+  private printPickingDocumentPlaceholder: HTMLElement | null = null;
+
   //  Page code shown in the header (see job-list.html's "{{ pageCode }} -
   //  ..." title) - overridden per subclass so it matches that page's own
   //  sidebar entry (e.g. JobWhOutboundList sets 'WH02' to match sidebar.html's
@@ -281,10 +285,191 @@ export class JobList implements OnDestroy {
       window.clearInterval(this._durationTickerId);
       this._durationTickerId = null;
     }
+    window.removeEventListener('afterprint', this.restorePickingDocumentPrintArea);
+    this.restorePickingDocumentPrintArea();
   }
 
   jobItem(jobId: number) {
     return this._jobData?.find((job) => job.id === jobId)?.items;
+  }
+
+  private escapePickingDocumentHtml(value: unknown): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  private restorePickingDocumentPrintArea = (): void => {
+    const printArea = this.printPickingDocumentAreaRef?.nativeElement;
+    if (printArea && this.printPickingDocumentPlaceholder?.parentNode) {
+      this.printPickingDocumentPlaceholder.parentNode.insertBefore(
+        printArea,
+        this.printPickingDocumentPlaceholder,
+      );
+      this.printPickingDocumentPlaceholder.remove();
+      this.printPickingDocumentPlaceholder = null;
+    }
+  };
+
+  printPickingDocument(job: Type.ResultProcessJobListData): void {
+    if (this.pageCode !== 'WH02' || job.type_id !== 4) return;
+
+    const printArea = this.printPickingDocumentAreaRef.nativeElement;
+    type AssignedRow = {
+      itemNo: number;
+      warehouse: string;
+      level: string;
+      locationName: string;
+      grade: string;
+      lot: string;
+      bags: number | null;
+      kg: number;
+    };
+    const assignedRows: AssignedRow[] = (job.items ?? []).flatMap((item, itemIndex) => {
+      const sourceLocations = item.locations?.from_locations ?? [];
+      return sourceLocations.length
+        ? sourceLocations.flatMap((location): AssignedRow[] => {
+            const pallets = location.pallets ?? [];
+            const locationName = location.location_name || '-';
+            const warehouse = location.wh_code || item.wh_code || '-';
+            if (pallets.length) {
+              return pallets.map((pallet) => ({
+                itemNo: itemIndex + 1,
+                warehouse,
+                level: '-',
+                locationName,
+                grade: pallet.grade || item.grade || '-',
+                lot: pallet.lot || item.lot_no || '-',
+                bags: Number(pallet.bag_count) || 0,
+                kg: Number(pallet.total_qty) || 0,
+              }));
+            }
+            return [{
+              itemNo: itemIndex + 1,
+              warehouse,
+              level: '-',
+              locationName,
+              grade: item.grade || '-',
+              lot: location.addon_lot?.map((lot) => lot.lot).filter(Boolean).join(', ') || item.lot_no || '-',
+              bags: null,
+              kg: Number(location.qty) || Number(item.qty) || 0,
+            }];
+          })
+        : [{
+            itemNo: itemIndex + 1,
+            warehouse: item.wh_code || job.from_location_type || '-',
+            level: '-',
+            locationName: '-',
+            grade: item.grade || '-',
+            lot: item.lot_no || '-',
+            bags: null,
+            kg: Number(item.qty) || 0,
+          }];
+    });
+    const totalBags = assignedRows.some((row) => row.bags !== null)
+      ? assignedRows.reduce((sum, row) => sum + (row.bags ?? 0), 0)
+      : null;
+    const totalKg = assignedRows.reduce((sum, row) => sum + row.kg, 0);
+    const formattedNumber = (value: number | null) =>
+      value === null ? '-' : value.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    const assignedItems = assignedRows
+      .map((row) => `<tr>
+        <td class="jd-center">${row.itemNo}</td>
+        <td>${this.escapePickingDocumentHtml(row.warehouse)}</td>
+        <td class="jd-center">${this.escapePickingDocumentHtml(row.level)}</td>
+        <td>${this.escapePickingDocumentHtml(row.locationName)}</td>
+        <td>${this.escapePickingDocumentHtml(row.grade)}</td>
+        <td>${this.escapePickingDocumentHtml(row.lot)}</td>
+        <td class="jd-number">${formattedNumber(row.bags)}</td>
+        <td class="jd-number">${formattedNumber(row.kg)}</td>
+      </tr>`)
+      .join('');
+    const date = this.parseJobDate(job.start_datetime || job.create_datetime);
+    const documentDate = date
+      ? `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
+      : '-';
+    const documentTime = date
+      ? `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+      : '-';
+    const palletRows = Array.from({ length: 9 }, (_, index) => `
+      <tr>
+        <td class="jd-pallet-no">${index + 1}.</td><td></td>
+        <td class="jd-pallet-no">${index + 10}.</td><td></td>
+      </tr>`).join('');
+
+    printArea.innerHTML = `
+      <section class="picking-loading-sheet">
+        <header class="jd-header">
+          <div class="jd-brand">
+            <img src="assets/images/irpc-logo.png" alt="IRPC" />
+            <div class="jd-company"><strong>IRPC (PUBLIC) Co.,LTD.</strong><span>Loading Slip</span></div>
+          </div>
+          <div class="jd-meta">
+            <div><span>Request No. :</span> ${this.escapePickingDocumentHtml(job.system_no || '-')}</div>
+            <div><span>RefDoc No. :</span> ${this.escapePickingDocumentHtml(job.wms_no || job.system_no || '-')}</div>
+            <div><span>Process Date :</span> ${documentDate} <span>${documentTime}</span></div>
+            <div><span>Confirm by :</span> ____________________</div>
+          </div>
+        </header>
+        <div class="jd-summary">
+          <div><span>Process Tram No. :</span> ${this.escapePickingDocumentHtml(job.remark || '-')}</div>
+          <div><span>Process No. :</span> ${this.escapePickingDocumentHtml(job.id)}</div>
+        </div>
+        <div class="jd-load-summary">
+          <div><strong>Grade :</strong> ${this.escapePickingDocumentHtml(job.items?.[0]?.grade || '-')}</div>
+          <div><strong>Qty :</strong> ${formattedNumber(totalBags)} BG</div>
+          <div><strong>${formattedNumber(totalKg)} KG</strong></div>
+        </div>
+        <div class="jd-section-heading">1. AS/RS ASSIGN DETAIL</div>
+        <table class="jd-assigned-table">
+          <thead><tr><th>Item</th><th>WH</th><th>Level</th><th>Location</th><th>Grade</th><th>Lot</th><th>Qty/BG</th><th>Qty/KG</th></tr></thead>
+          <tbody>${assignedItems || '<tr><td colspan="8" class="jd-empty-row">-</td></tr>'}</tbody>
+          <tfoot><tr><th colspan="6">Total</th><th class="jd-number">${formattedNumber(totalBags)}</th><th class="jd-number">${formattedNumber(totalKg)}</th></tr></tfoot>
+        </table>
+        <div class="jd-section-heading">2. Canvas / Container Inspect</div>
+        <div class="jd-container-inspect">
+          <div class="jd-options"><div><span class="jd-check"></span> COMPLETE</div><div><span class="jd-check"></span> INCOMPLETE</div></div>
+          <div class="jd-container-fields">
+            <div>CONTAINER NO. <span></span></div>
+            <div>SEAL NO. <span></span></div>
+          </div>
+        </div>
+        <div class="jd-section-heading jd-pallet-heading">3. PALLET NO.</div>
+        <table class="jd-pallet-table"><tbody>${palletRows}</tbody></table>
+        <div class="jd-section-heading jd-damage-title">4. DAMAGE <span>REPLACE</span></div>
+        <div class="jd-damage-tables">
+          <table class="jd-damage-table">
+            <thead><tr><th>Grade</th><th>Lot</th><th>Qty</th></tr></thead>
+            <tbody>${Array.from({ length: 4 }, () => '<tr><td></td><td></td><td></td></tr>').join('')}</tbody>
+          </table>
+          <table class="jd-damage-table">
+            <thead><tr><th>Grade</th><th>Lot</th><th>Qty</th></tr></thead>
+            <tbody>${Array.from({ length: 4 }, () => '<tr><td></td><td></td><td></td></tr>').join('')}</tbody>
+          </table>
+        </div>
+        <div class="jd-damage-total">Total <span>________________</span></div>
+        <div class="jd-cause-title">Cause of Damage</div>
+        <div class="jd-causes">
+          <div><span class="jd-check"></span> BAGGING/PLANT <span class="jd-cause-line"></span> Bag</div>
+          <div><span class="jd-check"></span> FIL(SH) <span class="jd-cause-line"></span> Bag</div>
+          <div><span class="jd-check"></span> W/H <span class="jd-cause-line"></span> Bag</div>
+          <div><span class="jd-check"></span> LABOUR(SH) <span class="jd-cause-line"></span> Bag</div>
+        </div>
+        <div class="jd-footer"><div><strong>WAREHOUSE</strong>________________________</div><div><strong>SHIPPING</strong>________________________</div></div>
+      </section>`;
+
+    setTimeout(() => {
+      if (printArea.parentNode) {
+        this.printPickingDocumentPlaceholder = document.createElement('div');
+        printArea.parentNode.insertBefore(this.printPickingDocumentPlaceholder, printArea);
+        document.body.appendChild(printArea);
+      }
+      window.addEventListener('afterprint', this.restorePickingDocumentPrintArea, { once: true });
+      window.print();
+    }, 50);
   }
 
   //  Product CC / Type tags above the card's Inspect button. CC prefers the

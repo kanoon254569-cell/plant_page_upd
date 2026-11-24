@@ -2243,6 +2243,311 @@
 }
 
 /* Inspect Button */
+.picking-document-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 78px;
+  min-height: 26px;
+  margin-left: 4px;
+  padding: 3px 6px;
+  border: 1px solid #bfdbfe;
+  border-radius: 7px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.picking-document-button mat-icon {
+  width: 15px;
+  height: 15px;
+  font-size: 15px;
+}
+
+.picking-document-button:hover {
+  border-color: #60a5fa;
+  background: #dbeafe;
+}
+
+#print-picking-document-area {
+  display: none;
+}
+
+@page {
+  size: A4;
+  margin: 8mm;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  #print-picking-document-area,
+  #print-picking-document-area * {
+    visibility: visible !important;
+  }
+
+  #print-picking-document-area {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 194mm;
+  }
+
+  #print-picking-document-area ::ng-deep .picking-loading-sheet {
+    width: 194mm;
+    min-height: 278mm;
+    box-sizing: border-box;
+    background: #fff;
+    color: #111;
+    font-family: 'Prompt', 'Tahoma', sans-serif;
+    font-size: 9px;
+    line-height: 1.25;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1.5px solid #111;
+    padding-bottom: 3mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-brand img {
+    height: 15mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-company {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-company strong {
+    font-size: 12px;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-company span {
+    font-size: 14px;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-meta {
+    width: 62mm;
+    line-height: 1.5;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-meta span,
+  #print-picking-document-area ::ng-deep .jd-summary span {
+    font-weight: 600;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-summary {
+    display: grid;
+    grid-template-columns: 1fr 45mm;
+    border-bottom: 1px solid #111;
+    padding: 2mm 0;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-load-summary {
+    display: flex;
+    gap: 12mm;
+    border-bottom: 1px dotted #777;
+    padding: 2mm 0;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-section-heading {
+    margin: 2mm 0 1mm;
+    font-weight: 700;
+    font-size: 9px;
+  }
+
+  #print-picking-document-area ::ng-deep table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-assigned-table th,
+  #print-picking-document-area ::ng-deep .jd-assigned-table td,
+  #print-picking-document-area ::ng-deep .jd-damage-table th,
+  #print-picking-document-area ::ng-deep .jd-damage-table td {
+    border: 1px solid #111;
+    padding: 1mm 0.8mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-assigned-table {
+    table-layout: fixed;
+    font-size: 8px;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-assigned-table th,
+  #print-picking-document-area ::ng-deep .jd-damage-table th {
+    background: #f1f5f9;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-assigned-table th:nth-child(1) { width: 9mm; }
+  #print-picking-document-area ::ng-deep .jd-assigned-table th:nth-child(2) { width: 13mm; }
+  #print-picking-document-area ::ng-deep .jd-assigned-table th:nth-child(3) { width: 12mm; }
+  #print-picking-document-area ::ng-deep .jd-assigned-table th:nth-child(4) { width: 20mm; }
+  #print-picking-document-area ::ng-deep .jd-assigned-table th:nth-child(5) { width: 27mm; }
+  #print-picking-document-area ::ng-deep .jd-assigned-table th:nth-child(7),
+  #print-picking-document-area ::ng-deep .jd-assigned-table th:nth-child(8) { width: 15mm; }
+  #print-picking-document-area ::ng-deep .jd-center,
+  #print-picking-document-area ::ng-deep .jd-number,
+  #print-picking-document-area ::ng-deep .jd-empty-row {
+    text-align: center;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-number {
+    white-space: nowrap;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-assigned-table tfoot th {
+    background: #fff;
+    text-align: right;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-container-inspect {
+    display: grid;
+    grid-template-columns: 48mm 1fr;
+    border-top: 1px dotted #777;
+    border-bottom: 1px dotted #777;
+    min-height: 17mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-options {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1mm;
+    padding: 1mm 2mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-options div {
+    display: flex;
+    align-items: center;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-check {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border: 1px solid #111;
+    margin-right: 4px;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-container-fields {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2mm;
+    padding: 1mm 2mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-container-fields div {
+    display: flex;
+    gap: 2mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-container-fields span {
+    flex: 1;
+    border-bottom: 1px dotted #777;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-pallet-heading {
+    margin-top: 2mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-pallet-table td {
+    height: 5mm;
+    border: 1px solid #111;
+    padding: 0.5mm 1mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-pallet-table td:nth-child(2),
+  #print-picking-document-area ::ng-deep .jd-pallet-table td:nth-child(4) {
+    width: 82mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-damage-title {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 2mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-damage-tables {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-damage-table th {
+    height: 5mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-damage-table td {
+    height: 6mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-damage-total {
+    margin-top: 1.5mm;
+    font-weight: 600;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-damage-total span {
+    margin-left: 4mm;
+    font-weight: 400;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-cause-title {
+    font-weight: 600;
+    margin: 1mm 0;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-causes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1mm 8mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-cause-line {
+    display: inline-block;
+    width: 22mm;
+    margin: 0 1mm;
+    border-bottom: 1px dotted #777;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 5mm;
+    padding-top: 2mm;
+    border-top: 1px solid #777;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-footer div {
+    display: flex;
+    flex-direction: column;
+    gap: 3mm;
+  }
+
+  #print-picking-document-area ::ng-deep .jd-footer strong {
+    font-size: 10px;
+  }
+}
+
 .inspect-button {
   display: flex;
   align-items: center;
