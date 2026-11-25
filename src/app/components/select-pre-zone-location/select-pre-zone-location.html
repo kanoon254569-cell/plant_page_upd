@@ -101,7 +101,11 @@
           <form [formGroup]="searchForm" class="row search-form pre-zone-search-form" *ngIf="_isExplandSearch">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
               <mat-label>Warehouse</mat-label>
-              <mat-select formControlName="whCode" placeholder="Select Warehouse">
+              <mat-select
+                [value]="searchForm.controls.whCode.value"
+                placeholder="Select Warehouse"
+                disabled
+              >
                 <mat-option *ngFor="let wh of whLocationOptions" [value]="wh.wh_code">
                   {{ wh.wh_name }}
                 </mat-option>
