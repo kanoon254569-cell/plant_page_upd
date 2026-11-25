@@ -999,6 +999,41 @@ export class CrudService {
     });
   }
 
+  processGetDoSaleInfo(query: { shipmentNo?: string; doNo?: string; grade?: string }): Observable<Type.ResponseProcessDoSaleInfo> {
+    const params = new URLSearchParams();
+    if (query.shipmentNo) params.set('shipmentNo', query.shipmentNo);
+    if (query.doNo) params.set('doNo', query.doNo);
+    if (query.grade) params.set('grade', query.grade);
+    return this.httpClient.get<Type.ResponseProcessDoSaleInfo>(
+      `${this.processUrl}do/sale-info?${params.toString()}`,
+      { headers: this.getAuthHeaders() },
+    );
+  }
+
+  processLoadingGetPallet(jobId: number, data: Type.RequestLoadingPallet): Observable<Type.ResponseStandard> {
+    return this.httpClient.patch<Type.ResponseStandard>(
+      `${this.processUrl}job/${jobId}/loading/get-pallet`,
+      data,
+      { headers: this.getAuthHeaders() },
+    );
+  }
+
+  processLoadingPutAway(jobId: number, data: Type.RequestLoadingPallet): Observable<Type.ResponseStandard> {
+    return this.httpClient.patch<Type.ResponseStandard>(
+      `${this.processUrl}job/${jobId}/loading/put-away`,
+      data,
+      { headers: this.getAuthHeaders() },
+    );
+  }
+
+  processLoadingResetPallet(jobId: number, data: Type.RequestLoadingPallet): Observable<Type.ResponseStandard> {
+    return this.httpClient.patch<Type.ResponseStandard>(
+      `${this.processUrl}job/${jobId}/loading/reset-pallet`,
+      data,
+      { headers: this.getAuthHeaders() },
+    );
+  }
+
   //  PATCH job/map-shipment-special -- shipment-list's "Map DO Special" action.
   processMapShipmentSpecial(
     data: Type.RequestMapShipmentSpecial,

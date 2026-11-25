@@ -16,6 +16,7 @@ import { JobWhTransferDetail } from './components/job-wh-transfer-detail/job-wh-
 import { JobWhInternalTransferDetail } from './components/job-wh-internal-transfer-detail/job-wh-internal-transfer-detail';
 import { JobShippingList } from './components/job-shipping-list/job-shipping-list';
 import { JobLoadingList } from './components/job-loading-list/job-loading-list';
+import { JobLoadingDetail } from './components/job-loading-detail/job-loading-detail';
 import { JobDetail } from './components/job-detail/job-detail';
 import { PalletManagement } from './components/pallet-management/pallet-management';
 import { LocationManagement } from './components/location-management/location-management';
@@ -47,6 +48,7 @@ const routes: Routes = [
   { path: 'job-wh-transfer-detail/:id', component: JobWhTransferDetail, canActivate: [AuthService] },
   { path: 'job-shipping-list', component: JobShippingList, canActivate: [AuthService] },
   { path: 'job-loading-list', component: JobLoadingList, canActivate: [AuthService] },
+  { path: 'job-loading-detail/:id', component: JobLoadingDetail, canActivate: [AuthService] },
   { path: 'job-detail/:id', component: JobDetail, canActivate: [AuthService] },
   { path: 'vehicle-list', component: VehicleList, canActivate: [AuthService] },
   { path: 'user-list', component: UserList, canActivate: [AuthService] },

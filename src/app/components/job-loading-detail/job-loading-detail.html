@@ -1,0 +1,542 @@
+<div class="header-section">
+  <div class="header-left">
+    <button type="button" class="back-button" (click)="goBack()" aria-label="กลับไป Truck Loading">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-section-title">
+      <div class="header-section-icon"><mat-icon>list_alt</mat-icon></div>
+      <span>SP02 - รายละเอียดงาน</span>
+    </div>
+    <app-page-help page="job-detail"></app-page-help>
+  </div>
+
+  <div class="header-actions" *ngIf="job">
+    <ng-container *hasPermission="'job.approve'">
+      <button
+        type="button"
+        class="approve-button"
+        *ngIf="!isEditing"
+        (click)="startEditing()"
+        [disabled]="isLoadingEditOptions || isPalletActionInProgress"
+      >
+        <mat-spinner *ngIf="isLoadingEditOptions" diameter="18"></mat-spinner>
+        <mat-icon *ngIf="!isLoadingEditOptions">edit</mat-icon>
+        {{ isLoadingEditOptions ? 'กำลังโหลด...' : 'แก้ไข' }}
+      </button>
+      <button
+        type="button"
+        class="loading-detail-secondary-button"
+        *ngIf="isEditing"
+        (click)="cancelEditing()"
+        [disabled]="isSaving"
+      >
+        ยกเลิก
+      </button>
+      <button
+        type="button"
+        class="approve-button"
+        *ngIf="isEditing"
+        (click)="saveEdits()"
+        [disabled]="isSaving"
+      >
+        <mat-spinner *ngIf="isSaving" diameter="18"></mat-spinner>
+        <mat-icon *ngIf="!isSaving">save</mat-icon>
+        {{ isSaving ? 'กำลังบันทึก...' : 'บันทึก' }}
+      </button>
+    </ng-container>
+  </div>
+</div>
+
+<div class="main-section">
+  <div class="loading-detail-edit-error" *ngIf="editError">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ editError }}</span>
+  </div>
+
+  <div class="job-detail-loading" *ngIf="isLoading">
+    <mat-spinner diameter="38"></mat-spinner>
+    <span>กำลังโหลดข้อมูลงาน...</span>
+  </div>
+
+  <section class="loading-detail-error" *ngIf="!isLoading && loadError">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ loadError }}</p>
+    <div class="loading-detail-error-actions">
+      <button type="button" class="loading-detail-secondary-button" (click)="goBack()">กลับไปหน้ารายการ</button>
+      <button type="button" class="approve-button" (click)="loadJob()" *ngIf="jobId > 0">ลองอีกครั้ง</button>
+    </div>
+  </section>
+
+  <ng-container *ngIf="!isLoading && job as loadingJob">
+    <section class="job-title-card">
+      <div class="job-icon job-icon-outbound">
+        <div class="text-topic-outbound">SP02</div>
+      </div>
+      <div class="job-content-card">
+        <div class="job-info">
+          <div class="job-system-no">{{ loadingJob.system_no || '-' }}</div>
+          <div class="status-badge" [ngClass]="statusClass(loadingJob.status_id)">
+            {{ loadingJob.status_name || 'ไม่ระบุสถานะ' }}
+          </div>
+        </div>
+        <div class="job-detail">
+          <span>รหัสงาน : {{ loadingJob.id }}</span>
+          <span>• ประเภทงาน : {{ loadingJob.type_name || 'Truck Loading' }}</span>
+          <span>• เวลาทำงาน : {{ formatDateTime(loadingJob.start_datetime) }}</span>
+          <span>• สร้างเมื่อ : {{ formatDateTime(loadingJob.create_datetime) }}</span>
+        </div>
+      </div>
+
+      <div class="step-toggle">
+        <div
+          class="step-slider"
+          [class.step-2]="isEditing ? draftMultiFl : loadingJob.is_multi_fl === 'Y'"
+        ></div>
+        <button
+          type="button"
+          class="step-btn"
+          [class.active]="isEditing ? !draftMultiFl : loadingJob.is_multi_fl === 'N'"
+          [disabled]="!isEditing"
+          (click)="draftMultiFl = false"
+        >
+          1 Step
+        </button>
+        <button
+          type="button"
+          class="step-btn"
+          [class.active]="isEditing ? draftMultiFl : loadingJob.is_multi_fl === 'Y'"
+          [disabled]="!isEditing"
+          (click)="draftMultiFl = true"
+        >
+          2 Step
+        </button>
+      </div>
+      <button
+        type="button"
+        class="urgent-chip"
+        [class.active]="isEditing ? draftUrgent : loadingJob.is_urgent === 'Y'"
+        [disabled]="!isEditing"
+        [attr.aria-pressed]="isEditing ? draftUrgent : loadingJob.is_urgent === 'Y'"
+        (click)="draftUrgent = !draftUrgent"
+      >
+        <mat-icon>{{ (isEditing ? draftUrgent : loadingJob.is_urgent === 'Y') ? 'priority_high' : 'flag' }}</mat-icon>
+        งานเร่งด่วน
+      </button>
+    </section>
+
+    <section class="loading-detail-kpis" aria-label="สรุปปริมาณการโหลด">
+      <article class="loading-detail-kpi planned">
+        <div class="loading-detail-kpi-icon"><mat-icon>inventory_2</mat-icon></div>
+        <div class="loading-detail-kpi-copy">
+          <span>จำนวนตามแผน</span>
+          <strong>{{ formatNumber(loadingJob.total_qty) }} <small>{{ loadingJob.movement_unit || 'kg' }}</small></strong>
+          <em>ยอดรวมของงาน</em>
+        </div>
+        <div class="loading-detail-kpi-mark">PLAN</div>
+      </article>
+      <article class="loading-detail-kpi received">
+        <div class="loading-detail-kpi-icon"><mat-icon>move_to_inbox</mat-icon></div>
+        <div class="loading-detail-kpi-copy">
+          <span>รับเข้าจุดโหลด</span>
+          <strong>{{ formatNumber(loadingJob.receive_qty) }} <small>{{ loadingJob.movement_unit || 'kg' }}</small></strong>
+          <div class="loading-detail-kpi-progress">
+            <span [style.width.%]="progressPercent(loadingJob.receive_qty, loadingJob.total_qty)"></span>
+          </div>
+        </div>
+        <div class="loading-detail-kpi-percent">
+          {{ progressPercent(loadingJob.receive_qty, loadingJob.total_qty) | number: '1.0-0' }}%
+        </div>
+      </article>
+      <article class="loading-detail-kpi loaded">
+        <div class="loading-detail-kpi-icon"><mat-icon>local_shipping</mat-icon></div>
+        <div class="loading-detail-kpi-copy">
+          <span>ขึ้นรถแล้ว</span>
+          <strong>{{ formatNumber(loadingJob.complete_qty) }} <small>{{ loadingJob.movement_unit || 'kg' }}</small></strong>
+          <div class="loading-detail-kpi-progress">
+            <span [style.width.%]="progressPercent(loadingJob.complete_qty, loadingJob.total_qty)"></span>
+          </div>
+        </div>
+        <div class="loading-detail-kpi-percent">
+          {{ progressPercent(loadingJob.complete_qty, loadingJob.total_qty) | number: '1.0-0' }}%
+        </div>
+      </article>
+    </section>
+
+    <div class="row m-0 pl-2 pr-2 loading-detail-layout">
+      <div class="col-md-8">
+        <section class="grade-lot-card">
+          <header class="grade-lot-header">
+            รายการเคลื่อนย้ายสินค้า
+            <span class="grade-lot-note">
+              <mat-icon>info_outline</mat-icon>
+              <span>{{ loadingJob.items.length }} รายการ · รายละเอียด DO และตำแหน่งขนย้าย</span>
+            </span>
+          </header>
+
+          <div class="grade-lot-content">
+            <article class="grade-lot-item" *ngFor="let item of loadingJob.items; let index = index">
+              <div class="grade-lot-item-header">
+                <div class="grade-lot-item-header-left">
+                  <div class="item-icon"><img src="assets/images/list.png" alt="" /></div>
+                  <div class="item-text">
+                    {{ index + 1 }}.
+                    <span class="item-pill item-pill--do">DO {{ item.do_no || '-' }}</span>
+                    <span class="item-pill item-pill--grade" *ngIf="item.grade">{{ item.grade }}</span>
+                    <span class="item-pill item-pill--lot" *ngFor="let lot of itemLots(item)">{{ lot }}</span>
+                    <span class="item-pill item-pill--qty">
+                      {{ formatNumber(item.total_qty || item.qty) }} {{ item.movement_unit || 'kg' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grade-lot-item-content">
+                <div class="sale-info" *ngIf="saleInfo(item) as info">
+                  <div class="sale-info-title">
+                    <mat-icon>receipt_long</mat-icon>
+                    ข้อมูลอ้างอิงจากฝ่ายขาย (iLogistic)
+                    <span class="sale-info-hint">ใช้อ้างอิง</span>
+                  </div>
+                  <dl class="sale-info-grid">
+                    <div class="sale-info-field" *ngFor="let field of saleInfoFields(info)" [class.sale-info-field--wide]="field.wide">
+                      <dt class="sale-info-label">{{ field.label }}</dt>
+                      <dd>{{ field.value }}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <div class="sale-info" *ngIf="loadingJob.shipment as shipment">
+                  <div class="sale-info-title">
+                    <mat-icon>local_shipping</mat-icon>
+                    ข้อมูลอ้างอิงการจัดส่ง
+                    <span class="sale-info-hint">ข้อมูลจาก iLogistic</span>
+                  </div>
+                  <dl class="sale-info-grid">
+                    <div class="sale-info-field"><dt class="sale-info-label">Shipment No.</dt><dd>{{ shipment.shipment_no || '-' }}</dd></div>
+                    <div class="sale-info-field"><dt class="sale-info-label">ลูกค้า</dt><dd>{{ shipment.customer_name || '-' }}</dd></div>
+                    <div class="sale-info-field"><dt class="sale-info-label">Ship-to</dt><dd>{{ shipment.shipto_name || '-' }}</dd></div>
+                    <div class="sale-info-field"><dt class="sale-info-label">พื้นที่</dt><dd>{{ shipment.zone_text || '-' }}</dd></div>
+                    <div class="sale-info-field"><dt class="sale-info-label">วันโหลด</dt><dd>{{ formatDateTime(shipment.loading_datetime) }}</dd></div>
+                    <div class="sale-info-field"><dt class="sale-info-label">คิว</dt><dd>{{ shipment.queue_number || '-' }}</dd></div>
+                    <div class="sale-info-field"><dt class="sale-info-label">สถานะจัดส่ง</dt><dd>{{ shipment.shipment_status || '-' }}</dd></div>
+                    <div class="sale-info-field">
+                      <dt class="sale-info-label">ผู้ขนส่ง / คนขับ</dt>
+                      <dd>{{ joinText([shipment.carrier_name, shipment.driver_text]) }}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <div class="loading-detail-item-quantities">
+                  <div>
+                    <span>จำนวนตามงาน</span>
+                    <strong>{{ formatNumber(item.total_qty || item.qty) }} {{ item.movement_unit || 'kg' }}</strong>
+                  </div>
+                  <div>
+                    <span>รับแล้ว</span>
+                    <strong>{{ formatNumber(item.receive_qty) }} {{ item.movement_unit || 'kg' }}</strong>
+                  </div>
+                  <div>
+                    <span>ขึ้นรถแล้ว</span>
+                    <strong>{{ formatNumber(item.complete_qty) }} {{ item.movement_unit || 'kg' }}</strong>
+                  </div>
+                </div>
+
+                <div class="loading-detail-locations" *ngIf="!isEditing">
+                  <section class="dock-location">
+                    <span class="dock-location-badge">GET</span>
+                    <header class="dock-location-header loading-detail-location-header get">
+                      <div class="dock-location-header-left">
+                        <span class="blue-circle"></span>
+                        <span class="dock-location-text">รับสินค้า: Dock</span>
+                      </div>
+                    </header>
+                    <div class="dock-location-content">
+                      <div class="dock-location-item" *ngFor="let location of item.locations?.from_locations">
+                        <div class="dock-location-item-left">
+                          <div class="dock-location-icon"><img src="assets/images/location.png" alt="" /></div>
+                          <div class="dock-location-item-left-content">
+                            <div class="dock-location-details">
+                              <div class="dock-location-title-row">
+                                <span class="dock-location-name">{{ location.location_name || location.name || 'Dock' }}</span>
+                              </div>
+                              <div class="dock-location-stats">
+                                <span class="stat-pill">
+                                  <span class="stat-pill-value">
+                                    {{ formatNumber(location.actual_qty) }} / {{ formatNumber(location.qty) }} kg
+                                  </span>
+                                </span>
+                              </div>
+                            </div>
+                            <div class="pallet-progress">
+                              <div class="pallet-bar">
+                                <div
+                                  class="pallet-bar-fill"
+                                  [style.width.%]="progressPercent(location.actual_qty || 0, location.qty || 0)"
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="no-data-dock-location" *ngIf="!item.locations?.from_locations?.length">
+                        ยังไม่มีตำแหน่งรับสินค้า
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="dock-location">
+                    <span class="dock-location-badge">PUT</span>
+                    <header class="dock-location-header loading-detail-location-header put">
+                      <div class="dock-location-header-left">
+                        <span class="blue-circle"></span>
+                        <span class="dock-location-text">ส่งสินค้า: Vehicle</span>
+                      </div>
+                    </header>
+                    <div class="dock-location-content">
+                      <div class="dock-location-item" *ngFor="let location of item.locations?.to_locations">
+                        <div class="dock-location-item-left">
+                          <div class="dock-location-icon"><img src="assets/images/location.png" alt="" /></div>
+                          <div class="dock-location-item-left-content">
+                            <div class="dock-location-details">
+                              <div class="dock-location-title-row">
+                                <span class="dock-location-name">{{ location.location_name || location.name || 'Vehicle' }}</span>
+                              </div>
+                              <div class="dock-location-stats">
+                                <span class="stat-pill">
+                                  <span class="stat-pill-value">
+                                    {{ formatNumber(location.actual_qty) }} / {{ formatNumber(location.qty) }} kg
+                                  </span>
+                                </span>
+                              </div>
+                            </div>
+                            <div class="pallet-progress">
+                              <div class="pallet-bar">
+                                <div
+                                  class="pallet-bar-fill"
+                                  [style.width.%]="progressPercent(location.actual_qty || 0, location.qty || 0)"
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="no-data-dock-location" *ngIf="!item.locations?.to_locations?.length">
+                        ยังไม่มีรถปลายทาง
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div class="loading-detail-location-editors" *ngIf="isEditing">
+                  <section class="dock-location">
+                    <span class="dock-location-badge">GET</span>
+                    <header class="dock-location-header loading-detail-location-header get">
+                      <div class="dock-location-header-left">
+                        <span class="blue-circle"></span>
+                        <span class="dock-location-text">รับสินค้า: Dock</span>
+                      </div>
+                      <div class="dock-location-header-right">
+                        <button type="button" (click)="addDraftLocation(item.id, 'from')">
+                          <img src="assets/images/add.png" alt="" /><span>เพิ่ม</span>
+                        </button>
+                      </div>
+                    </header>
+                    <div class="dock-location-content">
+                      <div class="dock-location-item" *ngFor="let location of draftLocations(item.id, 'from'); let locationIndex = index">
+                        <div class="dock-location-item-left">
+                          <div class="dock-location-icon"><img src="assets/images/location.png" alt="" /></div>
+                          <div class="dock-location-item-left-content">
+                            <select
+                              class="loading-detail-location-select"
+                              [ngModel]="location.locationId"
+                              (ngModelChange)="updateDraftLocation(location, 'from', $event)"
+                              aria-label="เลือกตำแหน่ง GET"
+                            >
+                              <option [ngValue]="null">เลือก Dock</option>
+                              <option *ngFor="let option of dockOptions" [ngValue]="option.id">{{ option.location_desc }}</option>
+                            </select>
+                            <label class="loading-detail-qty-field">
+                              <span>จำนวน (kg)</span>
+                              <input type="number" min="1" step="1" [(ngModel)]="location.qty" />
+                            </label>
+                          </div>
+                        </div>
+                        <div class="dock-location-item-right">
+                          <button
+                            type="button"
+                            class="delete-dock-location-button"
+                            aria-label="ลบตำแหน่ง GET"
+                            (click)="removeDraftLocation(item.id, 'from', locationIndex)"
+                          >
+                            <img src="assets/images/delete.png" alt="" />
+                          </button>
+                        </div>
+                      </div>
+                      <div class="no-data-dock-location" *ngIf="draftLocations(item.id, 'from').length === 0">ยังไม่ได้เลือกตำแหน่ง</div>
+                    </div>
+                  </section>
+
+                  <section class="dock-location">
+                    <span class="dock-location-badge">PUT</span>
+                    <header class="dock-location-header loading-detail-location-header put">
+                      <div class="dock-location-header-left">
+                        <span class="blue-circle"></span>
+                        <span class="dock-location-text">ส่งสินค้า: Vehicle</span>
+                      </div>
+                      <div class="dock-location-header-right">
+                        <button type="button" (click)="addDraftLocation(item.id, 'to')">
+                          <img src="assets/images/add.png" alt="" /><span>เพิ่ม</span>
+                        </button>
+                      </div>
+                    </header>
+                    <div class="dock-location-content">
+                      <div class="dock-location-item" *ngFor="let location of draftLocations(item.id, 'to'); let locationIndex = index">
+                        <div class="dock-location-item-left">
+                          <div class="dock-location-icon"><img src="assets/images/location.png" alt="" /></div>
+                          <div class="dock-location-item-left-content">
+                            <select
+                              class="loading-detail-location-select"
+                              [ngModel]="location.locationId"
+                              (ngModelChange)="updateDraftLocation(location, 'to', $event)"
+                              aria-label="เลือกรถปลายทาง"
+                            >
+                              <option [ngValue]="null">เลือกรถ</option>
+                              <option *ngFor="let option of vehicleOptions" [ngValue]="option.vehicle_id">
+                                {{ option.license_plate }} · {{ option.vehicle_text }}
+                              </option>
+                            </select>
+                            <label class="loading-detail-qty-field">
+                              <span>จำนวน (kg)</span>
+                              <input type="number" min="1" step="1" [(ngModel)]="location.qty" />
+                            </label>
+                          </div>
+                        </div>
+                        <div class="dock-location-item-right">
+                          <button
+                            type="button"
+                            class="delete-dock-location-button"
+                            aria-label="ลบตำแหน่ง PUT"
+                            (click)="removeDraftLocation(item.id, 'to', locationIndex)"
+                          >
+                            <img src="assets/images/delete.png" alt="" />
+                          </button>
+                        </div>
+                      </div>
+                      <div class="no-data-dock-location" *ngIf="draftLocations(item.id, 'to').length === 0">ยังไม่ได้เลือกตำแหน่ง</div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </article>
+
+            <div class="no-data-dock-location" *ngIf="loadingJob.items.length === 0">ไม่พบรายการสินค้าในงานนี้</div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="col-md-4">
+        <section class="forklift-card">
+          <header class="forklift-card-header">
+            <span><mat-icon>local_shipping</mat-icon>ควบคุมการโหลด</span>
+            <span class="loading-detail-pallet-total">
+              {{ loadingJob.pallets.receive_pallet.length + loadingJob.pallets.complete_pallet.length }} พาเลท
+            </span>
+          </header>
+          <div class="forklift-card-content">
+            <ng-container *hasPermission="'job.approve'">
+              <div class="loading-detail-pallet-scan" *ngIf="!isEditing">
+                <div class="loading-detail-scan-title">
+                  <mat-icon>qr_code_scanner</mat-icon>
+                  <div>
+                    <strong>รับพาเลทเข้าจุดโหลด</strong>
+                    <span>เลือก DO และ Dock ก่อนสแกน QR</span>
+                  </div>
+                </div>
+                <select [(ngModel)]="selectedPalletItemId" (ngModelChange)="onPalletItemChange($event)">
+                  <option [ngValue]="null">เลือกรายการสินค้า</option>
+                  <option *ngFor="let item of loadingJob.items" [ngValue]="item.id">{{ item.do_no || item.grade || item.id }}</option>
+                </select>
+                <select [(ngModel)]="selectedDockLocationId">
+                  <option [ngValue]="null">เลือก Dock</option>
+                  <option *ngFor="let location of dockLocationOptions()" [ngValue]="location.id">{{ location.name }}</option>
+                </select>
+                <div class="loading-detail-pallet-scan-row">
+                  <input
+                    type="text"
+                    [(ngModel)]="palletQrCode"
+                    placeholder="สแกนหรือกรอก QR พาเลท"
+                    (keyup.enter)="receivePallet()"
+                  />
+                  <button type="button" (click)="receivePallet()" [disabled]="isPalletActionInProgress">
+                    <mat-spinner *ngIf="isPalletActionInProgress" diameter="17"></mat-spinner>
+                    <mat-icon *ngIf="!isPalletActionInProgress">add</mat-icon>
+                    รับเข้า
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+
+            <div class="loading-detail-pallet-groups">
+              <section class="loading-detail-pallet-group receive">
+                <strong>
+                  <mat-icon>move_to_inbox</mat-icon>
+                  รับเข้าจุดโหลด
+                  <span>{{ loadingJob.pallets.receive_pallet.length }}</span>
+                </strong>
+                <div class="loading-detail-pallet-entry" *ngFor="let pallet of loadingJob.pallets.receive_pallet">
+                  <span class="loading-detail-pallet">{{ palletLabel(pallet) }}</span>
+                  <ng-container *hasPermission="'job.approve'">
+                    <button
+                      type="button"
+                      class="loading-detail-pallet-action"
+                      *ngIf="!isEditing && canPutAwayPallet(pallet)"
+                      [disabled]="isPalletActionInProgress"
+                      (click)="putAwayPallet(pallet)"
+                    >
+                      ขึ้นรถ
+                    </button>
+                  </ng-container>
+                </div>
+                <span class="loading-detail-pallet-empty" *ngIf="!loadingJob.pallets.receive_pallet.length">-</span>
+              </section>
+              <section class="loading-detail-pallet-group complete">
+                <strong>
+                  <mat-icon>local_shipping</mat-icon>
+                  ขึ้นรถแล้ว
+                  <span>{{ loadingJob.pallets.complete_pallet.length }}</span>
+                </strong>
+                <div class="loading-detail-pallet-entry" *ngFor="let pallet of loadingJob.pallets.complete_pallet">
+                  <span class="loading-detail-pallet complete">{{ palletLabel(pallet) }}</span>
+                  <ng-container *hasPermission="'job.approve'">
+                    <button
+                      type="button"
+                      class="loading-detail-pallet-action reset"
+                      *ngIf="!isEditing && canResetPallet(pallet)"
+                      [disabled]="isPalletActionInProgress"
+                      (click)="resetPallet(pallet)"
+                    >
+                      คืนพาเลท
+                    </button>
+                  </ng-container>
+                </div>
+                <span class="loading-detail-pallet-empty" *ngIf="!loadingJob.pallets.complete_pallet.length">-</span>
+              </section>
+            </div>
+
+            <dl class="loading-detail-facts">
+              <div><dt>เริ่มงาน</dt><dd>{{ formatDateTime(loadingJob.start_datetime) }}</dd></div>
+              <div><dt>เสร็จงาน</dt><dd>{{ formatDateTime(loadingJob.end_datetime) }}</dd></div>
+              <div><dt>รถ</dt><dd>{{ loadingJob.to_vehicle_plate || loadingJob.to_vehicle_desc || '-' }}</dd></div>
+              <div *ngIf="loadingJob.shipment?.vehicle_group_desc"><dt>ประเภทรถ</dt><dd>{{ loadingJob.shipment?.vehicle_group_desc }}</dd></div>
+              <div *ngIf="loadingJob.shipment?.vehicle_text"><dt>รายละเอียดรถ</dt><dd>{{ loadingJob.shipment?.vehicle_text }}</dd></div>
+            </dl>
+            <div class="loading-detail-remark" *ngIf="loadingJob.remark">
+              <strong>หมายเหตุ</strong>
+              <p>{{ loadingJob.remark }}</p>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </ng-container>
+</div>

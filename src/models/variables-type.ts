@@ -2035,6 +2035,8 @@ export interface RequestUpdateSpecialJobItem extends RequestCreateSpecialJobItem
 //  2/4/5. Shape = JobService.BuildLoadingJobResponse on the API.
 export interface LoadingJobPallet {
   id: number;
+  pallet_seq?: number | null;
+  scanned_qr_code?: string | null;
   grade: string | null;
   lot: string | null;
   qty: number;
@@ -2052,7 +2054,48 @@ export interface LoadingJobItem {
   complete_qty: number;
   total_qty: number;
   movement_unit: string | null;
-  locations?: { from_locations?: any[]; to_locations?: any[] };
+  locations?: {
+    from_locations?: LoadingJobLocation[];
+    to_locations?: LoadingJobLocation[];
+  };
+}
+
+export interface LoadingJobLocation {
+  id?: number | null;
+  location_id?: number | null;
+  wh_code?: string | null;
+  location_name?: string | null;
+  name?: string | null;
+  qty?: number | null;
+  actual_qty?: number | null;
+  receive_qty?: number | null;
+  complete_qty?: number | null;
+  addon_lot?: { lot?: string | null; qty?: number | null }[] | null;
+}
+
+export interface RequestLoadingPallet {
+  qrCodes?: string[];
+  qrCode?: string;
+  itemId?: number;
+  locationId?: number;
+  locationType?: string;
+  palletSeq?: number;
+  modeId?: number;
+  updateBy?: number;
+}
+
+export interface LoadingJobShipment {
+  shipment_no: string | null;
+  customer_name: string | null;
+  shipto_name: string | null;
+  zone_text: string | null;
+  loading_datetime: string | null;
+  shipment_status: string | null;
+  queue_number: string | null;
+  vehicle_group_desc: string | null;
+  carrier_name: string | null;
+  driver_text: string | null;
+  vehicle_text: string | null;
 }
 
 export interface LoadingJob {
@@ -2079,6 +2122,8 @@ export interface LoadingJob {
   start_datetime: string | null;
   end_datetime: string | null;
   create_datetime: string | null;
+  to_vehicle_plate?: string | null;
+  shipment?: LoadingJobShipment | null;
   pallets: { receive_pallet: LoadingJobPallet[]; complete_pallet: LoadingJobPallet[] };
   items: LoadingJobItem[];
 }
@@ -2086,3 +2131,25 @@ export interface LoadingJob {
 export interface ResponseProcessLoadingJobList {
   status: string;
   message: string;
+  data: LoadingJob[];
+}
+
+export interface ResultDoSaleInfo {
+  shipment_no: string;
+  do_no: string;
+  grade: string | null;
+  item_no: string | null;
+  customer_batch: string | null;
+  delivery_note: string | null;
+  other_instructions: string | null;
+  packing_remark: string | null;
+  marking_remark: string | null;
+  sale_info: string;
+}
+
+export interface ResponseProcessDoSaleInfo {
+  status: string;
+  message: string;
+  data: ResultDoSaleInfo[];
+  total_count?: number;
+}

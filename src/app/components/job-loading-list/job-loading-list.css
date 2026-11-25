@@ -1,5 +1,5 @@
 /* SP02 Loading List: page look comes from ../job-list/job-list.css
-   (styleUrls). Only the detail panel under a card is defined here. */
+   (styleUrls). Only SP02-specific pieces (filter row, DO tag, shipment strip) are here. */
 
 /* All 5 filters + buttons on one row (job-list.css wraps them). Columns
    share the width from a 0 basis: Shipment No, DO No and วันที่ are the
@@ -22,66 +22,182 @@
   }
 }
 
-.inspect-icon--open {
-  transform: rotate(90deg);
-}
-
-.loading-detail {
-  margin: -4px 0 12px;
-  padding: 14px 20px 16px;
-  border: 1px solid #e2e8f0;
-  border-top: none;
-  border-radius: 0 0 12px 12px;
+/* DO tag in the item row (before grade), neutral like job-list's qty tag. */
+.document-job-do {
   background: #f8fafc;
+  border-color: #dcc8b4;
+  color: #7c4a2d;
+  white-space: nowrap;
 }
 
-.loading-detail .job-items-table {
-  width: 100%;
+/* Shipment strip under the card (customer, ship-to, loading date, queue,
+   vehicle, remark). Tucks under the card like job-list's
+   .source-changed-strip, in slate. */
+.job-list-card.has-shipment-strip {
+  position: relative;
+  z-index: 1;
 }
 
-.loading-detail-muted {
+.shipment-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+  margin-top: -16px;
+  padding: 22px 16px 6px;
+  border: 1px solid #cbd5e1;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  min-width: 0;
+}
+
+.shipment-strip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+
+  mat-icon {
+    flex-shrink: 0;
+    color: #64748b;
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.shipment-strip-label {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.shipment-strip-value {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #1e293b;
+}
+
+/* PUT box with no vehicle yet ("ยังไม่มีรถ"), greyed like SPC01's
+   Preparing Zone "ยังไม่สแกน location". */
+.location .put-location .location-detail.no-location span {
+  font-size: 14px;
   color: #94a3b8;
 }
 
-.loading-pallet-groups {
+.location .put-location .location-detail.no-location img {
+  opacity: 0.4;
+}
+
+/* "+ อีก N รายการ" after the first GET dock + its modal, same as job-list's
+   .location-more-button / #sourceLocationsModal. */
+.location-more-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.location-more-button:hover {
+  color: #1e40af;
+  text-decoration: underline;
+}
+
+.location-list-modal-dialog {
+  max-width: 520px;
+}
+
+.location-list-modal-content {
+  overflow: hidden;
+  border: 1px solid #d9dee7;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+}
+
+.location-list-modal-header {
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e4e7ec;
+}
+
+.location-list-modal-header .modal-title {
+  color: #101828;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.location-list-modal-body {
+  padding: 16px 18px 18px;
+}
+
+.location-list-summary {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 3px 8px;
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.location-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  margin-top: 14px;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.loading-pallet-group {
-  flex: 1 1 280px;
-}
-
-.loading-pallet-title {
+.location-list li {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: #334155;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e4e7ec;
+  border-radius: 6px;
+  background: #f8fafc;
 }
 
-.loading-pallet-title span {
-  padding: 0 8px;
-  border-radius: 999px;
+.location-list-index {
+  display: inline-flex;
+  flex: 0 0 24px;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e6ffe7;
+  color: #15803d;
   font-size: 12px;
-  background: #e2e8f0;
-  color: #475569;
+  font-weight: 700;
 }
 
-.loading-pallet-chip {
-  display: inline-block;
-  margin: 0 6px 6px 0;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 13px;
-  background: #eff6ff;
-  color: #1d4ed8;
+.location-list-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.loading-pallet-chip--done {
-  background: #ecfdf5;
-  color: #047857;
+/* LD job icon: brown so it stands apart from inbound (green), outbound (red),
+   internal transfer (violet), WH transfer (sky blue), special (fuchsia) and
+   SP shipping staging (teal). */
+.job-icon.job-icon-loading {
+  background: linear-gradient(135deg, #faf6f2 0%, #efe4d9 100%);
+  border-color: #dcc8b4;
+
+  .text-topic-outbound {
+    color: #7c4a2d;
+  }
 }
