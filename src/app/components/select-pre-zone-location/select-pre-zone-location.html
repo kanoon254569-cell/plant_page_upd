@@ -98,30 +98,12 @@
               src="assets/images/right-arrow.png"
             />
           </div>
-          <form [formGroup]="searchForm" class="row search-form" *ngIf="_isExplandSearch">
+          <form [formGroup]="searchForm" class="row search-form pre-zone-search-form" *ngIf="_isExplandSearch">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
               <mat-label>Warehouse</mat-label>
               <mat-select formControlName="whCode" placeholder="Select Warehouse">
                 <mat-option *ngFor="let wh of whLocationOptions" [value]="wh.wh_code">
                   {{ wh.wh_name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
-              <mat-label>Area</mat-label>
-              <mat-select formControlName="areaCode" placeholder="Select Area">
-                <mat-option *ngFor="let area of areaLocationOptions" [value]="area.careacode">
-                  {{ area.careacode }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
-              <mat-label>Level</mat-label>
-              <mat-select formControlName="levelCode" placeholder="Select Level">
-                <mat-option *ngFor="let level of levelLocationOptions" [value]="level.clevelcode">
-                  {{ level.clevelcode }}
                 </mat-option>
               </mat-select>
             </mat-form-field>

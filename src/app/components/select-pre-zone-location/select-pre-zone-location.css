@@ -114,6 +114,15 @@
   }
 }
 
+.pre-zone-search-form mat-form-field {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.pre-zone-search-form .clear-btn {
+  flex: 0 0 110px;
+}
+
 .clear-btn {
   padding: 0;
 }
