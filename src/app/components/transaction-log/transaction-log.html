@@ -1,0 +1,226 @@
+﻿<!-- Page Name -->
+<div class="header-section">
+  <div class="header-section-icon">
+    <mat-icon>history</mat-icon>
+  </div>
+  <span>Transaction Log</span>
+</div>
+
+<!-- Search Filter -->
+<div class="search-filter">
+  <div class="search-filter-header">Search Filter</div>
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+      <!-- Modified Date -->
+      <div class="search-filter-field">
+        <label>Modified Date :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            [matDatepicker]="picker"
+            [(ngModel)]="modifiedDate"
+            placeholder="เลือกวันที่"
+            readonly
+            (click)="picker.open()"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <!-- Topic -->
+      <div class="search-filter-field">
+        <label>Topic :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.topic" placeholder="ค้นหาหัวข้อ" />
+        </mat-form-field>
+      </div>
+
+      <!-- Activity -->
+      <div class="search-filter-field">
+        <label>Activity :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.activity" placeholder="ค้นหากิจกรรม" />
+        </mat-form-field>
+      </div>
+
+      <!-- Editor -->
+      <!-- <div class="search-filter-field">
+        <label>Editor :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.editor">
+            <mat-option [value]="0">ทั้งหมด</mat-option>
+            <mat-option *ngFor="let o of optionsEditor" [value]="o.id">
+              {{ o.thai_name || o.eng_name || o.user_name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div> -->
+
+      <div class="search-filter-field">
+        <label>Detail :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.detail" placeholder="ค้นหารสยละเอียด" />
+        </mat-form-field>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="Clear" (click)="resetFilter()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button type="button" class="search-button" title="Search" (click)="onClickSearch()">
+          <img src="assets/images/search.png" alt="search-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Display Table -->
+<div class="display-table">
+  <div class="display-table-header">
+    <div>
+      Transaction Log List
+      <span class="table-count">{{ totalCount }} Records</span>
+    </div>
+    <button *hasPermission="'data.export'"
+      type="button"
+      class="export-excel-button"
+      [disabled]="isExportingExcel || totalCount === 0"
+      (click)="exportToExcel()"
+    >
+      <mat-icon>{{ isExportingExcel ? 'hourglass_empty' : 'file_download' }}</mat-icon>
+      Export Excel
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="display-table-content">
+    <!-- Skeleton while the log list loads: same columns as the real table -->
+    <div class="table-container p-0" *ngIf="isLoading" aria-hidden="true">
+      <table class="adm-skel-table" skeletonWidthsTo="transaction-log">
+        <thead>
+          <tr>
+            <th class="mat-column-no">#</th>
+            <th class="mat-column-topic">Topic</th>
+            <th class="mat-column-activity">Activity</th>
+            <th class="mat-column-detail">Detail</th>
+            <th class="mat-column-editor">Editor</th>
+            <th class="mat-column-modifiedDate">Modified Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of skeletonRows">
+            <td><span class="adm-skel adm-skel--center" style="width: 18px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 110px"></span></td>
+            <td><span class="adm-skel adm-skel--pill" style="width: 80px"></span></td>
+            <td><span class="adm-skel" style="width: 85%"></span></td>
+            <td><span class="adm-skel" style="width: 110px"></span></td>
+            <td>
+              <span class="adm-skel" style="width: 78px"></span>
+              <span class="adm-skel adm-skel--sub" style="width: 52px"></span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="table-container mat-elevation-z8 p-0"
+      *ngIf="!isLoading && transactionLogList && transactionLogList.length > 0"
+      style="box-shadow: none !important"
+    >
+      <table mat-table [dataSource]="transactionLogList" class="w-100" skeletonWidthsFrom="transaction-log">
+        <!-- No -->
+        <ng-container matColumnDef="no">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; justify-content: center">
+            #
+          </th>
+          <td mat-cell *matCellDef="let row; let i = index" style="text-align: center">
+            {{ ((filter.page ?? 1) - 1) * (filter.pageSize ?? 25) + i + 1 }}
+          </td>
+        </ng-container>
+
+        <!-- Topic -->
+        <ng-container matColumnDef="topic">
+          <th mat-header-cell *matHeaderCellDef>Topic</th>
+          <td mat-cell *matCellDef="let row" class="topic">
+            <span class="badge-chip badge-chip--blue" *ngIf="row.topic; else noTopic">{{
+              row.topic
+            }}</span>
+            <ng-template #noTopic>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Activity -->
+        <ng-container matColumnDef="activity">
+          <th mat-header-cell *matHeaderCellDef>Activity</th>
+          <td mat-cell *matCellDef="let row" class="activity">
+            <span
+              [ngClass]="activityBadgeClass(row.activity)"
+              *ngIf="row.activity; else noActivity"
+            >
+              {{ shortActivity(row) }}
+            </span>
+            <ng-template #noActivity>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Detail -->
+        <ng-container matColumnDef="detail">
+          <th mat-header-cell *matHeaderCellDef>Detail</th>
+          <td
+            mat-cell
+            *matCellDef="let row"
+            class="detail-cell"
+            [innerHTML]="formatDetail(row.detail)"
+          ></td>
+        </ng-container>
+
+        <!-- Editor -->
+        <ng-container matColumnDef="editor">
+          <th mat-header-cell *matHeaderCellDef>Editor</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="user-cell" *ngIf="row.create_user_name; else noEditor">
+              <span class="user-avatar">{{
+                (row.create_user_name || '?').charAt(0).toUpperCase()
+              }}</span>
+              {{ row.create_user_name }}
+            </div>
+            <ng-template #noEditor>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Modified Date -->
+        <ng-container matColumnDef="modifiedDate">
+          <th mat-header-cell *matHeaderCellDef>Modified Date</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="last-update-cell" *ngIf="row.create_datetime; else noDate">
+              <span class="last-update-date">{{ parseJobDate(row.create_datetime) | date: 'dd/MM/yyyy' }}</span>
+              <span class="last-update-time">{{ parseJobDate(row.create_datetime) | date: 'HH:mm:ss' }}</span>
+            </div>
+            <ng-template #noDate>-</ng-template>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && (!transactionLogList || transactionLogList.length === 0)">
+      <app-empty-state variant="table" title="ไม่พบข้อมูล" message="กรุณาลองเปลี่ยนเงื่อนไขการค้นหา"></app-empty-state>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator
+    [length]="totalCount"
+    [pageSize]="filter.pageSize ?? 25"
+    [pageSizeOptions]="[25, 50, 75, 100]"
+    [showFirstLastButtons]="true"
+    (page)="onPageEvent($event)"
+  ></mat-paginator>
+</div>

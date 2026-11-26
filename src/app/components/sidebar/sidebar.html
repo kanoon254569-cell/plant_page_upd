@@ -1,0 +1,78 @@
+<aside class="main-sidebar sidebar-light-primary elevation-4">
+  <!-- Logo -->
+  <a class="navbar-brand sidebar-brand">
+    <img src="assets/images/irpc-logo.png" alt="IRPC logo" />
+    <span class="sidebar-version">{{ _version }}</span>
+  </a>
+
+  <div class="sidebar">
+    <!-- Username & Role -->
+    <div class="user-panel sidebar-user-panel">
+      <div class="sidebar-avatar" aria-hidden="true">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <div class="info">
+        <a class="d-block">
+          <strong>{{ _name }}</strong>
+          <span>{{ _department }} - {{ _roleName }}</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Menus are defined in MENU_GROUPS (services/menu-access.service.ts);
+         the route guard checks the same rules. -->
+    <nav class="sidebar-nav">
+      @for (group of _mainGroups; track group.title) {
+        <ng-container *ngTemplateOutlet="menuGroup; context: { $implicit: group }"></ng-container>
+      }
+
+      @if (_adminGroups.length > 0) {
+        <div class="sidebar-divider" role="separator"></div>
+      }
+
+      @for (group of _adminGroups; track group.title) {
+        <ng-container *ngTemplateOutlet="menuGroup; context: { $implicit: group }"></ng-container>
+      }
+    </nav>
+  </div>
+</aside>
+<aside class="control-sidebar control-sidebar-dark"></aside>
+
+<!-- One group: header + items. Labels like "WH01 - Inbound" show the
+     code as a badge so the names line up. -->
+<ng-template #menuGroup let-group>
+  <ul
+    class="nav nav-sidebar flex-column"
+    [class.nav-group-collapsed]="isCollapsed(group.title)"
+    data-widget="treeview"
+    role="menu"
+    data-accordion="false"
+  >
+    <li class="nav-header">
+      <button
+        type="button"
+        class="nav-group-toggle"
+        [attr.aria-expanded]="!isCollapsed(group.title)"
+        (click)="toggleGroup(group.title)"
+      >
+        <span>{{ group.title }}</span>
+        <span class="nav-group-count">{{ group.items.length }}</span>
+        <i class="fa-solid fa-chevron-down nav-group-chevron" aria-hidden="true"></i>
+      </button>
+    </li>
+
+    @for (item of group.items; track item.path) {
+      <li class="nav-item nav-group-item">
+        <a [routerLink]="'/' + item.path" routerLinkActive="active" class="nav-link" [title]="item.label">
+          <img [src]="item.icon" [alt]="item.path" />
+          <p>
+            @if (item.code) {
+              <span class="nav-code">{{ item.code }}</span>
+            }
+            <span class="nav-label">{{ item.name }}</span>
+          </p>
+        </a>
+      </li>
+    }
+  </ul>
+</ng-template>

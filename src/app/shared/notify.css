@@ -1,0 +1,290 @@
+/*  Toasts and dialogs built by src/app/shared/notify.ts. They render under
+    <body>, outside every component's styles, so this sheet is global
+    (imported by src/styles.css). */
+
+/* ── Toast ── */
+.nt-toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 20000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  max-width: calc(100vw - 32px);
+  pointer-events: none;
+}
+
+.nt-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 360px;
+  max-width: 100%;
+  padding: 12px 12px 12px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid var(--nt-color, #1d4ed8);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+  font-family: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  color: #0f172a;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateX(16px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.nt-toast--show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.nt-toast--success { --nt-color: #16a34a; }
+.nt-toast--error { --nt-color: #dc2626; }
+.nt-toast--warning { --nt-color: #d97706; }
+.nt-toast--info { --nt-color: #1d4ed8; }
+.nt-toast--question { --nt-color: #64748b; }
+
+.nt-toast-icon {
+  flex-shrink: 0;
+  font-size: 22px;
+  color: var(--nt-color, #1d4ed8);
+}
+
+.nt-toast-body {
+  flex: 1;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.nt-toast-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.nt-toast-message {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #334155;
+  word-break: break-word;
+}
+
+.nt-toast-title + .nt-toast-message {
+  margin-top: 2px;
+}
+
+.nt-toast-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.nt-toast-close:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.nt-toast-close .material-icons {
+  font-size: 18px;
+}
+
+/* ── Dialog ── */
+body.nt-dialog-open {
+  overflow: hidden;
+}
+
+.nt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 19000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.45);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.nt-overlay--show {
+  opacity: 1;
+}
+
+.nt-overlay--clear {
+  background: transparent;
+}
+
+.nt-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 440px;
+  max-width: 100%;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.2);
+  font-family: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  color: #0f172a;
+  text-align: center;
+  transform: scale(0.96);
+  transition: transform 0.15s ease;
+}
+
+.nt-overlay--show .nt-dialog {
+  transform: scale(1);
+}
+
+.nt-dialog-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--nt-color) 14%, #ffffff);
+  color: var(--nt-color);
+}
+
+.nt-dialog-icon .material-icons {
+  font-size: 30px;
+}
+
+.nt-dialog-icon--success { --nt-color: #16a34a; }
+.nt-dialog-icon--error { --nt-color: #dc2626; }
+.nt-dialog-icon--warning { --nt-color: #d97706; }
+.nt-dialog-icon--info { --nt-color: #1d4ed8; }
+.nt-dialog-icon--question { --nt-color: #1d4ed8; }
+
+.nt-dialog-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.nt-dialog-content {
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
+  word-break: break-word;
+}
+
+.nt-dialog-label {
+  align-self: flex-start;
+  margin: 14px 0 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.nt-input {
+  width: 100%;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  color: #0f172a;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nt-dialog-label + .nt-input {
+  margin-top: 0;
+}
+
+.nt-input:focus {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+}
+
+.nt-input:disabled {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.nt-dialog-validation {
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 13px;
+  text-align: left;
+}
+
+.nt-dialog-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.nt-btn {
+  min-width: 100px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease, background 0.15s ease;
+}
+
+.nt-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.nt-btn--confirm {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.nt-btn--confirm:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.nt-btn--cancel {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.nt-btn--cancel:hover {
+  filter: brightness(0.96);
+}
+
+@media (max-width: 480px) {
+  .nt-toast-container {
+    left: 16px;
+    right: 16px;
+    align-items: stretch;
+  }
+
+  .nt-toast {
+    width: auto;
+  }
+}

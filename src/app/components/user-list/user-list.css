@@ -1,0 +1,1022 @@
+.example-full-width {
+  width: 100%;
+}
+
+.search-filter {
+  margin: 16px 16px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.search-filter:hover {
+  border-color: #cbd5e1;
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.1),
+    0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.search-filter-header {
+  display: flex;
+  align-items: center;
+  height: 62px;
+  font-size: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 20px;
+  font-weight: 600;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.search-filter-content {
+  padding: 18px 20px;
+}
+
+.search-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.search-filter-field {
+  flex: 1 1 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-filter-field label {
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.search-filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+.search-action {
+  padding: 8px 20px 14px 20px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.search-action span {
+  font-size: 12px;
+  color: #888;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field {
+  width: 100%;
+  height: 50px;
+}
+
+::ng-deep .search-filter-content .mdc-text-field {
+  height: 50px;
+  background-color: #f5f8fb !important;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .search-filter-content .mdc-text-field:hover {
+  background-color: #f0f4f9 !important;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field.mat-focused .mdc-text-field {
+  background-color: #ffffff !important;
+  box-shadow: inset 0 0 0 1.5px #1d4ed8 !important;
+}
+
+::ng-deep .search-filter-content .mat-mdc-text-field-wrapper {
+  padding-bottom: 0 !important;
+  height: 100%;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field-flex {
+  align-items: center;
+  height: 100%;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field-infix {
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field-infix input,
+::ng-deep .search-filter-content .mat-mdc-form-field-infix .mat-mdc-select {
+  margin: 0;
+  font-size: 16px;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field-focus-overlay {
+  background-color: transparent !important;
+}
+
+.clear-button {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow:
+    0 6px 16px rgba(71, 85, 105, 0.14),
+    0 1px 3px rgba(71, 85, 105, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clear-button img {
+  width: 18px;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.clear-button:hover {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  box-shadow:
+    0 10px 22px rgba(71, 85, 105, 0.2),
+    0 2px 6px rgba(71, 85, 105, 0.14);
+}
+
+.clear-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(71, 85, 105, 0.14);
+}
+
+.search-button {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  padding: 0;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow:
+    0 8px 20px rgba(29, 78, 216, 0.2),
+    0 2px 6px rgba(29, 78, 216, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-button img {
+  width: 18px;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.search-button:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  box-shadow:
+    0 12px 28px rgba(29, 78, 216, 0.28),
+    0 4px 10px rgba(29, 78, 216, 0.16);
+}
+
+.search-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.16);
+}
+
+.search-button:hover {
+  background-color: #1944bd;
+}
+
+.display-table {
+  margin: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.display-table:hover {
+  border-color: #cbd5e1;
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.1),
+    0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.display-table-header {
+  font-size: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 20px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.table-count {
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.table-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/*  Translucent button on the blue table-header bar -- same look as
+    location-management.css's header buttons (Export / Print Selected / Sync). */
+.export-excel-button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(22, 163, 74, 0.25);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.25s ease;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.export-excel-button:hover:not(:disabled) {
+  background: rgba(22, 163, 74, 0.4);
+}
+
+.export-excel-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/*  Translucent button on the blue table-header bar -- same look as
+    location-management.css's header buttons (Export / Print Selected / Sync). */
+.add-user-button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.25s ease;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.add-user-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.empty-state {
+  height: calc(100vh - 460px);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  color: #9ca3af;
+  text-align: center;
+}
+
+.empty-state h5 {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.table-container {
+  width: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+  padding: 12px;
+  height: calc(100vh - 460px);
+}
+
+.table-container th {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%) !important;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 12px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table-container td {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 14px 16px;
+  color: #1e293b;
+  border-bottom: 1px solid #eef1f5;
+  white-space: nowrap;
+}
+
+.table-container td strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.badge-chip--blue {
+  font-size: 14px;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.badge-chip--purple {
+  font-size: 14px;
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.last-update-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.last-update-date {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.last-update-time {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.status-chip--active {
+  color: #16a34a;
+}
+
+.status-chip--inactive {
+  color: #dc2626;
+}
+
+.table-container tr:nth-child(odd) {
+  background-color: #fff !important;
+}
+
+.table-container tr:nth-child(even) {
+  background-color: #fafbfc !important;
+}
+
+.table-container tr.mat-mdc-row:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.table-container tr.mat-mdc-row {
+  transition: background-color 0.15s ease;
+}
+
+/* Default Cell */
+.table-container td,
+.table-container th {
+  vertical-align: middle;
+}
+
+/* Center Columns */
+.mat-column-isAd,
+.mat-column-no,
+.mat-column-edit,
+.mat-column-delete {
+  text-align: center !important;
+}
+
+.mat-column-isAd,
+.mat-column-edit,
+.mat-column-delete {
+  justify-content: center;
+}
+
+/* Left Columns */
+.mat-column-userName,
+.mat-column-thaiName,
+.mat-column-engName,
+.mat-column-department,
+.mat-column-role,
+.mat-column-lastUpdate {
+  text-align: left;
+}
+
+/* Action Buttons */
+.mat-column-edit,
+.mat-column-delete,
+.mat-column-isAd {
+  width: 70px;
+}
+
+/* Last Update */
+.mat-column-lastUpdate {
+  min-width: 140px;
+}
+
+.edit-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(29, 78, 216, 0.3);
+  transition: all 0.25s ease;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.edit-button:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 0 6px 14px rgba(29, 78, 216, 0.4);
+}
+
+.delete-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(220, 38, 38, 0.24);
+  transition: all 0.25s ease;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.delete-button:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.32);
+}
+
+/* ═══════════════════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════════════════ */
+.ul-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  animation: ul-fade-in 0.15s ease;
+}
+
+@keyframes ul-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.ul-modal {
+  background: #fff;
+  border-radius: 8px;
+  width: 1060px;
+  max-width: calc(100vw - 32px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: ul-slide-up 0.18s ease;
+}
+
+@keyframes ul-slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.ul-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 20px;
+  background: #ffffff;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid #1a1a2e;
+}
+
+.ul-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1a1a2e;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ul-modal__title .material-icons {
+  font-size: 20px;
+  color: #000000;
+}
+
+.ul-modal__close {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.ul-modal__close:hover {
+  color: #1a1a2e;
+}
+
+.ul-modal__close .material-icons {
+  font-size: 20px;
+}
+
+.ul-modal__body {
+  padding: 20px 20px 12px;
+}
+
+.ul-modal__body input.form-control,
+.ul-modal__body select.form-control {
+  height: 50px !important;
+  font-size: 16px;
+  padding: 0 14px !important;
+}
+
+.ul-modal__body select.form-select {
+  height: 50px !important;
+  font-size: 16px;
+  padding: 0 2.25rem 0 14px !important;
+}
+
+.ul-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+/* ISO/IEC 27001-aligned password complexity checklist (see passwordPolicyValidator).
+   Anchored to the input's wrapper and shown only while the field has focus, so it floats
+   above the rest of the form instead of pushing the layout down. */
+.password-field-group {
+  position: relative;
+}
+
+.password-rules-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+  padding: 12px 14px;
+  animation: password-rules-popover-in 0.15s ease;
+}
+
+@keyframes password-rules-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.password-rules-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.password-rules {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 0;
+}
+
+.password-rules li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #dc2626;
+}
+
+.password-rules li::before {
+  content: '\2715';
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.password-rules li.is-valid {
+  color: #16a34a;
+}
+
+.password-rules li.is-valid::before {
+  content: '\2713';
+}
+
+.ul-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  font-size: 14px;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Toggle switch */
+.ul-toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ul-toggle {
+  width: 42px;
+  height: 22px;
+  background: #ced4da;
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.ul-toggle--on {
+  background: #28a745;
+}
+
+.ul-toggle__thumb {
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.ul-toggle--on .ul-toggle__thumb {
+  left: 23px;
+}
+
+/* ═══════════════════════════════════════════════════
+   PRINT BUTTON
+   ═══════════════════════════════════════════════════ */
+.print-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(5, 150, 105, 0.3);
+  transition: all 0.25s ease;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.print-button:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 6px 14px rgba(5, 150, 105, 0.4);
+}
+
+.mat-column-print {
+  width: 70px;
+}
+
+/* ═══════════════════════════════════════════════════
+   PRINT SECTION (QR label card + browser print preview)
+   ═══════════════════════════════════════════════════ */
+#print-user-area {
+  display: none;
+}
+
+@page {
+  size: auto;
+  margin: 0mm;
+}
+
+/*  #print-user-area is moved under <body> while printing (see printUsers).
+    Everything else under <body> is removed from the flow (display: none, not
+    just hidden) and the area keeps its natural height, so several cards --
+    one .pcard-print-page each -- paginate onto their own pages. A fixed
+    100vh area would cap the printout to the first card. */
+@media print {
+  ::ng-deep body > *:not(#print-user-area) {
+    display: none !important;
+  }
+  #print-user-area {
+    display: block !important;
+    width: 100% !important;
+    background: #fff !important;
+  }
+}
+
+/* The card markup below is injected via el.innerHTML (raw DOM, not Angular
+   template), so it never receives Angular's view-encapsulation attribute -
+   ::ng-deep is required for these rules to reach it. Card rules copied from
+   location-management.css's .pcard so both printed labels look the same. */
+#print-user-area ::ng-deep .pcard-print-page {
+  width: 100%;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  page-break-after: always;
+  break-after: page;
+}
+
+#print-user-area ::ng-deep .pcard-print-page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+/* ═══════════════════════════════════════════════════
+   MULTI-SELECT PRINT (checkbox column + Print Selected)
+   ═══════════════════════════════════════════════════ */
+.mat-column-select {
+  width: 56px;
+  text-align: center !important;
+}
+
+th.mat-column-select {
+  justify-content: center;
+}
+
+.select-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #1d4ed8;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+/*  Translucent button on the blue table-header bar -- same look as
+    location-management.css's header buttons (Export / Print Selected / Sync). */
+.bulk-print-button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(8, 145, 178, 0.2);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.25s ease;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.bulk-print-button:hover:not(:disabled) {
+  background: rgba(8, 145, 178, 0.35);
+}
+
+.bulk-print-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+#print-user-area ::ng-deep .pcard {
+  width: 100%;
+  height: 100%;
+  border: 2px solid #000;
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: 'Tahoma', 'Segoe UI', sans-serif;
+  break-inside: avoid;
+  display: flex;
+  flex-direction: column;
+}
+
+#print-user-area ::ng-deep .pcard__header {
+  background: #000;
+  color: #fff;
+  padding: 20px 16px;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+/*  Smaller padding than location's 15% so the QR can grow (user cards print
+    a larger QR than location labels). */
+#print-user-area ::ng-deep .pcard__body {
+  padding: 5%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/*  Fills the card body (square, limited by whichever of width/height is
+    smaller) instead of location's fixed 687.96px. */
+#print-user-area ::ng-deep .pcard__qr {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#print-user-area ::ng-deep .pcard__footer {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 62px;
+  font-weight: 500;
+  color: #000;
+  padding: 20px 8px;
+  flex: 0 0 auto;
+}
+
+/*  Name in the card header -- based on location-management.css's
+    .pcard__plate, but with one fixed font-size for every name (change it
+    here to resize). line-height is relative so taller Thai glyphs don't
+    overlap when a long name wraps. */
+#print-user-area ::ng-deep .pcard__plate {
+  font-size: 110px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: 2px;
+  word-break: normal;
+  overflow-wrap: normal;
+  color: #000;
+}
+
+/*  One word of the name (see renderUserQrCard) -- never split inside the
+    word, so a long name only wraps at the space between first name and
+    surname. */
+#print-user-area ::ng-deep .pcard__plate-word {
+  white-space: nowrap;
+}

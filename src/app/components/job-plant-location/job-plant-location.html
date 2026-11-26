@@ -1,0 +1,80 @@
+<div
+  class="src-location"
+  [ngClass]="validationErrors && isEmptyLocations ? 'validation-error' : ''"
+>
+  <div class="src-location-badge" *ngIf="badgeText">{{ badgeText }}</div>
+  <div class="src-location-header">
+    <div class="src-location-header-left">
+      <span class="green-circle" [ngStyle]="{ 'background-color': stepStyle?.color }"></span>
+      <span class="src-location-text">{{ stepStyle?.name }}: {{ stepStyle?.header_text }}</span>
+    </div>
+    <div class="src-location-header-right">
+      <button
+        type="button"
+        (click)="onAddLocation()"
+        data-bs-toggle="modal"
+        [attr.data-bs-target]="modalTarget"
+        [disabled]="readOnly"
+      >
+        <img src="assets/images/add.png" />
+        <span>เพิ่ม</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="src-location-content" *ngIf="locations.length > 0">
+    <div class="src-location-item" *ngFor="let location of locations">
+      <div class="src-location-item-left">
+        <div class="src-location-icon">
+          <img src="assets/images/location.png" />
+        </div>
+        <div class="src-location-item-left-content">
+          <div class="src-location-text">
+            {{ plantCcCode }} ({{ location.value.locationName }})
+          </div>
+          <!--  Progress from tr_job_from/to_location qty / actual_qty: indigo
+                on GET, green on PUT -- same colours as the other cards. -->
+          <div class="pallet-progress" *ngIf="showProgress">
+            <div class="pallet-bar">
+              <div
+                class="pallet-bar-fill"
+                [class.pallet-bar-fill--put]="progressStep === 'put'"
+                [ngStyle]="{ width: getProgressWidth(location) + '%' }"
+              ></div>
+            </div>
+            <span class="pallet-progress-qty">
+              {{ getTakenQty(location) | number: '1.0-0' }} /
+              <!--  Saved qty from before an item qty change, until the next save. -->
+              <s class="pallet-progress-old-qty" *ngIf="isQtyChanged(location)">{{
+                location.value.qty | number: '1.0-0'
+              }}</s>
+              {{ getTotalQty(location) | number: '1.0-0' }} {{ qtyUnit || 'kg' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="src-location-item-right">
+        <button
+          type="button"
+          class="delete-src-location-button"
+          *ngIf="canModifyLocation"
+          (click)="onDeleteLocation(location)"
+        >
+          <img src="assets/images/delete.png" alt="delete-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-data-src-location" *ngIf="locations.length === 0">
+    <div *ngIf="validationErrors" class="validation-error-message">
+      กรุณาเลือก location ต้นทางอย่างน้อย 1 รายการ
+    </div>
+    <ng-container *ngIf="!validationErrors">
+      <div class="app-empty-state-icon app-empty-state-icon--sm">
+        <mat-icon>place</mat-icon>
+      </div>
+      <div>ยังไม่ได้เลือกตำแหน่ง</div>
+    </ng-container>
+  </div>
+</div>

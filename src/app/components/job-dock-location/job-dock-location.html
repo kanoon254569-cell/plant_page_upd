@@ -1,0 +1,127 @@
+<div
+  class="dock-location"
+  [ngClass]="validationErrors && !isEnoughLocations ? 'validation-error' : ''"
+>
+  <div class="dock-location-badge" *ngIf="badgeText">{{ badgeText }}</div>
+  <div class="dock-location-header">
+    <div class="dock-location-header-left">
+      <span class="blue-circle" [ngStyle]="{ 'background-color': stepStyle?.color }"></span>
+      <span class="dock-location-text">{{ stepStyle?.name }}: {{ stepStyle?.header_text }}</span>
+      <span *ngIf="enableQty" class="qty-text" [ngClass]="{ 'full-qty': qtyLocations === itemQty }">
+        QTY: {{ qtyLocations | number: '1.0-2' }} / {{ itemQty | number: '1.0-2' }} kg
+      </span>
+    </div>
+    <div class="dock-location-header-right">
+      <button
+        type="button"
+        (click)="onAddLocation()"
+        data-bs-toggle="modal"
+        [attr.data-bs-target]="modalTarget"
+        [disabled]="readOnly"
+        *ngIf="!disableModifyLocation"
+      >
+        <img src="assets/images/add.png" />
+        <span>เพิ่ม</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="dock-location-content" *ngIf="locations.length > 0">
+    <div *ngIf="enableQty && qtyLocations > itemQty" class="validation-error-message">
+      QTY เกินจำนวนของ item — ปรับ qty ของ location ก่อน Save
+    </div>
+
+    <div *ngIf="validationErrors && !isEnoughLocations">
+      <div class="validation-error-message">กรุณากรอกจำนวนของ location ให้ครบ</div>
+    </div>
+
+    <div class="dock-location-item" *ngFor="let location of locations">
+      <div class="dock-location-item-left">
+        <div class="dock-location-icon">
+          <img src="assets/images/location.png" />
+        </div>
+        <!--  Same layout as job-wh-location: name + Grade/Lot pills on one
+              line, then the progress bar with "actual / qty" and the qty
+              edit button at its right end. -->
+        <div class="dock-location-item-left-content">
+          <div class="dock-location-details">
+            <div class="dock-location-title-row">
+              <span class="dock-location-name">{{ location.value.locationName }}</span>
+              <span class="dock-location-stats">
+                <span
+                  *ngIf="locationGrade(location)"
+                  class="stat-pill stat-pill--grade"
+                  [title]="'Grade: ' + locationGrade(location)"
+                >
+                  <span class="stat-pill-value">{{ locationGrade(location) }}</span>
+                </span>
+                <span
+                  *ngIf="locationLot(location)"
+                  class="stat-pill stat-pill--lot"
+                  [title]="'Lot No: ' + locationLot(location)"
+                >
+                  <span class="stat-pill-value">{{ locationLot(location) }}</span>
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="pallet-progress">
+            <div class="pallet-bar">
+              <div
+                class="pallet-bar-fill"
+                [ngStyle]="{ width: getPalletProgressWidth(location) + '%' }"
+              ></div>
+            </div>
+            <span class="pallet-progress-qty">
+              {{ (location.value.actualQty || 0) | number: '1.0-0' }} /
+              {{ (location.value.qty || 0) | number: '1.0-0' }} kg
+              <button
+                type="button"
+                class="dock-location-edit-button"
+                title="แก้ไขจำนวน"
+                (click)="onAssignLocationQty(location)"
+                *ngIf="enableQty && !disableModifyLocation && !readOnly && !IsLocationComplete(location) && !IsPalletComplete(location)"
+              >
+                <img src="assets/images/edit.png" alt="edit-icon" />
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!disableModifyLocation" class="dock-location-item-right">
+        <button
+          type="button"
+          class="delete-dock-location-button"
+          (click)="onDeleteLocation(location)"
+          *ngIf="!IsPalletComplete(location)"
+        >
+          <img src="assets/images/delete.png" alt="delete-icon" />
+        </button>
+
+        <button
+          type="button"
+          class="repeat-dock-location-button"
+          (click)="onFitQtyLocation(location)"
+          *ngIf="IsPalletComplete(location)"
+        >
+          <img src="assets/images/repeating.png" alt="repeat-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-data-dock-location" *ngIf="locations.length === 0">
+    <div *ngIf="validationErrors" class="validation-error-message">
+      กรุณาเลือก location อย่างน้อย 1 รายการ
+    </div>
+    <ng-container *ngIf="!validationErrors">
+      <div class="app-empty-state-icon app-empty-state-icon--sm">
+        <mat-icon>{{ disableModifyLocation ? 'info_outline' : 'place' }}</mat-icon>
+      </div>
+      <div *ngIf="!disableModifyLocation">ยังไม่ได้เลือกตำแหน่ง</div>
+      <div *ngIf="disableModifyLocation">ไม่ต้องระบุตำแหน่ง</div>
+    </ng-container>
+  </div>
+</div>

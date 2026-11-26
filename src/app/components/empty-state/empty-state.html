@@ -1,0 +1,98 @@
+<div class="empty-state-content">
+  <svg class="empty-state-art" viewBox="0 0 240 150" fill="none" aria-hidden="true">
+    <ellipse cx="120" cy="134" rx="100" ry="9" fill="#e2e8f0" />
+    <circle cx="120" cy="72" r="64" fill="#eff6ff" />
+
+    @switch (variant) {
+      @case ('transfer') {
+        <!-- Source rack (GET) -->
+        <rect x="26" y="52" width="58" height="76" rx="6" fill="#fff" stroke="#bbf7d0" stroke-width="2" />
+        <line x1="26" y1="78" x2="84" y2="78" stroke="#bbf7d0" stroke-width="2" />
+        <line x1="26" y1="104" x2="84" y2="104" stroke="#bbf7d0" stroke-width="2" />
+        <rect x="34" y="84" width="18" height="16" rx="2" fill="#86efac" />
+        <rect x="56" y="84" width="18" height="16" rx="2" fill="#4ade80" />
+        <rect x="34" y="110" width="18" height="14" rx="2" fill="#4ade80" />
+        <rect x="40" y="38" width="30" height="14" rx="7" fill="#14a318" />
+        <text x="55" y="48" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">GET</text>
+
+        <!-- Destination rack (PUT) -->
+        <rect x="156" y="52" width="58" height="76" rx="6" fill="#fff" stroke="#bfdbfe" stroke-width="2" />
+        <line x1="156" y1="78" x2="214" y2="78" stroke="#bfdbfe" stroke-width="2" />
+        <line x1="156" y1="104" x2="214" y2="104" stroke="#bfdbfe" stroke-width="2" />
+        <rect x="186" y="110" width="18" height="14" rx="2" fill="#93c5fd" />
+        <rect x="164" y="84" width="18" height="16" rx="2" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3" />
+        <rect x="170" y="38" width="30" height="14" rx="7" fill="#1d4ed8" />
+        <text x="185" y="48" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">PUT</text>
+
+        <!-- Transfer path + moving box -->
+        <path [attr.id]="pathId" d="M74 80 Q120 20 170 80" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4" />
+        <path d="M164 74 L171 81 L162 83" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        <g class="empty-state-motion">
+          <rect x="-9" y="-8" width="18" height="16" rx="2" fill="#1d4ed8" />
+          <line x1="-9" y1="-2" x2="9" y2="-2" stroke="#93c5fd" stroke-width="1.5" />
+          <animateMotion dur="2.8s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.7;1" calcMode="spline" keySplines="0.4 0 0.2 1;0 0 1 1">
+            <mpath [attr.href]="'#' + pathId" />
+          </animateMotion>
+        </g>
+      }
+
+      @case ('job') {
+        <!-- Job sheet -->
+        <rect x="64" y="28" width="76" height="98" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="2" />
+        <rect x="88" y="22" width="28" height="12" rx="4" fill="#1d4ed8" />
+        <rect x="76" y="46" width="14" height="14" rx="3" fill="#dbeafe" />
+        <line x1="96" y1="50" x2="128" y2="50" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round" />
+        <line x1="96" y1="57" x2="116" y2="57" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round" />
+        <rect x="76" y="70" width="14" height="14" rx="3" fill="#dbeafe" />
+        <line x1="96" y1="74" x2="128" y2="74" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round" />
+        <line x1="96" y1="81" x2="110" y2="81" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round" />
+        <rect x="76" y="94" width="52" height="20" rx="4" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 3" />
+
+        <!-- Pallet boxes -->
+        <rect x="150" y="98" width="30" height="26" rx="3" fill="#93c5fd" />
+        <line x1="150" y1="108" x2="180" y2="108" stroke="#dbeafe" stroke-width="2" />
+        <rect x="182" y="98" width="30" height="26" rx="3" fill="#60a5fa" />
+        <line x1="182" y1="108" x2="212" y2="108" stroke="#dbeafe" stroke-width="2" />
+        <rect x="166" y="72" width="30" height="26" rx="3" fill="#bfdbfe" />
+        <line x1="166" y1="82" x2="196" y2="82" stroke="#eff6ff" stroke-width="2" />
+        <rect x="146" y="124" width="70" height="5" rx="2" fill="#94a3b8" />
+
+        <!-- Magnifier -->
+        <g class="empty-state-motion empty-state-bob">
+          <circle cx="44" cy="58" r="14" fill="#fff" stroke="#1d4ed8" stroke-width="4" />
+          <line x1="54" y1="68" x2="64" y2="78" stroke="#1d4ed8" stroke-width="5" stroke-linecap="round" />
+        </g>
+      }
+
+      @default {
+        <!-- Data table -->
+        <rect x="40" y="30" width="160" height="96" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="2" />
+        <path d="M40 38 a8 8 0 0 1 8 -8 h144 a8 8 0 0 1 8 8 v12 h-160 z" fill="#1d4ed8" />
+        <line x1="52" y1="40" x2="78" y2="40" stroke="#bfdbfe" stroke-width="3" stroke-linecap="round" />
+        <line x1="96" y1="40" x2="122" y2="40" stroke="#bfdbfe" stroke-width="3" stroke-linecap="round" />
+        <line x1="140" y1="40" x2="166" y2="40" stroke="#bfdbfe" stroke-width="3" stroke-linecap="round" />
+        <line x1="52" y1="66" x2="186" y2="66" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 8" />
+        <line x1="52" y1="86" x2="186" y2="86" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 8" />
+        <line x1="52" y1="106" x2="150" y2="106" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 8" />
+
+        <!-- Magnifier -->
+        <g class="empty-state-motion empty-state-bob">
+          <circle cx="182" cy="100" r="16" fill="#fff" stroke="#1d4ed8" stroke-width="4" />
+          <line x1="193" y1="112" x2="204" y2="123" stroke="#1d4ed8" stroke-width="5" stroke-linecap="round" />
+        </g>
+      }
+    }
+  </svg>
+
+  <h2 class="empty-state-title">{{ title }}</h2>
+  @if (message) {
+    <p class="empty-state-message">{{ message }}</p>
+  }
+
+  @if (actionLabel) {
+    <button type="button" class="empty-state-action" (click)="action.emit()">
+      <mat-icon>{{ actionIcon }}</mat-icon>
+      {{ actionLabel }}
+    </button>
+  }
+</div>

@@ -1,0 +1,1148 @@
+<!-- Page Name -->
+<div class="header-section">
+  <div class="header-section-icon">
+    <mat-icon>local_shipping</mat-icon>
+  </div>
+  <span>Shipment Management</span>
+</div>
+
+<!-- Search Filter -->
+<div class="search-filter">
+  <div class="search-filter-header">
+    <div class="search-filter-header-left">
+      <mat-icon>tune</mat-icon>
+      <span>ค้นหาและกรองข้อมูล Shipment & DO</span>
+    </div>
+  </div>
+
+  <div class="search-filter-content">
+    <div class="search-filter-row">
+      <!-- Shipment No -->
+      <div class="search-filter-field">
+        <label>Shipment No :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            [(ngModel)]="filter.shipmentNo"
+            placeholder="ค้นหาเลขที่ Shipment"
+            (keyup.enter)="onClickSearch()"
+          />
+        </mat-form-field>
+      </div>
+
+      <!-- DO No -->
+      <div class="search-filter-field">
+        <label>DO No (Delivery No) :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            [(ngModel)]="filter.doNo"
+            placeholder="ค้นหาเลขที่ DO"
+            (keyup.enter)="onClickSearch()"
+          />
+        </mat-form-field>
+      </div>
+
+      <!-- Warehouse -->
+      <div class="search-filter-field">
+        <label>Warehouse :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="filter.whCode" placeholder="ค้นหารหัสคลังสินค้า" (keyup.enter)="onClickSearch()" />
+        </mat-form-field>
+      </div>
+
+      <!-- Status -->
+      <div class="search-filter-field">
+        <label>Status :</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="filter.statusId">
+            <mat-option value="">ทั้งหมด</mat-option>
+            <mat-option *ngFor="let s of statusOptions" [value]="s.id">
+              <span class="status-dot-inline" [style.background]="s.color"></span>
+              {{ s.code }} - {{ s.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Actions -->
+      <div class="search-filter-actions">
+        <button type="button" class="clear-button" title="ล้างตัวกรอง" (click)="resetFilter()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button type="button" class="search-button" title="ค้นหา" (click)="onClickSearch()">
+          <img src="assets/images/search.png" alt="search-icon" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Shipment List -->
+<div class="display-table">
+  <div class="display-table-header">
+    <div class="table-title-group">
+      <span>รายการ Shipment & DO</span>
+      <span class="table-count">{{ totalCount }} Shipment</span>
+    </div>
+    <div class="table-header-meta">
+      <span class="table-meta-item" title="จำนวน DO ทั้งหมดในหน้านี้">
+        <mat-icon>inventory_2</mat-icon>
+        <span class="table-meta-label">รวม DO</span>
+        <strong class="table-meta-value">{{ totalDosCount | number }}</strong>
+      </span>
+      <span class="table-meta-item" title="น้ำหนักรวมของ DO ในหน้านี้">
+        <mat-icon>scale</mat-icon>
+        <span class="table-meta-label">น้ำหนักรวม</span>
+        <strong class="table-meta-value">{{ totalWeightKg | number: '1.0-0' }}</strong>
+        <span class="table-meta-unit">kg</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="table-container" *ngIf="pagedShipments.length > 0; else noShipmentsTemplate">
+    <table class="shipment-table">
+      <!-- Fixed column widths (table-layout: fixed). DO rows share these
+           columns: DO no · grade · lot spans Shipment + Status, remark spans
+           คลัง..Loading, DO actions span DO + Action. -->
+      <colgroup>
+        <col class="sc-expand" />
+        <col class="sc-shipment" />
+        <col class="sc-status" />
+        <col class="sc-storage" />
+        <col class="sc-vehicle" />
+        <col class="sc-driver" />
+        <col class="sc-loading" />
+        <col class="sc-qty" />
+        <col class="sc-pallet" />
+        <col class="sc-docount" />
+        <col class="sc-action" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="col-expand"></th>
+          <th>Shipment No</th>
+          <th>Status</th>
+          <th>คลัง / Plant</th>
+          <th>ทะเบียนรถ / ผู้ขนส่ง</th>
+          <th>คนขับ</th>
+          <th>Loading</th>
+          <th class="text-right">Qty (kg)</th>
+          <th class="text-center">พาเลท</th>
+          <th class="text-center" title="จำนวน DO ใน Shipment">DO</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let shipment of pagedShipments">
+          <tr
+            class="shipment-row"
+            [class.shipment-row--expanded]="shipment.expanded"
+            (click)="toggleExpand(shipment)"
+          >
+            <td class="col-expand">
+              <button
+                type="button"
+                class="btn-expand-icon"
+                [title]="shipment.expanded ? 'ยุบ' : 'ขยาย'"
+                [attr.aria-label]="shipment.expanded ? 'ยุบ' : 'ขยาย'"
+                [attr.aria-expanded]="shipment.expanded"
+              >
+                <mat-icon>{{ shipment.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </button>
+            </td>
+            <td>
+              <div class="two-line-cell">
+                <span class="shipment-badge">{{ shipment.shipmentNo }}</span>
+                <span class="two-line-sub two-line-sub--customer" *ngIf="shipment.customerName" [title]="shipment.customerName">{{ shipment.customerName }}</span>
+              </div>
+            </td>
+            <td>
+              <span
+                class="status-pill"
+                [ngClass]="getStatusBadgeClass(shipment.statusId)"
+                [title]="getStatusOption(shipment.statusId).name"
+              >
+                <span class="status-dot" [style.background]="getStatusOption(shipment.statusId).color"></span>
+                <strong>{{ getStatusOption(shipment.statusId).code }}</strong>
+                <span class="status-name">· {{ getStatusOption(shipment.statusId).name }}</span>
+              </span>
+            </td>
+            <td>
+              <div class="storage-text">
+                <span>{{ shipment.whCode }}</span>
+                <span class="storage-sep">/</span>
+                <span>{{ shipment.plantCode || '-' }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="two-line-cell">
+                <span class="two-line-main" [title]="shipment.licensePlate || ''">{{ shipment.licensePlate || '-' }}</span>
+                <span class="two-line-sub" *ngIf="shipment.carrierName" [title]="shipment.carrierName">{{ shipment.carrierName }}</span>
+              </div>
+            </td>
+            <td class="col-wrap">{{ shipment.driverName || '-' }}</td>
+            <td>
+              <div class="two-line-cell" *ngIf="shipment.loadingDate; else noLoadingDate">
+                <span class="two-line-main">{{ shipment.loadingDate | date: 'dd/MM/yyyy' }}</span>
+                <span class="two-line-sub">{{ shipment.loadingDate | date: 'HH:mm' }}</span>
+              </div>
+              <ng-template #noLoadingDate>-</ng-template>
+            </td>
+            <td class="text-right"><span class="qty-amount">{{ getShipmentTotalQty(shipment) | number: '1.0-0' }}</span></td>
+            <td class="text-center">
+              <span class="pallet-badge">{{ getShipmentTotalPallets(shipment) | number }}</span>
+            </td>
+            <td class="text-center">{{ shipment.dos?.length || 0 }}</td>
+            <td (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                class="btn-row-add-do"
+                title="เพิ่ม DO เข้า Shipment นี้"
+                aria-label="เพิ่ม DO เข้า Shipment นี้"
+                (click)="openDoPicker(shipment)"
+              >
+                <mat-icon>add</mat-icon>
+                <span>DO</span>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Expanded: one sub-row per DO, sharing the shipment table's columns -->
+          <ng-container *ngIf="shipment.expanded">
+            <tr class="do-subhead" *ngIf="shipment.dos && shipment.dos.length > 0">
+              <td></td>
+              <td colspan="2">
+                <label class="do-check-label">
+                  <input
+                    type="checkbox"
+                    class="do-check"
+                    [checked]="isAllShipmentDosChecked(shipment)"
+                    [indeterminate]="isSomeShipmentDosChecked(shipment)"
+                    (change)="toggleAllShipmentDos(shipment)"
+                    aria-label="เลือก DO ทั้งหมดใน Shipment นี้"
+                  />
+                  เลขที่ DO · Grade · Lot No.
+                </label>
+              </td>
+              <td colspan="4">หมายเหตุ</td>
+              <td class="text-right">Qty (kg)</td>
+              <td class="text-center">พาเลท</td>
+              <td class="text-right" colspan="2">
+                <!-- Bulk actions on the ticked DOs of this shipment -->
+                <div class="do-action-buttons do-bulk-actions" *ngIf="checkedDosOf(shipment).length > 0; else doActionsLabel">
+                  <span class="do-bulk-count">{{ checkedDosOf(shipment).length }}</span>
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--251"
+                    [title]="'ส่ง 251 (' + checkedDosOf(shipment).length + ' DO)'"
+                    aria-label="ส่ง 251 DO ที่เลือก"
+                    (click)="bulkSend251(shipment)"
+                  >
+                    <mat-icon>forward_to_inbox</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--dopre"
+                    [title]="'DO Preparing (' + checkedDosOf(shipment).length + ' DO)'"
+                    aria-label="DO Preparing DO ที่เลือก"
+                    (click)="bulkDoPreparing(shipment)"
+                  >
+                    <mat-icon>playlist_add_check</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--move"
+                    [title]="'ย้าย ' + checkedDosOf(shipment).length + ' DO ไปยัง Shipment อื่น'"
+                    aria-label="ย้าย DO ที่เลือก"
+                    (click)="openBulkMoveDoModal(shipment)"
+                  >
+                    <mat-icon>drive_file_move</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--delete"
+                    [title]="'ลบ ' + checkedDosOf(shipment).length + ' DO'"
+                    aria-label="ลบ DO ที่เลือก"
+                    (click)="bulkDeleteDos(shipment)"
+                  >
+                    <mat-icon>delete_sweep</mat-icon>
+                  </button>
+                </div>
+                <ng-template #doActionsLabel>จัดการ DO</ng-template>
+              </td>
+            </tr>
+            <tr class="do-row" *ngFor="let doItem of shipment.dos; let last = last" [class.do-row--last]="last">
+              <td></td>
+              <td colspan="2">
+                <div class="do-cell-main">
+                  <input
+                    type="checkbox"
+                    class="do-check"
+                    [checked]="checkedDoIds.has(doItem.id)"
+                    (change)="toggleDoChecked(doItem)"
+                    [attr.aria-label]="'เลือก ' + doItem.doNo"
+                  />
+                  <strong class="do-no">{{ doItem.doNo }}</strong>
+                  <span class="grade-chip" [title]="doItem.gradeDesc || doItem.grade">{{ doItem.grade || '-' }}</span>
+                  <!-- DO's own lot; when empty, the lots picked for it (tr_lot_location) with qty -->
+                  <span class="lot-code" *ngIf="doItem.lotNo || !doItem.lots?.length; else doPickedLots">{{ doItem.lotNo || '-' }}</span>
+                  <ng-template #doPickedLots>
+                    <span class="do-lot-list">
+                      <span
+                        class="do-lot-item"
+                        *ngFor="let l of doItem.lots"
+                        [title]="'Lot ที่หยิบ' + (l.actualQty != null ? ' · Actual ' + (l.actualQty | number: '1.0-0') + ' kg' : '')"
+                      >
+                        <span class="do-lot-no">{{ l.lotNo }}</span>
+                        <span class="do-lot-qty">{{ l.qty | number: '1.0-0' }}</span>
+                      </span>
+                    </span>
+                  </ng-template>
+                </div>
+              </td>
+              <td colspan="4">
+                <span class="remark-text" [title]="doItem.remark || ''">{{ doItem.remark || '-' }}</span>
+              </td>
+              <td class="text-right">
+                <span class="qty-amount">{{ doItem.qty | number: '1.0-0' }}</span>
+              </td>
+              <td class="text-center">
+                <span class="pallet-badge" *ngIf="doItem.palletQty; else noDoPallet">{{ doItem.palletQty | number }}</span>
+                <ng-template #noDoPallet><span class="text-muted">-</span></ng-template>
+              </td>
+              <td class="text-right" colspan="2">
+                <div class="do-action-buttons">
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--251"
+                    title="ส่ง 251 (FG Issue)"
+                    aria-label="ส่ง 251"
+                    (click)="sendDo251(shipment, doItem)"
+                  >
+                    <mat-icon>send</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--dopre"
+                    title="DO Preparing"
+                    aria-label="DO Preparing"
+                    (click)="openDoPreparing(shipment, doItem)"
+                  >
+                    <mat-icon>pending_actions</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--move"
+                    title="ย้าย DO ไปยัง Shipment อื่น"
+                    aria-label="ย้าย DO ไปยัง Shipment อื่น"
+                    (click)="openMoveDoModal(shipment, doItem)"
+                  >
+                    <mat-icon>swap_horiz</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--merge"
+                    title="รวม DO อื่นเข้า DO นี้"
+                    aria-label="รวม DO"
+                    (click)="openMergeDoModal(shipment, doItem)"
+                  >
+                    <mat-icon>call_merge</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--split"
+                    title="แยก DO ไปยัง Shipment อื่น"
+                    aria-label="แยก DO"
+                    (click)="openSplitDoModal(shipment, doItem)"
+                  >
+                    <mat-icon>call_split</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--edit"
+                    title="แก้ไขข้อมูล DO"
+                    aria-label="แก้ไขข้อมูล DO"
+                    (click)="openEditDoModal(shipment, doItem)"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-do-action btn-do-action--delete"
+                    title="ลบ DO"
+                    aria-label="ลบ DO"
+                    (click)="confirmDeleteDo(shipment, doItem)"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr
+              class="do-row do-row--last do-row--empty"
+              *ngIf="!shipment.dos || shipment.dos.length === 0"
+            >
+              <td></td>
+              <td colspan="10">
+                <div class="empty-do-inline">
+                  <span>ยังไม่มีรายการ DO ใน Shipment นี้</span>
+                  <button type="button" class="btn-empty-add" (click)="openDoPicker(shipment)">
+                    <mat-icon>add</mat-icon> เพิ่ม DO ตอนนี้
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="do-spacer" aria-hidden="true">
+              <td></td>
+              <td colspan="10"></td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #noShipmentsTemplate>
+    <div class="empty-state">
+      <app-empty-state
+        variant="table"
+        [title]="isLoading ? 'กำลังโหลดรายการ Shipment...' : 'ไม่พบข้อมูล Shipment'"
+        [message]="isLoading ? '' : 'กรุณาลองเปลี่ยนเงื่อนไขการค้นหา'"
+      ></app-empty-state>
+    </div>
+  </ng-template>
+
+  <!-- Paginator -->
+  <mat-paginator
+    [length]="totalCount"
+    [pageIndex]="(filter.page ?? 1) - 1"
+    [pageSize]="filter.pageSize ?? 10"
+    [pageSizeOptions]="[5, 10, 25, 50]"
+    [showFirstLastButtons]="true"
+    (page)="onPageEvent($event)"
+  ></mat-paginator>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODAL 1: เลือก DO เข้า Shipment ("+ DO") -- today's DOs from          -->
+<!-- GET job/shipment, tick one or more, then "เพิ่ม DO"                   -->
+<!-- ===================================================================== -->
+<div class="custom-modal-overlay" *ngIf="doPickerShipment" (click)="closeDoPicker()">
+  <div class="custom-modal custom-modal--pick" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="custom-modal__header">
+      <div class="custom-modal__title-group">
+        <span class="custom-modal__eyebrow">เพิ่มเข้า Shipment {{ doPickerShipment.shipmentNo }}</span>
+        <div class="custom-modal__title-row">
+          <mat-icon class="modal-header-icon">playlist_add</mat-icon>
+          <span class="custom-modal__title-text">เลือก DO ที่จะเพิ่ม</span>
+        </div>
+      </div>
+      <button type="button" class="custom-modal__close" (click)="closeDoPicker()" title="ปิด (Esc)" aria-label="ปิด">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="custom-modal__body do-pick-body">
+      <ng-container *ngTemplateOutlet="doPickerContent"></ng-container>
+    </div>
+
+    <div class="custom-modal__footer">
+      <span class="do-pick-selected">เลือกแล้ว {{ selectedDoNos.size }} รายการ</span>
+      <button type="button" class="modal-btn-cancel" (click)="closeDoPicker()">ยกเลิก</button>
+      <button
+        type="button"
+        class="modal-btn-save"
+        [disabled]="selectedDoNos.size === 0"
+        (click)="confirmAddSelectedDos()"
+      >
+        เพิ่ม DO{{ selectedDoNos.size ? ' (' + selectedDoNos.size + ')' : '' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODAL 2: แก้ไข DO (Edit DO)                                           -->
+<!-- ===================================================================== -->
+<div class="custom-modal-overlay" *ngIf="isEditDoModalOpen" (click)="closeEditDoModal()">
+  <div class="custom-modal custom-modal--edit" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="custom-modal__header">
+      <div class="custom-modal__title-group">
+        <span class="custom-modal__eyebrow">Shipment {{ editDoForm.shipmentNo }}</span>
+        <div class="custom-modal__title-row">
+          <mat-icon class="modal-header-icon modal-header-icon--edit">edit</mat-icon>
+          <span class="custom-modal__title-text">แก้ไขข้อมูล DO: {{ editDoForm.doNo }}</span>
+        </div>
+      </div>
+      <button type="button" class="custom-modal__close" (click)="closeEditDoModal()" title="ปิด (Esc)" aria-label="ปิด">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="custom-modal__body">
+      <!-- Same inputs as the DO picker's filter (do-pick-input / do-pick-select) -->
+      <div class="edit-do-grid" (keyup.enter)="saveEditDo()">
+        <div class="do-pick-field edit-do-span2">
+          <label>เลขที่ DO (Delivery No) <span class="required">*</span></label>
+          <input class="do-pick-input" [(ngModel)]="editDoForm.doNo" />
+        </div>
+        <div class="do-pick-field">
+          <label>Grade <span class="required">*</span></label>
+          <input class="do-pick-input" [(ngModel)]="editDoForm.grade" />
+        </div>
+
+        <div class="do-pick-field">
+          <label>Lot No.</label>
+          <input class="do-pick-input" [(ngModel)]="editDoForm.lotNo" />
+        </div>
+        <div class="do-pick-field">
+          <label>Qty (kg) <span class="required">*</span></label>
+          <input type="number" min="0" class="do-pick-input text-right" [(ngModel)]="editDoForm.qty" />
+        </div>
+        <div class="do-pick-field">
+          <label>พาเลท <span class="required">*</span></label>
+          <input type="number" min="0" class="do-pick-input text-right" [(ngModel)]="editDoForm.palletQty" />
+        </div>
+
+        <div class="do-pick-field">
+          <label>Warehouse</label>
+          <mat-select
+            class="do-pick-input do-pick-select"
+            [(ngModel)]="editDoForm.whCode"
+            panelClass="filter-multi-panel shipment-status-panel"
+          >
+            <mat-option *ngFor="let o of editWarehouseOptions" [value]="o.code">
+              <span class="filter-option-code">{{ o.code }}</span>
+              <span class="filter-option-name">{{ o.name }}</span>
+            </mat-option>
+          </mat-select>
+        </div>
+        <div class="do-pick-field">
+          <label>Plant Code</label>
+          <mat-select
+            class="do-pick-input do-pick-select"
+            [(ngModel)]="editDoForm.plantCode"
+            panelClass="filter-multi-panel shipment-status-panel"
+          >
+            <mat-option *ngFor="let p of editPlantOptions" [value]="p.code">
+              <span class="filter-option-code">{{ p.code }}</span>
+              <span class="filter-option-name">{{ p.name }}</span>
+            </mat-option>
+          </mat-select>
+        </div>
+
+        <div class="do-pick-field edit-do-wide">
+          <label>หมายเหตุ (Remark)</label>
+          <input class="do-pick-input" [(ngModel)]="editDoForm.remark" />
+        </div>
+      </div>
+    </div>
+
+    <div class="custom-modal__footer">
+      <button type="button" class="modal-btn-cancel" (click)="closeEditDoModal()">ยกเลิก</button>
+      <button type="button" class="modal-btn-save" (click)="saveEditDo()">บันทึกการแก้ไข</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODAL 3: ย้าย DO (Move DO) -- same layout as the "+ DO" picker,        -->
+<!-- orange tone: pick the destination shipment for the DO(s) being moved  -->
+<!-- ===================================================================== -->
+<div class="custom-modal-overlay" *ngIf="isMoveDoModalOpen" (click)="closeMoveDoModal()">
+  <div class="custom-modal custom-modal--pick custom-modal--move" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="custom-modal__header">
+      <div class="custom-modal__title-group">
+        <span class="custom-modal__eyebrow">ย้ายจาก Shipment {{ sourceShipment?.shipmentNo }}</span>
+        <div class="custom-modal__title-row">
+          <mat-icon class="modal-header-icon modal-header-icon--move">swap_horiz</mat-icon>
+          <span class="custom-modal__title-text">เลือก Shipment ปลายทาง</span>
+        </div>
+      </div>
+      <button type="button" class="custom-modal__close" (click)="closeMoveDoModal()" title="ปิด (Esc)" aria-label="ปิด">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="custom-modal__body do-pick-body">
+      <!-- DOs being moved -->
+      <div class="move-summary">
+        <div class="move-summary-head">
+          <span class="move-summary-title">
+            DO ที่จะย้าย <span class="move-summary-count">{{ movingDos.length }}</span>
+          </span>
+          <span class="move-summary-total">
+            รวม <strong>{{ movingQtyTotal | number }}</strong> kg · <strong>{{ movingPalletTotal | number }}</strong> พาเลท
+          </span>
+        </div>
+        <div class="move-summary-chips">
+          <span class="move-do-chip" *ngFor="let d of movingDos">
+            <strong>{{ d.doNo }}</strong>
+            <span>{{ d.grade }}{{ d.lotNo ? ' · ' + d.lotNo : '' }}</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Destination: same filters + list as the "+ DO" picker (GET job/shipment); pick one row -->
+      <ng-container *ngTemplateOutlet="doPickerContent"></ng-container>
+    </div>
+
+    <div class="custom-modal__footer">
+      <span class="do-pick-selected">
+        ย้ายไป:
+        <strong class="move-target-text">{{ moveTargetRow ? 'Shipment ' + moveTargetRow.shipmentno : 'ยังไม่ได้เลือก' }}</strong>
+      </span>
+      <button type="button" class="modal-btn-cancel" (click)="closeMoveDoModal()">ยกเลิก</button>
+      <button
+        type="button"
+        class="modal-btn-save btn-move-confirm"
+        [disabled]="!moveTargetRow"
+        (click)="confirmMoveDo()"
+      >
+        ยืนยันการย้าย{{ movingDos.length > 1 ? ' (' + movingDos.length + ')' : '' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODAL 4: แยก DO (Split DO) -- same layout as Move DO: qty to split    -->
+<!-- off, then pick the destination shipment from the shared DO list       -->
+<!-- ===================================================================== -->
+<div class="custom-modal-overlay" *ngIf="isSplitDoModalOpen" (click)="closeSplitDoModal()">
+  <div class="custom-modal custom-modal--pick custom-modal--split" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="custom-modal__header">
+      <div class="custom-modal__title-group">
+        <span class="custom-modal__eyebrow">แยกจาก Shipment {{ splittingShipment?.shipmentNo }}</span>
+        <div class="custom-modal__title-row">
+          <mat-icon class="modal-header-icon modal-header-icon--split">call_split</mat-icon>
+          <span class="custom-modal__title-text">แยก DO {{ splittingDo?.doNo }} · เลือก DO ปลายทาง</span>
+        </div>
+      </div>
+      <button type="button" class="custom-modal__close" (click)="closeSplitDoModal()" title="ปิด (Esc)" aria-label="ปิด">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="custom-modal__body do-pick-body">
+      <!-- DO being split; the qty split off is the sum of the ticked DOs' qty -->
+      <div class="move-summary split-summary">
+        <div class="move-summary-head">
+          <span class="move-summary-title">
+            DO ที่จะแยก
+            <span class="move-do-chip">
+              <strong>{{ splittingDo?.doNo }}</strong>
+              <span>{{ splittingDo?.grade }}{{ splittingDo?.lotNo ? ' · ' + splittingDo?.lotNo : '' }}</span>
+            </span>
+          </span>
+          <span class="move-summary-total">
+            ทั้งหมด <strong>{{ splittingDo?.qty | number }}</strong> kg
+          </span>
+        </div>
+        <div class="split-qty-row">
+          <span>
+            แยกออก
+            <strong>{{ splitQty | number }}</strong> kg
+            <ng-container *ngIf="splitTargets.length; else noSplitRow">(รวม {{ splitTargets.length }} DO ที่เลือก)</ng-container>
+            <ng-template #noSplitRow>(เลือก DO ในตารางด้านล่าง)</ng-template>
+          </span>
+          <span class="split-qty-remain">
+            DO เดิมคงเหลือ <strong>{{ splitRemainingQty | number }}</strong> kg
+          </span>
+        </div>
+      </div>
+
+      <ng-container *ngTemplateOutlet="doPickerContent"></ng-container>
+    </div>
+
+    <div class="custom-modal__footer">
+      <span class="do-pick-selected">
+        แยกไป:
+        <strong class="split-target-text">{{ splitTargets.length ? splitTargets.length + ' DO' : 'ยังไม่ได้เลือก' }}</strong>
+      </span>
+      <button type="button" class="modal-btn-cancel" (click)="closeSplitDoModal()">ยกเลิก</button>
+      <button
+        type="button"
+        class="modal-btn-save btn-split-confirm"
+        [disabled]="splitTargets.length === 0"
+        (click)="confirmSplitDo()"
+      >
+        ยืนยันแยก{{ splitTargets.length ? ' (' + splitTargets.length + ')' : '' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODAL 4b: รวม DO (Merge DO) -- same layout as the "+ DO" picker: tick  -->
+<!-- DOs in the shared DO list to merge into this DO                       -->
+<!-- ===================================================================== -->
+<div class="custom-modal-overlay" *ngIf="isMergeDoModalOpen" (click)="closeMergeDoModal()">
+  <div class="custom-modal custom-modal--pick custom-modal--merge" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="custom-modal__header">
+      <div class="custom-modal__title-group">
+        <span class="custom-modal__eyebrow">รวมเข้า DO {{ mergeTargetDo?.doNo }} (Shipment {{ mergeShipment?.shipmentNo }})</span>
+        <div class="custom-modal__title-row">
+          <mat-icon class="modal-header-icon modal-header-icon--merge">call_merge</mat-icon>
+          <span class="custom-modal__title-text">เลือก DO ที่จะรวม</span>
+        </div>
+      </div>
+      <button type="button" class="custom-modal__close" (click)="closeMergeDoModal()" title="ปิด (Esc)" aria-label="ปิด">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="custom-modal__body do-pick-body">
+      <!-- DO merged into + totals: its qty, the ticked DOs' qty, and the sum -->
+      <div class="move-summary merge-summary">
+        <div class="move-summary-head">
+          <span class="move-summary-title">
+            รวมเข้า DO
+            <span class="move-do-chip">
+              <strong>{{ mergeTargetDo?.doNo }}</strong>
+              <span>{{ mergeTargetDo?.grade }}{{ mergeTargetDo?.lotNo ? ' · ' + mergeTargetDo?.lotNo : '' }}</span>
+            </span>
+          </span>
+          <span class="move-summary-total">
+            ยอดเดิม <strong>{{ mergeTargetDo?.qty | number }}</strong> kg
+          </span>
+        </div>
+        <div class="split-qty-row">
+          <span>
+            รวมเข้ามา
+            <strong>{{ mergeQty | number }}</strong> kg
+            <ng-container *ngIf="mergeSources.length; else noMergeRow">(รวม {{ mergeSources.length }} DO ที่เลือก)</ng-container>
+            <ng-template #noMergeRow>(เลือก DO ในตารางด้านล่าง)</ng-template>
+          </span>
+          <span class="split-qty-remain">
+            ยอดรวมหลังรวม <strong>{{ mergeTotalQty | number }}</strong> kg
+          </span>
+        </div>
+      </div>
+
+      <ng-container *ngTemplateOutlet="doPickerContent"></ng-container>
+    </div>
+
+    <div class="custom-modal__footer">
+      <span class="do-pick-selected">
+        เลือกแล้ว {{ mergeSources.length }} DO · ยอดรวม
+        <strong class="merge-total-text">{{ mergeTotalQty | number }} kg</strong>
+      </span>
+      <button type="button" class="modal-btn-cancel" (click)="closeMergeDoModal()">ยกเลิก</button>
+      <button
+        type="button"
+        class="modal-btn-save btn-merge-confirm"
+        [disabled]="selectedDoNos.size === 0"
+        (click)="confirmMergeDo()"
+      >
+        รวม DO{{ selectedDoNos.size ? ' (' + selectedDoNos.size + ')' : '' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODAL 5: สร้าง Shipment ใหม่ (Create Shipment)                       -->
+<!-- ===================================================================== -->
+<div class="custom-modal-overlay" *ngIf="isCreateShipmentModalOpen" (click)="closeCreateShipmentModal()">
+  <div class="custom-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="custom-modal__header">
+      <div class="custom-modal__title-group">
+        <span class="custom-modal__eyebrow">Shipment Management · New Shipment</span>
+        <div class="custom-modal__title-row">
+          <mat-icon class="modal-header-icon">local_shipping</mat-icon>
+          <span class="custom-modal__title-text">สร้างรายการ Shipment ใหม่</span>
+        </div>
+      </div>
+      <button type="button" class="custom-modal__close" (click)="closeCreateShipmentModal()" title="ปิด (Esc)">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="custom-modal__body">
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>เลขที่ Shipment <span class="required">*</span></label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <input matInput [(ngModel)]="createShipmentForm.shipmentNo" placeholder="เช่น SHP-20261112-099" />
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <label>ทะเบียนรถ (License Plate)</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <input matInput [(ngModel)]="createShipmentForm.licensePlate" placeholder="เช่น 70-9988 ระยอง" />
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>ชื่อผู้ขนส่ง (Carrier Name)</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <input matInput [(ngModel)]="createShipmentForm.carrierName" placeholder="เช่น บจก. ไออาร์พีซี โลจิสติกส์" />
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <label>ชื่อพนักงานขับรถ (Driver Name)</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <input matInput [(ngModel)]="createShipmentForm.driverName" placeholder="เช่น สมชาย ใจดี" />
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row-3">
+        <div class="form-group">
+          <label>Warehouse</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-select [(ngModel)]="createShipmentForm.whCode">
+              <mat-option value="MWH">MWH (Main Warehouse)</mat-option>
+              <mat-option value="DOCK">DOCK (Loading Dock)</mat-option>
+              <mat-option value="PRE-ZONE">PRE-ZONE</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <label>Plant Code</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-select [(ngModel)]="createShipmentForm.plantCode">
+              <mat-option value="1100">Plant 1100</mat-option>
+              <mat-option value="1200">Plant 1200</mat-option>
+              <mat-option value="1300">Plant 1300</mat-option>
+              <mat-option value="1600">Plant 1600</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <label>สถานะเริ่มต้น</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-select [(ngModel)]="createShipmentForm.statusId">
+              <mat-option *ngFor="let s of statusOptions" [value]="s.id">
+                {{ s.code }} - {{ s.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
+    <div class="custom-modal__footer">
+      <button type="button" class="modal-btn-cancel" (click)="closeCreateShipmentModal()">ยกเลิก</button>
+      <button type="button" class="modal-btn-save" (click)="saveCreateShipment()">
+        <mat-icon>check</mat-icon> สร้าง Shipment
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===================================================================== -->
+<!-- Notice / confirm modal (replaces SweetAlert on this page) -- notify() -->
+<!-- ===================================================================== -->
+<div
+  class="custom-modal-overlay notice-overlay"
+  *ngIf="notice"
+  (click)="closeNotice(false)"
+>
+  <div
+    class="custom-modal notice-modal"
+    [ngClass]="'notice--' + (notice.icon || 'info')"
+    (click)="$event.stopPropagation()"
+    role="alertdialog"
+    aria-modal="true"
+  >
+    <div class="notice-body">
+      <div class="notice-icon"><mat-icon>{{ noticeIcon }}</mat-icon></div>
+      <div class="notice-title" *ngIf="notice.title">{{ notice.title }}</div>
+      <div class="notice-text" *ngIf="notice.html" [innerHTML]="notice.html"></div>
+      <div class="notice-text" *ngIf="!notice.html && notice.text">{{ notice.text }}</div>
+    </div>
+    <div class="custom-modal__footer notice-footer" *ngIf="notice.showConfirmButton !== false">
+      <button type="button" class="modal-btn-cancel" *ngIf="notice.showCancelButton" (click)="closeNotice(false)">
+        {{ notice.cancelButtonText || 'ยกเลิก' }}
+      </button>
+      <button
+        type="button"
+        class="modal-btn-save"
+        [style.background]="notice.confirmButtonColor || null"
+        (click)="closeNotice(true)"
+      >
+        {{ notice.confirmButtonText || 'ตกลง' }}
+      </button>
+    </div>
+  </div>
+</div>
+<!-- ===================================================================== -->
+<!-- Shared DO list (GET job/shipment): filters + table + paginator. Used  -->
+<!-- by the "+ DO" picker (tick DOs) and the Move DO modal (pick one row). -->
+<!-- ===================================================================== -->
+<ng-template #doPickerContent>
+      <!-- Filters (same layout as job-list's shipment list) -- GET job/shipment -->
+      <div class="do-pick-filter">
+        <div class="do-pick-field">
+          <label>Shipment No</label>
+          <input
+            class="do-pick-input"
+            [(ngModel)]="doFilter.shipmentNo"
+            (keyup.enter)="searchDoPicker()"
+            placeholder="พิมพ์ Shipment No"
+          />
+        </div>
+        <div class="do-pick-field">
+          <label>Delivery No</label>
+          <input
+            class="do-pick-input do-pick-search"
+            [(ngModel)]="doFilter.deliveryNo"
+            (keyup.enter)="searchDoPicker()"
+            placeholder="พิมพ์ Delivery No"
+          />
+        </div>
+        <div class="do-pick-field">
+          <label>Plant CC</label>
+          <mat-select
+            class="do-pick-input do-pick-select"
+            [(ngModel)]="doFilter.plantCodes"
+            multiple
+            placeholder="ทั้งหมด"
+            panelClass="filter-multi-panel shipment-status-panel"
+            (openedChange)="!$event && searchDoPicker()"
+          >
+            <mat-select-trigger>{{ doPlantLabel }}</mat-select-trigger>
+            <div class="filter-multi-header" (click)="$event.stopPropagation()">
+              <span class="filter-multi-count">{{
+                doFilter.plantCodes.length ? 'เลือก ' + doFilter.plantCodes.length + ' รายการ' : 'ทั้งหมด'
+              }}</span>
+              <button
+                type="button"
+                class="filter-multi-clear"
+                *ngIf="doFilter.plantCodes.length"
+                (click)="doFilter.plantCodes = []"
+              >
+                ล้าง
+              </button>
+            </div>
+            <mat-option *ngFor="let p of doPlantOptions" [value]="p.code">
+              <span class="filter-option-code">{{ p.code }}</span>
+              <span class="filter-option-name" *ngIf="p.name">{{ p.name }}</span>
+            </mat-option>
+          </mat-select>
+        </div>
+        <div class="do-pick-field">
+          <label>Loading Date</label>
+          <div class="do-pick-date" (click)="doLoadingPicker.open()">
+            <mat-icon>calendar_today</mat-icon>
+            <input
+              [matDatepicker]="doLoadingPicker"
+              [(ngModel)]="doFilter.loadingDate"
+              (dateChange)="searchDoPicker()"
+              placeholder="เลือกวันที่"
+              readonly
+            />
+            <mat-datepicker #doLoadingPicker></mat-datepicker>
+          </div>
+        </div>
+        <div class="do-pick-field">
+          <label>WH</label>
+          <mat-select
+            class="do-pick-input do-pick-select"
+            [(ngModel)]="doFilter.whIds"
+            multiple
+            placeholder="ทั้งหมด"
+            panelClass="filter-multi-panel shipment-status-panel"
+            (openedChange)="!$event && searchDoPicker()"
+          >
+            <mat-select-trigger>{{ doWhLabel }}</mat-select-trigger>
+            <div class="filter-multi-header" (click)="$event.stopPropagation()">
+              <span class="filter-multi-count">{{
+                doFilter.whIds.length ? 'เลือก ' + doFilter.whIds.length + ' รายการ' : 'ทั้งหมด'
+              }}</span>
+              <button
+                type="button"
+                class="filter-multi-clear"
+                *ngIf="doFilter.whIds.length"
+                (click)="doFilter.whIds = []"
+              >
+                ล้าง
+              </button>
+            </div>
+            <mat-option *ngFor="let w of doWhOptions" [value]="w.id">
+              <span class="filter-option-name">{{ w.name }}</span>
+            </mat-option>
+          </mat-select>
+        </div>
+        <div class="do-pick-status-group">
+          <div class="do-pick-field">
+            <label>Status</label>
+            <mat-select
+            class="do-pick-input do-pick-select"
+            [(ngModel)]="doFilter.statusIds"
+            multiple
+            placeholder="ทั้งหมด"
+            panelClass="filter-multi-panel shipment-status-panel"
+            (openedChange)="!$event && searchDoPicker()"
+          >
+            <mat-select-trigger>{{ doStatusLabel }}</mat-select-trigger>
+            <div class="filter-multi-header" (click)="$event.stopPropagation()">
+              <span class="filter-multi-count">{{
+                doFilter.statusIds.length ? 'เลือก ' + doFilter.statusIds.length + ' รายการ' : 'ทั้งหมด'
+              }}</span>
+              <button
+                type="button"
+                class="filter-multi-clear"
+                *ngIf="doFilter.statusIds.length"
+                (click)="doFilter.statusIds = []"
+              >
+                ล้าง
+              </button>
+            </div>
+            <mat-option *ngFor="let s of doStatusOptions" [value]="s.id">
+              <span class="filter-status-dot" [style.background]="doStatusColor(s.id)"></span>
+              <span class="filter-option-name">{{ s.name }}</span>
+            </mat-option>
+          </mat-select>
+          </div>
+          <div class="do-pick-actions">
+            <button type="button" class="clear-button" title="ล้างตัวกรอง" (click)="resetDoFilter()">
+              <img src="assets/images/clear.png" alt="clear-icon" />
+            </button>
+            <button type="button" class="search-button" title="ค้นหา" (click)="searchDoPicker()">
+              <img src="assets/images/search.png" alt="search-icon" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DO list -- same look as job-list's shipment list (shipment-map-left):
+           one row per DO, grouped by Shipment, detail row on the chevron. -->
+      <div class="do-pick-list">
+        <table class="do-pick-table">
+          <colgroup>
+            <col class="col-check" />
+            <col class="col-wh" />
+            <col class="col-shipment" />
+            <col class="col-do" />
+            <col />
+            <col class="col-lot" />
+            <col class="col-product-cc" />
+            <col class="col-qty" />
+            <col class="col-status" />
+            <col class="col-explain" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="do-pick-check">
+                <button
+                  *ngIf="!isPickOneRow"
+                  type="button"
+                  class="do-pick-check-all"
+                  [disabled]="doOptions.length === 0"
+                  (click)="toggleAllDos()"
+                  [title]="allDosSelected ? 'ยกเลิกเลือกทั้งหน้า' : 'เลือกทั้งหน้า'"
+                  aria-label="เลือกทั้งหน้า"
+                >
+                  <mat-icon>{{
+                    allDosSelected ? 'check_box' : selectedDoNos.size > 0 ? 'indeterminate_check_box' : 'check_box_outline_blank'
+                  }}</mat-icon>
+                </button>
+              </th>
+              <th>WH</th>
+              <th>Shipment</th>
+              <th>DO</th>
+              <th>Grade</th>
+              <th>Lot No.</th>
+              <th>Prod CC</th>
+              <th class="do-pick-num">Qty</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <ng-container *ngIf="!doSearchLoading && !doSearchError">
+            <tbody class="do-pick-group" *ngFor="let group of groupedDoOptions; trackBy: trackByDoGroup">
+              <ng-container *ngFor="let o of group.rows; let first = first; trackBy: trackByDo">
+                <tr
+                  class="do-pick-row"
+                  [class.selected]="isDoRowPicked(o)"
+                  [class.expanded]="doExpanded.has(o.deliveryno)"
+                  (click)="onDoRowClick(o)"
+                >
+                  <td class="do-pick-check">
+                    <mat-icon>{{ doRowIcon(o) }}</mat-icon>
+                  </td>
+                  <td class="do-pick-main" [title]="o.whcode || ''">{{ o.whcode || '-' }}</td>
+                  <td class="do-pick-shipment">{{ first ? group.shipmentno : '' }}</td>
+                  <td class="do-pick-main">{{ o.deliveryno || '-' }}</td>
+                  <td [title]="o.fpdgradecode || ''">{{ o.fpdgradecode || '-' }}</td>
+                  <td [title]="o.pdlotno || ''">{{ o.pdlotno || '-' }}</td>
+                  <td [title]="o.product_cc || ''">{{ o.product_cc || '-' }}</td>
+                  <td class="do-pick-num">
+                    <span class="do-pick-main">{{ (o.qty | number: '1.0-2') || 0 }}</span>
+                    <span class="do-pick-unit">{{ o.unit }}</span>
+                  </td>
+                  <td>
+                    <span
+                      class="do-pick-status-text"
+                      [style.color]="doStatusColor(o.current_status_id)"
+                      [title]="o.current_status || o.status || 'No Status'"
+                    >{{ doStatusAbbr(o) }}</span>
+                  </td>
+                  <td class="do-pick-explain">
+                    <button
+                      type="button"
+                      class="do-pick-explain-btn"
+                      [class.open]="doExpanded.has(o.deliveryno)"
+                      [title]="doExpanded.has(o.deliveryno) ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียด'"
+                      (click)="$event.stopPropagation(); toggleDoExpanded(o)"
+                    >
+                      <mat-icon>expand_more</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="do-pick-detail" *ngIf="doExpanded.has(o.deliveryno)">
+                  <td colspan="10">
+                    <div class="do-pick-detail-grid">
+                      <div><span>Plant CC</span><strong>{{ o.cccode || '-' }}{{ o.ccname ? ' · ' + o.ccname : '' }}</strong></div>
+                      <div><span>พาเลท</span><strong>{{ o.total_pallet || '-' }}</strong></div>
+                      <div><span>Loading</span><strong>{{ (o.loading_datetime | date: 'dd/MM/yyyy HH:mm') || '-' }}</strong></div>
+                      <div><span>Delivery Date</span><strong>{{ (o.deliverydate | date: 'dd/MM/yyyy') || '-' }}</strong></div>
+                      <div class="do-pick-detail-wide"><span>Remark</span><strong>{{ o.remark || '-' }}</strong></div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </ng-container>
+        </table>
+        <!-- Loading / error / no-data state fills the rest of the list box -->
+        <div class="do-pick-state" *ngIf="doSearchLoading || doSearchError || doOptions.length === 0">
+          <div class="app-empty-state-icon app-empty-state-icon--sm">
+            <mat-icon>{{ doSearchLoading ? 'hourglass_empty' : doSearchError ? 'error_outline' : 'inventory_2' }}</mat-icon>
+          </div>
+          <span class="do-pick-state-title">
+            {{ doSearchLoading ? 'กำลังโหลดรายการ DO...' : doSearchError || 'ไม่พบ DO ตามเงื่อนไข' }}
+          </span>
+          <span class="do-pick-state-sub" *ngIf="!doSearchLoading && !doSearchError">
+            ลองเปลี่ยน Loading Date หรือตัวกรองอื่น
+          </span>
+        </div>
+      </div>
+
+      <!-- Source note (left) + paginator (right) on one row -->
+      <div class="do-pick-foot">
+        <div class="do-pick-note">
+          <mat-icon>info</mat-icon>
+          รายการขายจะดึงข้อมูลมาจากระบบ iLogistic
+        </div>
+        <mat-paginator
+          class="do-pick-paginator"
+          [length]="doTotalCount"
+          [pageIndex]="doPage - 1"
+          [pageSize]="doPageSize"
+          [pageSizeOptions]="[10, 25, 50]"
+          [showFirstLastButtons]="true"
+          (page)="onDoPageEvent($event)"
+        ></mat-paginator>
+      </div>
+</ng-template>

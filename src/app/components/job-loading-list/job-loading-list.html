@@ -1,0 +1,504 @@
+<!-- Page Name (same header as job-list) -->
+<div class="header-section">
+  <div class="header-section-title">
+    <div class="header-section-icon">
+      <mat-icon>list_alt</mat-icon>
+    </div>
+    <span>SP02 - Truck Loading</span>
+  </div>
+</div>
+
+<!-- Search Filter (same layout as job-list) -->
+<div class="search-filter">
+  <div class="row search-filter-row">
+    <!-- System Number (system_no), same as job-list -->
+    <div class="col-md search-filter-col">
+      <label>เลขที่ใบงาน</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <input
+          matInput
+          [(ngModel)]="filter.systemNo"
+          placeholder="พิมพ์หมายเลขใบงาน"
+          (keyup.enter)="onClickSearch()"
+        />
+      </mat-form-field>
+    </div>
+
+    <!-- Date (job create date, same range picker as job-list) -->
+    <div class="col-md search-filter-col search-filter-col--date">
+      <label>วันที่</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-date-range-input [rangePicker]="rangePicker">
+          <input
+            matStartDate
+            [(ngModel)]="filter.dateFrom"
+            placeholder="วันที่เริ่มต้น"
+            readonly
+            (click)="rangePicker.open()"
+          />
+          <input
+            matEndDate
+            [(ngModel)]="filter.dateTo"
+            placeholder="สิ้นสุด"
+            readonly
+            (click)="rangePicker.open()"
+          />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
+        <mat-date-range-picker #rangePicker></mat-date-range-picker>
+      </mat-form-field>
+    </div>
+
+    <!-- Dock (GET location = ct_strorage_dock.dock_name, eg. 38D01) -->
+    <div class="col-md-2 search-filter-col">
+      <label>Dock</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-select
+          [(ngModel)]="filter.docks"
+          multiple
+          placeholder="ทั้งหมด"
+          panelClass="filter-multi-panel"
+        >
+          <mat-select-trigger>
+            <span class="filter-trigger" [title]="filter.docks.join(', ')">{{
+              filter.docks.join(', ')
+            }}</span>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{
+              filter.docks.length ? 'เลือก ' + filter.docks.length + ' รายการ' : 'ทั้งหมด'
+            }}</span>
+            <button
+              type="button"
+              class="filter-multi-clear"
+              *ngIf="filter.docks.length"
+              (click)="filter.docks = []"
+            >
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let dock of dockOptions" [value]="dock">
+            <span class="filter-option-name">{{ dock }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Vehicle (PUT location of the job, eg. 111355|716677) -->
+    <div class="col-md-2 search-filter-col">
+      <label>Vehicle</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <input
+          matInput
+          [(ngModel)]="filter.vehicle"
+          placeholder="พิมพ์ทะเบียนรถ"
+          (keyup.enter)="onClickSearch()"
+        />
+      </mat-form-field>
+    </div>
+
+    <!-- Status -->
+    <div class="col-md-2 search-filter-col">
+      <label>สถานะ</label>
+      <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+        <mat-select
+          [(ngModel)]="filter.statusIds"
+          multiple
+          placeholder="ทั้งหมด"
+          panelClass="filter-multi-panel"
+        >
+          <mat-select-trigger>
+            <span class="filter-trigger" [title]="statusLabels().join(', ')">{{
+              statusLabels().join(', ')
+            }}</span>
+          </mat-select-trigger>
+          <div class="filter-multi-header" (click)="$event.stopPropagation()">
+            <span class="filter-multi-count">{{
+              filter.statusIds.length ? 'เลือก ' + filter.statusIds.length + ' รายการ' : 'ทั้งหมด'
+            }}</span>
+            <button
+              type="button"
+              class="filter-multi-clear"
+              *ngIf="filter.statusIds.length"
+              (click)="filter.statusIds = []"
+            >
+              ล้าง
+            </button>
+          </div>
+          <mat-option *ngFor="let option of statusOptions" [value]="option.id">
+            <span [ngClass]="'filter-status-dot ' + jobStatusClass(option.id)"></span>
+            <span class="filter-option-name">{{ option.name_th || option.name }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Search Button -->
+    <div class="col-md-auto search-filter-col search-filter-action-col">
+      <div class="search-button-group">
+        <button class="clear-button" (click)="resetFilter()">
+          <img src="assets/images/clear.png" alt="clear-icon" />
+        </button>
+        <button class="search-button" (click)="onClickSearch()">
+          <mat-icon>search</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Job List Container -->
+<div class="job-section">
+  <div class="job-header">
+    <div class="job-header-left">
+      <strong>รายการใบงาน</strong>
+      <span class="job-count-badge">{{ filteredJobs.length }} งาน</span>
+    </div>
+
+    <div class="job-header-right">
+      <!-- Sort (same menu as job-list) -- picking an option re-sorts right away. -->
+      <button
+        type="button"
+        class="header-filter"
+        [class.active]="!!sortValue"
+        [matMenuTriggerFor]="sortMenu"
+        #sortTrigger="matMenuTrigger"
+        [class.open]="sortTrigger.menuOpen"
+        [title]="sortLabel"
+      >
+        <mat-icon class="header-filter-icon">swap_vert</mat-icon>
+        <span class="header-filter-label">เรียงตาม</span>
+        <span class="header-filter-value">{{ sortLabel }}</span>
+        <mat-icon class="header-filter-caret">expand_more</mat-icon>
+      </button>
+
+      <mat-menu #sortMenu="matMenu" xPosition="before" class="product-cc-menu">
+        <div class="product-cc-menu-title">เรียงตาม</div>
+        <button
+          mat-menu-item
+          class="product-cc-menu-item"
+          *ngFor="let option of sortOptions"
+          [class.selected]="sortValue === option.value"
+          (click)="onSelectSort(option.value)"
+        >
+          <span>{{ option.label }}</span>
+          <mat-icon *ngIf="sortValue === option.value">check</mat-icon>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!isLoading; else jobListLoading">
+    <div class="job-list-container" *ngIf="pagedJobs.length > 0; else noJobData">
+      <div class="job-list-entry" *ngFor="let job of pagedJobs">
+        <div class="job-list-card" [class.has-shipment-strip]="!!job.shipment || !!job.remark">
+          <div class="job-icon job-icon-outbound job-icon-loading">
+            <div class="text-topic-outbound">LD</div>
+          </div>
+
+          <div class="system-info">
+            <div class="system-header">
+              <div class="data-no">
+                <!-- No DO here: a job can have several DOs (item row + items modal). -->
+                <div class="system-no">{{ job.system_no || '-' }}</div>
+              </div>
+              <div class="date">
+                {{ (parseJobDate(job.create_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }}
+              </div>
+            </div>
+
+            <div class="badge">
+              <div [ngClass]="'status ' + jobStatusClass(job.status_id)">
+                {{ job.status_name }}
+              </div>
+              <div class="status step" *ngIf="job.is_multi_fl === 'Y'">2 Step</div>
+              <div class="status is-urgent" *ngIf="job.is_urgent === 'Y'">ด่วน</div>
+            </div>
+          </div>
+
+          <div class="grade-lot-progress">
+            <div class="document-job">
+              <span class="document-job-segments">
+                <!-- First DO item: DO + grade + lot + kg ("+ อีก N รายการ" opens the rest). -->
+                <span class="document-job-tag document-job-do" *ngIf="job.items[0]?.do_no">DO {{ job.items[0].do_no }}</span>
+                <span class="document-job-grade">{{ job.items[0]?.grade || '-' }}</span>
+                <!-- Several lots: first one + "+N" (full list in the title), as in job-list. -->
+                <span
+                  class="document-job-tag document-job-lot"
+                  *ngIf="itemLots(job.items[0]) as lots"
+                  [title]="lots.join(', ')"
+                  >{{ lots[0] }}<span class="document-job-lot-more" *ngIf="lots.length > 1"
+                    >+{{ lots.length - 1 }}</span
+                  ></span
+                >
+                <span class="document-job-tag document-job-qty">
+                  {{ (job.items[0]?.qty | number: '1.0-0') || 0 }} kg
+                </span>
+              </span>
+              <button
+                type="button"
+                class="job-items-more-button"
+                *ngIf="job.items.length > 1"
+                data-bs-toggle="modal"
+                data-bs-target="#loadingJobItemsModal"
+                (click)="selectedJob = job"
+              >
+                + อีก {{ job.items.length - 1 }} รายการ
+              </button>
+            </div>
+
+            <div class="pallet-progress">
+              <div class="pallet-text">
+                {{ (job.complete_qty | number: '1.0-0') || 0 }}/{{
+                  (job.total_qty | number: '1.0-0') || 0
+                }}
+                {{ job.movement_unit || 'Pallet' }}
+              </div>
+
+              <!-- Blue = taken at GET so far, green on top = loaded on the vehicle. -->
+              <div
+                class="progress-wrapper progress-wrapper--stacked"
+                matTooltipClass="tooltip-nowrap"
+                [matTooltip]="
+                  'รับ ' + (job.receive_qty | number: '1.0-0') + ' · ขึ้นรถ ' + (job.complete_qty | number: '1.0-0')
+                "
+                matTooltipPosition="above"
+              >
+                <div class="progress-bar progress-bar--receive" [style.width.%]="receivePercent(job)"></div>
+                <div class="progress-bar" [style.width.%]="completePercent(job)"></div>
+              </div>
+
+              <div class="percent">{{ completePercent(job) | number: '1.0-0' }}%</div>
+            </div>
+
+            <div class="start-end-datetime">
+              {{ (parseJobDate(job.start_datetime) | date: 'dd/MM/yyyy HH:mm:ss') || '-' }} -
+              {{ formatDateEnd(job.start_datetime, job.end_datetime) }} <span>|</span>
+              {{ formatDuration(job.start_datetime, job.end_datetime) }}
+            </div>
+          </div>
+
+          <div class="location">
+            <div class="get-location">
+              <div class="get-header">
+                <span style="color: #1d4ed8"><strong>GET</strong></span>
+                <div class="cc-info" *ngIf="job.from_location_cc_code || job.from_location_cc_desc">
+                  <span class="cc-code" *ngIf="job.from_location_cc_code">{{
+                    job.from_location_cc_code
+                  }}</span>
+                  <span class="cc-desc" *ngIf="job.from_location_cc_desc">{{
+                    job.from_location_cc_desc
+                  }}</span>
+                </div>
+              </div>
+              <div class="location-detail">
+                <img src="assets/images/location.png" alt="location-icon" />
+                <!-- Several docks: first one + "+ อีก N รายการ" (opens #loadingDocksModal), as in job-list. -->
+                <span>{{ dockName(job) }}</span>
+                <button
+                  type="button"
+                  class="location-more-button"
+                  *ngIf="dockNames(job).length > 1"
+                  data-bs-toggle="modal"
+                  data-bs-target="#loadingDocksModal"
+                  (click)="selectedJob = job"
+                >
+                  + อีก {{ dockNames(job).length - 1 }} รายการ
+                </button>
+              </div>
+            </div>
+
+            <div class="arrow">→</div>
+
+            <div class="put-location">
+              <div class="put-header">
+                <span style="color: #14a318"><strong>PUT</strong></span>
+                <div class="cc-info" *ngIf="job.to_vehicle_desc">
+                  <span class="cc-desc">{{ job.to_vehicle_desc }}</span>
+                </div>
+              </div>
+              <div class="location-detail" [class.no-location]="!vehicleName(job)">
+                <img src="assets/images/location.png" alt="location-icon" />
+                <span>{{ vehicleName(job) || 'ยังไม่มีรถ' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipment strip under the card: iLogistic (VsearchStatus) of the job's DO + job remark -->
+        <div class="shipment-strip" *ngIf="job.shipment || job.remark">
+          <ng-container *ngIf="job.shipment as s">
+            <span class="shipment-strip-item" *ngIf="s.customer_name" [title]="s.customer_name">
+              <mat-icon>business</mat-icon>
+              <span class="shipment-strip-label">ลูกค้า</span>
+              <span class="shipment-strip-value">{{ s.customer_name }}</span>
+            </span>
+            <span class="shipment-strip-item" *ngIf="s.shipto_name" [title]="s.shipto_name + (s.zone_text ? ' (' + s.zone_text + ')' : '')">
+              <mat-icon>place</mat-icon>
+              <span class="shipment-strip-label">Ship-to</span>
+              <span class="shipment-strip-value">{{ s.shipto_name }}<ng-container *ngIf="s.zone_text"> · {{ s.zone_text }}</ng-container></span>
+            </span>
+            <span class="shipment-strip-item" *ngIf="s.loading_datetime">
+              <mat-icon>event</mat-icon>
+              <span class="shipment-strip-label">วันโหลด</span>
+              <span class="shipment-strip-value">{{ parseJobDate(s.loading_datetime) | date: 'dd/MM/yyyy' }}</span>
+            </span>
+            <span class="shipment-strip-item" *ngIf="s.queue_number">
+              <mat-icon>confirmation_number</mat-icon>
+              <span class="shipment-strip-label">คิว</span>
+              <span class="shipment-strip-value">{{ s.queue_number }}</span>
+            </span>
+            <span
+              class="shipment-strip-item"
+              *ngIf="s.vehicle_group_desc || s.vehicle_text || s.driver_text"
+              [title]="joinText([s.vehicle_group_desc, s.vehicle_text, s.driver_text, s.carrier_name])"
+            >
+              <mat-icon>local_shipping</mat-icon>
+              <span class="shipment-strip-value">{{ joinText([s.vehicle_group_desc, s.vehicle_text, s.driver_text]) }}</span>
+            </span>
+          </ng-container>
+          <span class="shipment-strip-item" *ngIf="job.remark" [title]="job.remark">
+            <mat-icon>notes</mat-icon>
+            <span class="shipment-strip-label">หมายเหตุ</span>
+            <span class="shipment-strip-value">{{ job.remark }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #jobListLoading>
+    <div class="job-list-container job-list-loading">
+      <div class="job-list-skeleton-card" *ngFor="let row of skeletonRows">
+        <div class="skeleton skeleton-job-icon"></div>
+        <div class="skeleton-group skeleton-system-info">
+          <div class="skeleton skeleton-line skeleton-line-lg"></div>
+          <div class="skeleton skeleton-line skeleton-line-sm"></div>
+        </div>
+        <div class="skeleton-group skeleton-grade-lot-progress">
+          <div class="skeleton skeleton-line skeleton-line-md"></div>
+          <div class="skeleton skeleton-progress"></div>
+          <div class="skeleton skeleton-line skeleton-line-xs"></div>
+        </div>
+        <div class="skeleton-group skeleton-location-group">
+          <div class="skeleton skeleton-location-box"></div>
+          <div class="skeleton skeleton-arrow"></div>
+          <div class="skeleton skeleton-location-box"></div>
+        </div>
+        <div class="skeleton skeleton-button"></div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Pagination (client side) -->
+  <div class="job-pagination" *ngIf="!isLoading && pagedJobs.length > 0">
+    <mat-paginator
+      [length]="filteredJobs.length"
+      [pageIndex]="filter.page - 1"
+      [pageSize]="filter.pageSize"
+      [pageSizeOptions]="[25, 50, 75, 100]"
+      [showFirstLastButtons]="true"
+      (page)="onPageEvent($event)"
+    >
+    </mat-paginator>
+  </div>
+
+  <!-- DO items of the job ("+ อีก N รายการ"), same look as job-list's #jobItemsModal. -->
+  <div
+    class="modal fade"
+    id="loadingJobItemsModal"
+    tabindex="-1"
+    aria-labelledby="loadingJobItemsModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered job-items-modal-dialog">
+      <div class="modal-content location-list-modal-content">
+        <div class="modal-header location-list-modal-header">
+          <div>
+            <div class="system-eyebrow">{{ selectedJob?.system_no || '-' }}</div>
+            <h5 class="modal-title" id="loadingJobItemsModalLabel">รายการสินค้าในใบงาน</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body location-list-modal-body">
+          <ng-container *ngIf="selectedJob">
+            <div class="location-list-summary">{{ selectedJob.items.length }} รายการ</div>
+            <div class="job-items-table-wrapper">
+              <table class="job-items-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>DO (Delivery No)</th>
+                    <th>เกรด</th>
+                    <th>ล็อต</th>
+                    <th class="text-end">จำนวน</th>
+                    <th class="text-end">ขึ้นรถ/ทั้งหมด</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of selectedJob.items; let index = index">
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ item.do_no?.trim() || '-' }}</td>
+                    <td>{{ item.grade || '-' }}</td>
+                    <td>{{ itemLots(item)?.join(', ') || '-' }}</td>
+                    <td class="text-end">
+                      {{ (item.qty | number: '1.0-0') || 0 }} kg
+                    </td>
+                    <td class="text-end">
+                      {{ (item.complete_qty | number: '1.0-0') || 0 }}/{{
+                        (item.total_qty | number: '1.0-0') || 0
+                      }}
+                      {{ item.movement_unit || selectedJob.movement_unit || '' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GET docks of the job, same look as job-list's #sourceLocationsModal. -->
+  <div
+    class="modal fade"
+    id="loadingDocksModal"
+    tabindex="-1"
+    aria-labelledby="loadingDocksModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered location-list-modal-dialog">
+      <div class="modal-content location-list-modal-content">
+        <div class="modal-header location-list-modal-header">
+          <div>
+            <div class="system-eyebrow">{{ selectedJob?.system_no || '-' }}</div>
+            <h5 class="modal-title" id="loadingDocksModalLabel">ตำแหน่งต้นทาง</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body location-list-modal-body">
+          <ng-container *ngIf="selectedJob">
+            <div class="location-list-summary">{{ dockNames(selectedJob).length }} locations</div>
+            <ol class="location-list">
+              <li *ngFor="let dock of dockNames(selectedJob); let index = index">
+                <span class="location-list-index">{{ index + 1 }}</span>
+                <span class="location-list-name">{{ dock }}</span>
+              </li>
+            </ol>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #noJobData>
+  <div class="no-job-data">
+    <app-empty-state
+      variant="job"
+      title="ไม่พบข้อมูลใบงาน"
+      message="ลองปรับเงื่อนไขการค้นหาใหม่อีกครั้ง"
+    ></app-empty-state>
+  </div>
+</ng-template>

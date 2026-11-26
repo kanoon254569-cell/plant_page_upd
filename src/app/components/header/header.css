@@ -1,0 +1,67 @@
+.main-header{
+    background: linear-gradient(90deg,rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+}
+
+*, .nav-item{
+    color: #ffffff;
+}
+
+a{
+    font-family: 'Prompt', 'Inter', sans-serif;
+}
+
+.material-symbols-outlined{
+    font-size: 20px;
+    position: relative;
+    top: 3px;
+}
+
+.fa-expand-arrows-alt{
+    position: relative;
+    top: 5px;
+}
+
+/*  Sign-out button: same style as the page action buttons (job-list.css
+    .upload-button / .shipment-button -- 135deg gradient, 10px radius, 600
+    weight, tinted shadow, lifts on hover), in red. */
+.logout-button{
+    height: 38px;
+    padding: 6px 18px;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Prompt', 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow:
+        0 6px 16px rgba(220, 38, 38, 0.22),
+        0 1px 4px rgba(220, 38, 38, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    i{
+        font-size: 15px;
+    }
+}
+
+.logout-button:hover,
+.logout-button:focus-visible{
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+    box-shadow:
+        0 10px 24px rgba(220, 38, 38, 0.3),
+        0 2px 6px rgba(220, 38, 38, 0.15);
+    transform: translateY(-2px);
+    outline: none;
+}
+
+.logout-button:active{
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.18);
+}
+

@@ -1,0 +1,458 @@
+<div
+  class="modal fade wh-location-modal"
+  [id]="modalId"
+  tabindex="-1"
+  [attr.aria-labelledby]="modalId + 'Label'"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="location-modal-header">
+        <div class="location-modal-title-group">
+          <span class="location-modal-eyebrow">ตำแหน่งในคลังสินค้า</span>
+          <div class="location-modal-title-row">
+            <span class="location-modal-title-text" [id]="modalId + 'Label'">{{ title }}</span>
+            <span class="location-modal-item-tag" *ngIf="headerGrade">
+              <span class="location-modal-item-tag-label">เกรด:</span> {{ headerGrade }}
+            </span>
+            <span class="location-modal-item-tag" *ngIf="headerLotNo">
+              <span class="location-modal-item-tag-label">ล็อต:</span> {{ headerLotNo }}
+            </span>
+          </div>
+        </div>
+        <button type="button" class="location-modal-close" aria-label="ปิด" (click)="onClose()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div
+          class="stock-filter-title"
+          (click)="_isExplandStockInquiry = !_isExplandStockInquiry"
+          *ngIf="!isHidenTitleFilter"
+        >
+          <h6>ค้นหาสต็อก</h6>
+          <img
+            class="{{ _isExplandStockInquiry ? 'down' : 'up' }}-arrow"
+            src="assets/images/right-arrow.png"
+          />
+        </div>
+        <div>
+          <form
+            [formGroup]="stockInquiryForm"
+            class="row stock-form"
+            *ngIf="_isExplandStockInquiry && !isHidenStockFilter"
+          >
+            <div class="col-md grade-form">
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                [ngClass]="isGradeCorrect ? '' : 'validation-error'"
+              >
+                <mat-label>เกรด</mat-label>
+                <input matInput formControlName="grade" placeholder="เกรด" />
+              </mat-form-field>
+              <div *ngIf="!isGradeCorrect" class="validation-error-message">
+                <img src="assets/images/incorrect.png" alt="validation-error-icon" />
+                <span>ไม่พบข้อมูลเกรด</span>
+              </div>
+            </div>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>เลขที่ล็อต</mat-label>
+              <input matInput formControlName="lotNo" placeholder="เลขที่ล็อต" />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                class="btn-search-lot"
+                aria-label="ค้นหาเลขที่ล็อต"
+                (click)="onOpenLotModal()"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>วันที่สต็อก</mat-label>
+              <input
+                matInput
+                [matDatepicker]="picker"
+                formControlName="invDate"
+                placeholder="วันที่สต็อก"
+                readonly
+              />
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+
+            <div class="col-md clear-btn">
+              <button type="button" class="clear-button" (click)="onResetStockInquiry()">
+                <img src="assets/images/clear.png" alt="clear-icon" />
+                ล้าง
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div>
+          <div
+            class="search-filter-title"
+            (click)="_isExplandSearch = !_isExplandSearch"
+            *ngIf="!isHidenTitleFilter"
+          >
+            <h6>ค้นหาตำแหน่ง</h6>
+            <img
+              class="{{ _isExplandSearch ? 'down' : 'up' }}-arrow"
+              src="assets/images/right-arrow.png"
+            />
+          </div>
+          <form [formGroup]="searchForm" class="row search-form" *ngIf="_isExplandSearch">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>คลังสินค้า</mat-label>
+              <mat-select formControlName="whCode" placeholder="เลือกคลังสินค้า">
+                <mat-option *ngFor="let wh of whLocationOptions" [value]="wh.wh_code">
+                  {{ wh.wh_name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>พื้นที่</mat-label>
+              <mat-select formControlName="areaCode" placeholder="เลือกพื้นที่">
+                <mat-option *ngFor="let area of areaLocationOptions" [value]="area.careacode">
+                  {{ area.careacode }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-md">
+              <mat-label>ชั้น</mat-label>
+              <mat-select formControlName="levelCode" placeholder="เลือกชั้น">
+                <mat-option *ngFor="let level of levelLocationOptions" [value]="level.clevelcode">
+                  {{ level.clevelcode }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="col-md clear-btn">
+              <button type="button" class="clear-button" (click)="onResetSearch()">
+                <img src="assets/images/clear.png" alt="clear-icon" />
+                ล้าง
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="select-wh-location">
+          <div class="select-wh-location-header">
+            <div class="select-wh-location-header-left">
+              <div class="select-wh-location-qty">
+                <img src="assets/images/box.png" alt="box-icon" />
+                <!-- Source picker: totalAvailableQty is the stock in view, not a
+                     target to fill, so show it as context next to the picked qty
+                     (neutral until something is picked, green after) instead of
+                     "picked / stock" in red. -->
+                <ng-container *ngIf="requireExistingStock; else destinationQty">
+                  <span [ngClass]="{ green: confirmQtyWhLocations(selectedItemId ?? 0) > 0 }">
+                    เลือกแล้ว {{ confirmQtyWhLocations(selectedItemId ?? 0) | number: '1.0-0' }} {{ qtyUnit }}
+                  </span>
+                  <span class="select-wh-location-stock">
+                    · สต็อกที่แสดง {{ totalAvailableQty | number: '1.0-0' }} {{ qtyUnit }}
+                  </span>
+                </ng-container>
+                <!-- Destination: must add up to the source total (targetTotalQty),
+                     same rule/colors as the page's PUT panel -- green only when
+                     exactly equal. -->
+                <ng-template #destinationQty>
+                  <span
+                    [ngClass]="
+                      targetTotalQty == null
+                        ? 'green'
+                        : confirmQtyWhLocations(selectedItemId ?? 0) === targetTotalQty && targetTotalQty > 0
+                          ? 'green'
+                          : 'red'
+                    "
+                    >จำนวน: {{ confirmQtyWhLocations(selectedItemId ?? 0) | number: '1.0-0'
+                    }}<ng-container *ngIf="targetTotalQty != null">
+                      / {{ targetTotalQty | number: '1.0-0' }}</ng-container
+                    >
+                    {{ qtyUnit }}</span
+                  >
+                </ng-template>
+              </div>
+            </div>
+            <div class="select-wh-location-header-right">
+              <div *ngFor="let location of checkedWhLocation(selectedItemId ?? 0)">
+                <div class="select-wh-location-checked">
+                  <span class="location-name">{{ displayLocationName(location.value.locationName) }}</span>
+                  <span *ngIf="location.value.lotNo" class="location-lot-tag">ล็อต: {{ location.value.lotNo }}</span>
+                  <span *ngIf="location.value.selectedPallets?.length" class="location-pallet-tag">
+                    {{ location.value.selectedPallets?.length }} พาเลท
+                  </span>
+                  <span class="confirm-qty-number">{{ location.value.confirmQty | number: '1.0-0' }} {{ qtyUnit }}</span>
+                  <button
+                    type="button"
+                    class="delete-checked-location-button"
+                    *ngIf="!hasActualQty(location)"
+                    (click)="onUncheckLocation(location)"
+                  >
+                    <img
+                      src="assets/images/remove.png"
+                      alt="remove-icon"
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="select-wh-location-content" *ngIf="currentWhLocations.length > 0">
+            <div
+              class="select-wh-location-item"
+              [ngClass]="{
+                checked: location?.value?.isChecked,
+                disable: isDisabledLocation(location),
+              }"
+              *ngFor="let location of currentWhLocations"
+            >
+              <label
+                class="pallet-mode-toggle"
+                *ngIf="requireExistingStock"
+                (click)="$event.stopPropagation()"
+              >
+                <input
+                  type="checkbox"
+                  [checked]="location.value.isPalletMode"
+                  [disabled]="location.value.isChecked"
+                  (change)="togglePalletMode(location, $event)"
+                />
+                <span>เลือกเป็นรายพาเลท</span>
+              </label>
+
+              <div class="select-wh-location-item-row">
+              <div
+                class="select-wh-location-item-left"
+                (click)="onCheckLocation(location)"
+                [ngClass]="
+                  ((location?.value?.isChecked && !location?.value?.isPalletMode) ? 'cursor-default' : '') +
+                  (isDisabledLocation(location) ? ' disable' : '')
+                "
+              >
+                <div class="select-wh-location-icon">
+                  <img src="assets/images/location.png" alt="location-icon" />
+                </div>
+                <div class="select-wh-location-details">
+                  <div class="select-wh-location-details-content">
+                    <span class="location-name">{{ displayLocationName(location.value.locationName) }}</span>
+
+                    <span class="location-stats">
+                      <!-- Destination: only rows with real stock show their lot (the
+                           stock's own lot); an empty location's lotNo is just the
+                           source lot copied in, not what the location holds. -->
+                      <span
+                        *ngIf="location.value.lotNo && (requireExistingStock || !isHiddenAvailableQty(location))"
+                        class="stat-pill stat-pill--lot"
+                      >
+                        <span class="stat-pill-label">ล็อต</span>
+                        <span class="stat-pill-value">{{ location.value.lotNo }}</span>
+                      </span>
+                      <span class="stat-pill stat-pill--available" *ngIf="!isHiddenAvailableQty(location)">
+                        <span class="stat-pill-label">พร้อมใช้</span>
+                        <span class="stat-pill-value">{{ location.value.availableQty | number: '1.0-0' }} {{ qtyUnit }}</span>
+                      </span>
+                      <span class="stat-pill stat-pill--lock" *ngIf="!isHiddenLockQty(location)">
+                        <span class="stat-pill-label">ล็อก</span>
+                        <span class="stat-pill-value">{{ location.value.qtyLock | number: '1.0-0' }} {{ qtyUnit }}</span>
+                      </span>
+                      <span
+                        class="stat-pill stat-pill--confirm stat-pill--editable"
+                        *ngIf="location.value.confirmQty && location.value.confirmQty > 0"
+                        title="แก้ไขจำนวน"
+                        (click)="onEditLocationQty(location, $event)"
+                      >
+                        <span class="stat-pill-label">จำนวน</span>
+                        <span class="stat-pill-value">{{ location.value.confirmQty | number: '1.0-0' }} {{ qtyUnit }}</span>
+                      </span>
+                      <span
+                        class="stat-pill stat-pill--pallet"
+                        *ngIf="location.value.selectedPallets && location.value.selectedPallets.length > 0"
+                      >
+                        <span class="stat-pill-label">พาเลท</span>
+                        <span class="stat-pill-value">{{ location.value.selectedPallets.length }}</span>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="select-wh-location-item-right">
+                <button
+                  type="button"
+                  class="delete-wh-location-button"
+                  *ngIf="location?.value?.isChecked && !hasActualQty(location)"
+                  (click)="onUncheckLocation(location)"
+                >
+                  <img src="assets/images/remove.png" alt="remove-icon" />
+                </button>
+              </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-data-select-wh-location" *ngIf="currentWhLocations.length === 0">
+            <div class="app-empty-state-icon app-empty-state-icon--sm">
+              <mat-icon>place</mat-icon>
+            </div>
+            <div>ไม่พบตำแหน่งในคลังสินค้า</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" data-bs-dismiss="modal" (click)="onSave()">บันทึก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade wh-location-confirm-modal"
+    [id]="confirmModalId"
+    tabindex="-1"
+    aria-hidden="true"
+    data-bs-backdrop="static"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content confirm-modal-content">
+        <div class="confirm-icon">
+          <img src="assets/images/location.png" alt="location" />
+        </div>
+        <h5 class="confirm-title">บันทึกการเปลี่ยนแปลง?</h5>
+        <p class="confirm-body">ต้องการบันทึกการเปลี่ยนแปลงหรือไม่?</p>
+        <div class="confirm-footer">
+          <button class="confirm-btn confirm-btn-save" (click)="onSave()" data-bs-dismiss="modal">
+            บันทึก
+          </button>
+          <button
+            class="confirm-btn confirm-btn-cancel"
+            (click)="onCancel()"
+            data-bs-dismiss="modal"
+          >
+            ยกเลิก
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade wh-lot-select-modal" [id]="lotSelectModalId" tabindex="-1" [attr.aria-labelledby]="lotSelectModalId + 'Label'">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content lot-select-modal-content">
+        <div class="location-modal-header">
+          <div class="location-modal-title-group">
+            <span class="location-modal-eyebrow">เลือกล็อต</span>
+            <span class="location-modal-title-text" [id]="lotSelectModalId + 'Label'">เลือกเลขที่ล็อต</span>
+          </div>
+          <button
+            type="button"
+            class="location-modal-close"
+            aria-label="ปิด"
+            (click)="hideLotSelectModal()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="modal-body lot-select-modal-body">
+          <div
+            class="lot-select-item"
+            *ngFor="let v of lotNoOptions"
+            (click)="onSelectLotNo(v.pdlotno)"
+            [ngClass]="{ active: stockInquiryForm.controls.lotNo.value === v.pdlotno }"
+          >
+            <div class="lot-select-item-lot-no">
+              <div class="lot-select-item-label">เลขที่ล็อต</div>
+              <div class="lot-select-item-value">{{ v.pdlotno }}</div>
+            </div>
+            <div class="lot-select-item-available-qty">
+              <div class="lot-select-item-label">จำนวนพร้อมใช้</div>
+              <div class="lot-select-item-value">{{ (v.available ?? 0) | number: '1.0-0' }} {{ qtyUnit }}</div>
+            </div>
+            <div class="lot-select-item-lock-qty">
+              <div class="lot-select-item-label">จำนวนที่ล็อก</div>
+              <div class="lot-select-item-value">{{ (v.qtylock ?? 0) | number: '1.0-0' }} {{ qtyUnit }}</div>
+            </div>
+          </div>
+
+          <div class="lot-empty" *ngIf="lotNoOptions.length === 0">
+            <div class="app-empty-state-icon app-empty-state-icon--sm">
+              <mat-icon>inventory_2</mat-icon>
+            </div>
+            <div>ไม่พบข้อมูลล็อต</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade wh-pallet-picker-modal"
+    [id]="palletPickerModalId"
+    tabindex="-1"
+    [attr.aria-labelledby]="palletPickerModalId + 'Label'"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content pallet-picker-modal-content">
+        <div class="location-modal-header">
+          <div class="location-modal-title-group">
+            <span class="location-modal-eyebrow">เลือกพาเลท</span>
+            <span class="location-modal-title-text" [id]="palletPickerModalId + 'Label'">
+              {{ displayLocationName(_palletPickerLocation?.value?.locationName) }}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="location-modal-close"
+            aria-label="ปิด"
+            (click)="onClosePalletPicker()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="modal-body pallet-picker-modal-body">
+          <div class="pallet-picker-summary">
+            <span>เลือกแล้ว {{ palletPickerSelectedQty | number: '1.0-2' }} {{ qtyUnit }}</span>
+            <button type="button" class="pallet-select-all-button" (click)="onSelectAllPallets()">
+              เลือก / ยกเลิกทั้งหมด
+            </button>
+          </div>
+
+          <div class="pallet-picker-list">
+            <label class="pallet-picker-item" *ngFor="let pallet of _palletPickerData">
+              <input
+                type="checkbox"
+                [checked]="isPalletChecked(pallet.pallet_no)"
+                (change)="onTogglePallet(pallet, $event)"
+              />
+              <div class="pallet-picker-item-details">
+                <span class="pallet-no">{{ pallet.pallet_no }}</span>
+                <span class="pallet-meta">เกรด {{ pallet.grade }} · ล็อต {{ pallet.lot }}</span>
+              </div>
+              <strong class="pallet-qty">{{ pallet.qty | number: '1.0-2' }} {{ qtyUnit }}</strong>
+            </label>
+
+            <div class="pallet-picker-empty" *ngIf="_palletPickerData.length === 0">
+              <div class="app-empty-state-icon app-empty-state-icon--sm">
+                <mat-icon>inventory_2</mat-icon>
+              </div>
+              <div>ไม่พบข้อมูลพาเลทในตำแหน่งนี้</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer pallet-picker-modal-footer">
+          <button type="button" (click)="onConfirmPalletPicker()">
+            ยืนยัน ({{ palletPickerSelectedQty | number: '1.0-2' }} {{ qtyUnit }})
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

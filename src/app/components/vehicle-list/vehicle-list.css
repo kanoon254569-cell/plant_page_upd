@@ -1,0 +1,560 @@
+﻿/* ═══════════════════════════════════════════════════
+   SEARCH FILTER
+   ═══════════════════════════════════════════════════ */
+.search-filter {
+  margin: 16px 16px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.search-filter:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1), 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.search-filter-header {
+  display: flex;
+  align-items: center;
+  height: 62px;
+  font-size: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 20px;
+  font-weight: 600;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.search-filter-content {
+  padding: 18px 20px;
+}
+
+.search-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.search-filter-field {
+  flex: 1 1 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-filter-field label {
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.search-filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field {
+  width: 100%;
+  height: 50px;
+}
+
+::ng-deep .search-filter-content .mdc-text-field {
+  height: 50px;
+  background-color: #f5f8fb !important;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .search-filter-content .mdc-text-field:hover {
+  background-color: #f0f4f9 !important;
+}
+
+::ng-deep .search-filter-content .mat-mdc-text-field-wrapper {
+  padding-bottom: 0 !important;
+  height: 100%;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field-flex {
+  align-items: center;
+  height: 100%;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field-infix {
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field-infix input,
+::ng-deep .search-filter-content .mat-mdc-form-field-infix .mat-mdc-select {
+  margin: 0;
+  font-size: 16px;
+}
+
+.clear-button {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(71, 85, 105, 0.14), 0 1px 3px rgba(71, 85, 105, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  img { width: 18px; height: auto; }
+}
+
+.clear-button:hover {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  box-shadow: 0 10px 22px rgba(71, 85, 105, 0.2), 0 2px 6px rgba(71, 85, 105, 0.14);
+}
+
+.search-button {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  padding: 0;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(29, 78, 216, 0.2), 0 2px 6px rgba(29, 78, 216, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  img { width: 18px; height: auto; filter: brightness(0) invert(1); }
+}
+
+.search-button:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  box-shadow: 0 12px 28px rgba(29, 78, 216, 0.28), 0 4px 10px rgba(29, 78, 216, 0.16);
+}
+
+/* ═══════════════════════════════════════════════════
+   TABLE
+   ═══════════════════════════════════════════════════ */
+.display-table {
+  margin: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.display-table:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1), 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.display-table-header {
+  height: 62px;
+  font-size: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 20px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.table-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-count {
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.table-container {
+  width: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+  padding: 12px;
+  height: calc(100vh - 460px);
+}
+
+.table-container th {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%) !important;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 12px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table-container td {
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 14px 16px;
+  color: #1e293b;
+  border-bottom: 1px solid #eef1f5;
+  white-space: nowrap;
+}
+
+.table-container tr:nth-child(odd)  { background-color: #fff !important; }
+.table-container tr:nth-child(even) { background-color: #fafbfc !important; }
+.table-container tr.mat-mdc-row:hover { background-color: #f1f5f9 !important; }
+.table-container tr.mat-mdc-row { transition: background-color 0.15s ease; }
+.table-container td, .table-container th { vertical-align: middle; }
+
+.mat-column-select {
+  width: 56px;
+  text-align: center;
+}
+
+.mat-column-no,
+.mat-column-action {
+  text-align: center;
+}
+
+.mat-column-vehicleName,
+.mat-column-licensePlate,
+.mat-column-vehicleType,
+.mat-column-vehicleGroup,
+.mat-column-carrierName,
+.mat-column-rfid {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+th.mat-column-select,
+th.mat-column-no,
+th.mat-column-action {
+  justify-content: center;
+}
+
+.export-excel-button,
+.bulk-print-button,
+.select-clear-button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+
+  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+}
+
+.export-excel-button {
+  cursor: pointer;
+  background: rgba(22, 163, 74, 0.25);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.export-excel-button:hover:not(:disabled) {
+  background: rgba(22, 163, 74, 0.4);
+}
+
+.bulk-print-button {
+  cursor: pointer;
+  background: rgba(8, 145, 178, 0.2);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.bulk-print-button:hover:not(:disabled) {
+  background: rgba(8, 145, 178, 0.35);
+}
+
+.select-clear-button {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.select-clear-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.export-excel-button:disabled,
+.bulk-print-button:disabled,
+.select-clear-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 3px 10px 3px 6px;
+  border-radius: 999px;
+
+  mat-icon { font-size: 13px; width: 13px; height: 13px; }
+}
+
+.badge-chip--blue { background: #eff6ff; color: #1d4ed8; }
+
+.rfid-code {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+.status-chip--active   { color: #16a34a; }
+.status-chip--inactive { color: #dc2626; }
+
+.last-update-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.last-update-date {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.last-update-time {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.print-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(8, 145, 178, 0.3);
+  transition: all 0.25s ease;
+
+  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+}
+
+.print-button:hover {
+  background: linear-gradient(135deg, #0e7490 0%, #155e75 100%);
+  box-shadow: 0 6px 14px rgba(8, 145, 178, 0.4);
+}
+
+.empty-state {
+  height: calc(100vh - 460px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.empty-state h5 { margin-bottom: 8px; font-weight: 600; }
+.empty-state p  { margin: 0; font-size: 14px; }
+
+/* ═══════════════════════════════════════════════════
+   PRINT SECTION
+   ═══════════════════════════════════════════════════ */
+#print-area { display: none; }
+
+/*  Removes the browser's default ~12-19mm print margins so the full page
+    height is actually available to .pcard -- without this, .pcard's own
+    sizing (already close to a full page tall) reliably overflowed onto a
+    mostly-blank second page. */
+@page {
+  size: auto;
+  margin: 0mm;
+}
+
+/*  #print-area itself must NOT get a fixed height here. With multiple
+    selected vehicles, #print-area holds several stacked .pcard-print-page
+    children -- clamping #print-area to exactly one page's height
+    (100vh) caps Chromium's print pagination to that single page, so only
+    the first vehicle's card ever made it onto paper/PDF even though the
+    rest were correctly sitting in the DOM. Each .pcard-print-page instead
+    carries its own fixed `height: 100vh` below, so #print-area can grow
+    to fit however many page-chunks it contains while every chunk still
+    forces its own page break. */
+@media print {
+  #print-area { display: block; width: 100%; }
+}
+
+.print-area-content--single {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.print-area-content--multiple {
+  display: block;
+  height: 100%;
+}
+
+.pcard-print-page {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  page-break-after: always;
+  break-after: page;
+}
+
+.pcard-print-page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+.pcard {
+  width: 95%;
+  min-height: 95%;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #000;
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  break-inside: avoid;
+}
+
+.pcard__top {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.pcard__header {
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-align: center;
+  font-size: 28px;
+}
+
+.pcard__plate { font-size: 130px; font-weight: 700; letter-spacing: 2px;  color: #000;}
+.pcard__vname { font-size: 68px; margin-top: 4px; opacity: 0.85;  color: #000; font-weight: 500;}
+.pcard__vcarrier { font-size: 58px; opacity: 0.7; margin-top: 2px;  color: #000; font-weight: 500;}
+
+.pcard__body {
+  padding: 5%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+}
+
+.pcard__footer {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 52px;
+  color: #000;
+  padding: 18px;
+  font-weight: 600;
+}
+/* ═══════════════════════════════════════════════════
+   SELECT COLUMN CHECKBOX
+   Makes the Material <mat-checkbox> look like user-list's native
+   .select-checkbox: 16px box, #1d4ed8 accent, no 40px ripple/touch area.
+   ═══════════════════════════════════════════════════ */
+.mat-column-select ::ng-deep .mat-mdc-checkbox {
+  --mat-checkbox-state-layer-size: 16px;
+  --mat-checkbox-touch-target-display: none;
+  --mat-checkbox-selected-icon-color: #1d4ed8;
+  --mat-checkbox-selected-hover-icon-color: #1d4ed8;
+  --mat-checkbox-selected-focus-icon-color: #1d4ed8;
+  --mat-checkbox-selected-pressed-icon-color: #1d4ed8;
+  --mat-checkbox-selected-checkmark-color: #fff;
+  --mat-checkbox-unselected-icon-color: #767676;
+  --mat-checkbox-unselected-hover-icon-color: #4f4f4f;
+  --mat-checkbox-unselected-focus-icon-color: #4f4f4f;
+  vertical-align: middle;
+}
+
+.mat-column-select ::ng-deep .mdc-checkbox {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  padding: 0;
+}
+
+.mat-column-select ::ng-deep .mdc-checkbox__native-control {
+  width: 16px;
+  height: 16px;
+  top: 0;
+  left: 0;
+  right: 0;
+  cursor: pointer;
+}
+
+.mat-column-select ::ng-deep .mdc-checkbox__background {
+  width: 16px;
+  height: 16px;
+  top: 0;
+  left: 0;
+  border-width: 1px;
+  border-radius: 3px;
+}
+
+.mat-column-select ::ng-deep .mdc-checkbox__ripple,
+.mat-column-select ::ng-deep .mat-mdc-checkbox-ripple,
+.mat-column-select ::ng-deep .mat-mdc-checkbox-touch-target {
+  display: none;
+}

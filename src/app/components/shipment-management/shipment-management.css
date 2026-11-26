@@ -1,0 +1,2271 @@
+/* ═══════════════════════════════════════════════════
+   SEARCH FILTER
+   ═══════════════════════════════════════════════════ */
+.search-filter {
+  margin: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.search-filter:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1), 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.search-filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 62px;
+  font-size: 16px;
+  padding: 12px 20px;
+  font-weight: 600;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.search-filter-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-filter-header-left mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.search-filter-content {
+  padding: 18px 20px;
+}
+
+.search-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.search-filter-field {
+  flex: 1 1 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-filter-field label {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.search-filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field {
+  width: 100%;
+  height: 50px;
+}
+
+::ng-deep .search-filter-content .mdc-text-field {
+  height: 50px;
+  background-color: #f5f8fb !important;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .search-filter-content .mdc-text-field:hover {
+  background-color: #f0f4f9 !important;
+}
+
+::ng-deep .search-filter-content .mat-mdc-text-field-wrapper {
+  padding-bottom: 0 !important;
+  height: 100%;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field-flex {
+  align-items: center;
+  height: 100%;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field-infix {
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+::ng-deep .search-filter-content .mat-mdc-form-field-infix input,
+::ng-deep .search-filter-content .mat-mdc-form-field-infix .mat-mdc-select {
+  margin: 0;
+  font-size: 16px;
+}
+
+.clear-button {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(71, 85, 105, 0.14), 0 1px 3px rgba(71, 85, 105, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clear-button:hover {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  box-shadow: 0 10px 22px rgba(71, 85, 105, 0.2), 0 2px 6px rgba(71, 85, 105, 0.14);
+}
+
+.clear-button img {
+  width: 18px;
+  height: auto;
+}
+
+.search-button {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  padding: 0;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(29, 78, 216, 0.2), 0 2px 6px rgba(29, 78, 216, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-button:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  box-shadow: 0 12px 28px rgba(29, 78, 216, 0.28), 0 4px 10px rgba(29, 78, 216, 0.16);
+}
+
+.search-button img {
+  width: 18px;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.status-dot-inline {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+/* ═══════════════════════════════════════════════════
+   SHIPMENT DISPLAY TABLE / CARDS
+   ═══════════════════════════════════════════════════ */
+.display-table {
+  margin: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbfe 100%);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.display-table:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1), 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.display-table-header {
+  height: 62px;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(90deg, rgba(40, 50, 120, 1) 0%, rgba(37, 163, 221, 1) 100%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.table-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-count {
+  font-size: 13px;
+  font-weight: 500;
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.table-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* Summary chips (same pill look as .table-count) */
+.table-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.table-meta-item mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.9;
+}
+
+.table-meta-label {
+  opacity: 0.85;
+}
+
+.table-meta-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.table-meta-unit {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* Shipment table -- same look as the other admin list pages
+   (vehicle-list / user-list .table-container) */
+.table-container {
+  width: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+  padding: 12px;
+  height: calc(100vh - 460px);
+}
+
+/* No-data / loading state fills the same height as the table, so the card
+   keeps its size (same as user-list) */
+.empty-state {
+  height: calc(100vh - 460px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.shipment-table {
+  width: 100%;
+  min-width: 1400px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Column widths -- fixed except ทะเบียนรถ / ผู้ขนส่ง (.sc-vehicle), which
+   takes the space left over (table min-width 1400px). */
+.sc-expand   { width: 44px; }
+.sc-shipment { width: 200px; }
+.sc-status   { width: 210px; }
+.sc-storage  { width: 150px; }
+/* .sc-vehicle has no width: it takes the space left over */
+.sc-driver   { width: 130px; }
+.sc-loading  { width: 110px; }
+.sc-qty      { width: 100px; }
+.sc-pallet   { width: 72px; }
+.sc-docount  { width: 56px; }
+.sc-action   { width: 146px; } /* + .sc-docount = 7 DO buttons (24px, gap 4) */
+
+/* Fixed layout: long text ends in "…" instead of pushing the column wider */
+.shipment-row > td,
+.do-row > td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shipment-table > thead > tr > th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 12px 10px;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.shipment-row > td {
+  font-size: 14.5px;
+  line-height: 1.5;
+  padding: 12px 10px;
+  color: #1e293b;
+  border-bottom: 1px solid #eef1f5;
+  white-space: nowrap;
+  vertical-align: middle;
+  background: #ffffff;
+  transition: background-color 0.15s ease;
+}
+
+.shipment-row {
+  cursor: pointer;
+}
+
+.shipment-row:hover > td {
+  background: #f1f5f9;
+}
+
+.shipment-row--expanded > td {
+  background: #f8fafc;
+  border-bottom-color: transparent;
+}
+
+.shipment-row--expanded:hover > td {
+  background: #f1f5f9;
+}
+
+.shipment-table th.text-right,
+.shipment-table td.text-right {
+  text-align: right;
+}
+
+.shipment-table th.text-center,
+.shipment-table td.text-center {
+  text-align: center;
+}
+
+.col-expand {
+  width: 44px;
+}
+
+.shipment-table th.col-expand,
+.shipment-table td.col-expand {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.shipment-row > td.col-wrap {
+  white-space: normal;
+  min-width: 72px;
+}
+
+.col-expand .btn-expand-icon {
+  margin: 0 auto;
+}
+
+.btn-expand-icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.btn-expand-icon mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+}
+
+.btn-expand-icon:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* expanded = solid blue, same as the DO picker / job-list explain button */
+.shipment-row--expanded .btn-expand-icon {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.shipment-badge {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.2px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-badge--success {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.status-badge--info {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.status-badge--warning {
+  background: #fefce8;
+  color: #854d0e;
+}
+
+.status-badge--danger {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.two-line-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.two-line-main {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.two-line-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-pill {
+  max-width: 100%;
+}
+
+.status-name {
+  display: inline-block;
+  min-width: 0;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.btn-row-add-do {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  padding: 0 10px 0 6px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-row-add-do:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.btn-row-add-do mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* ═══════════════════════════════════════════════════
+   DO SUB-ROWS (shown under an expanded shipment row,
+   sharing the shipment table's columns). Every cell
+   except the first (the blue-bar gutter) is drawn as one
+   white bordered box: sub-header on top, DO rows below.
+   ═══════════════════════════════════════════════════ */
+.do-subhead > td,
+.do-row > td,
+.do-spacer > td {
+  background: #f8fafc;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.do-row > td {
+  font-size: 14px;
+  padding: 8px 10px;
+  color: #1e293b;
+}
+
+.do-row > td:last-child {
+  padding-left: 0;
+  padding-right: 9px; /* + 1px box border = 10px, same as "+ DO" */
+}
+
+/* Small header row naming what each column means for the DO sub-rows */
+.do-subhead > td {
+  padding: 8px 10px 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.do-subhead > td:nth-child(2) {
+  padding-left: 10px;
+}
+
+.do-subhead > td:last-child {
+  padding-right: 10px;
+}
+
+/* The white box */
+.do-subhead > td:not(:first-child),
+.do-row > td:not(:first-child) {
+  background: #ffffff;
+}
+
+.do-subhead > td:not(:first-child) {
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #eef1f5;
+}
+
+.do-row:not(.do-row--last) > td:not(:first-child) {
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.do-row--last > td:not(:first-child) {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.do-subhead > td:nth-child(2),
+.do-row > td:nth-child(2) {
+  border-left: 1px solid #e2e8f0;
+}
+
+.do-subhead > td:last-child,
+.do-row > td:last-child {
+  border-right: 1px solid #e2e8f0;
+}
+
+.do-subhead > td:nth-child(2) {
+  border-top-left-radius: 8px;
+}
+
+.do-subhead > td:last-child {
+  border-top-right-radius: 8px;
+}
+
+.do-row--last > td:nth-child(2) {
+  border-bottom-left-radius: 8px;
+}
+
+.do-row--last > td:last-child {
+  border-bottom-right-radius: 8px;
+}
+
+.do-row:hover > td:not(:first-child) {
+  background: #f8fafc;
+}
+
+/* Gap under the box, closing the expanded group */
+.do-spacer > td {
+  height: 12px;
+  padding: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Blue bar down the left edge ties an expanded shipment to its DOs */
+.shipment-row--expanded > td:first-child,
+.do-subhead > td:first-child,
+.do-row > td:first-child,
+.do-spacer > td:first-child {
+  box-shadow: inset 3px 0 0 #1d4ed8;
+}
+
+.do-cell-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* per-DO checkbox (replaces the old └ connector) */
+.do-check {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0 10px 0 2px;
+  accent-color: #1d4ed8;
+  cursor: pointer;
+}
+
+.do-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.do-no {
+  font-weight: 600;
+  color: #334155;
+}
+
+.empty-do-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.grade-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lot-code {
+  font-family: monospace;
+  font-size: 13px;
+  color: #334155;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.qty-amount {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.pallet-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f5f3ff;
+  color: #7c3aed;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.storage-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.storage-sep {
+  color: #cbd5e1;
+}
+
+/* Lots picked for a DO (tr_lot_location) */
+.do-lot-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.do-lot-item {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.do-lot-no {
+  font-family: monospace;
+  color: #334155;
+  background: #f1f5f9;
+  padding: 1px 6px;
+}
+
+.do-lot-qty {
+  font-weight: 600;
+  color: #0f766e;
+  background: #fff;
+  padding: 1px 6px;
+  border-left: 1px solid #e2e8f0;
+}
+
+.remark-text {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* DO Action Buttons (Move / Delete) */
+.do-action-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-do-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  background: #ffffff;
+  white-space: nowrap;
+}
+
+.btn-do-action mat-icon {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+}
+
+/* Move DO */
+.btn-do-action--move {
+  color: #d97706;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.btn-do-action--move:hover {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+/* Edit DO */
+.btn-do-action--edit {
+  color: #4f46e5;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+.btn-do-action--edit:hover {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+/* Send 251 (FG Issue) */
+.btn-do-action--251 {
+  color: #16a34a;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.btn-do-action--251:hover {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* DO Preparing */
+.btn-do-action--dopre {
+  color: #2563eb;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+.btn-do-action--dopre:hover {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* Delete DO */
+.btn-do-action--delete {
+  color: #dc2626;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.btn-do-action--delete:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Merge DO (รวม DO) */
+.btn-do-action--merge {
+  color: #0d9488;
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+.btn-do-action--merge:hover {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+/* Split DO (แยก DO) */
+.btn-do-action--split {
+  color: #7c3aed;
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+.btn-do-action--split:hover {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.btn-empty-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+}
+
+.btn-empty-add:hover {
+  background: #e2e8f0;
+}
+
+/* ═══════════════════════════════════════════════════
+   CUSTOM MODALS (OVERLAY & DIALOG)
+   ═══════════════════════════════════════════════════ */
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.custom-modal {
+  width: 100%;
+  max-width: 680px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-modal--split {
+  max-width: 740px;
+}
+
+@keyframes modalSlideUp {
+  from {
+    transform: translateY(20px) scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.custom-modal__header {
+  padding: 18px 20px;
+  background: #ffffff;
+  border-bottom: 2px solid #1a1a2e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.custom-modal__title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-modal__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.4px;
+}
+
+.custom-modal__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.modal-header-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: #2563eb;
+}
+
+.modal-header-icon--edit {
+  color: #2563eb;
+}
+
+.modal-header-icon--move {
+  color: #d97706;
+}
+
+.modal-header-icon--split {
+  color: #7c3aed;
+}
+
+.custom-modal__title-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Same look as job-detail's location modal close (.location-modal-close) */
+.custom-modal__close {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.custom-modal__close mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.custom-modal__close:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.custom-modal__body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.custom-modal__footer {
+  padding: 12px 20px 16px;
+  background: #ffffff;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Modal Form Controls */
+.modal-section-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.section-box-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 10px;
+}
+
+.section-box-title mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #2563eb;
+}
+
+.radio-options-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.col-span-2 {
+  grid-column: span 2;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 5px;
+}
+
+.required {
+  color: #dc2626;
+}
+
+::ng-deep .custom-modal .mat-mdc-form-field {
+  width: 100%;
+  height: 44px;
+}
+
+::ng-deep .custom-modal .mdc-text-field {
+  height: 44px;
+  background-color: #ffffff !important;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .custom-modal .mat-mdc-form-field-infix {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  min-height: 44px !important;
+}
+
+/* Info Highlight Card (Move DO) */
+.info-card-highlight {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #d97706;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.info-card-label {
+  color: #64748b;
+}
+
+.info-card-val {
+  color: #0f172a;
+}
+
+.badge-source-shipment {
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.btn-move-confirm {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+}
+
+.btn-move-confirm:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%) !important;
+}
+
+/* Split Source and Preview */
+.split-source-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.split-source-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.split-source-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.split-source-val {
+  font-size: 13px;
+  color: #0f172a;
+  margin-top: 2px;
+}
+
+.highlight-val {
+  color: #7c3aed;
+  font-weight: 700;
+}
+
+.split-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.split-preview-card {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.split-preview-card--orig {
+  border-left: 3px solid #64748b;
+}
+
+.split-preview-card--new {
+  border-left: 3px solid #16a34a;
+  background: #f0fdf4;
+}
+
+.preview-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.preview-card-header mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.preview-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.preview-card-qty {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.preview-card-qty small {
+  font-size: 12px;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.preview-card-pallet {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.split-arrow-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #7c3aed;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.split-arrow-center mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.btn-split-confirm {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+}
+
+/* Helpers */
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: #94a3b8;
+}
+
+.text-primary {
+  color: #1d4ed8;
+}
+
+.text-success {
+  color: #16a34a;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.mt-2 {
+  margin-top: 8px;
+}
+
+.mt-3 {
+  margin-top: 14px;
+}
+
+/* Shipment with no DO: no sub-header, so the single row opens the box */
+.do-row--empty > td:not(:first-child) {
+  border-top: 1px solid #e2e8f0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+/* Right-align the Action column so "+ DO" lines up with the DO action
+   buttons underneath (both end 10px from the box edge). */
+.shipment-table > thead > tr > th:last-child,
+.shipment-row > td:last-child {
+  text-align: right;
+  padding-right: 10px;
+}
+
+/* ═══════════════════════════════════════════════════
+   "+ DO" PICKER MODAL -- today's DOs (GET job/shipment), tick to add
+   ═══════════════════════════════════════════════════ */
+.custom-modal--pick {
+  max-width: 1240px;
+  max-height: 96vh;
+}
+
+.do-pick-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 20px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.do-pick-list {
+  min-height: 260px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  scrollbar-width: thin;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+/* DO list table -- same look as job-list's .shipment-table-left */
+.do-pick-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  color: #344054;
+}
+
+.do-pick-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 11px 8px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e4e7ec;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.do-pick-table td {
+  height: 52px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #eef2f6;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Column widths as % so the wide (1240px) modals spread them evenly;
+   Grade takes what is left (about 17%) */
+.do-pick-table .col-check { width: 4%; }
+.do-pick-table .col-wh { width: 7%; }
+.do-pick-table .col-shipment,
+.do-pick-table .col-do { width: 11%; }
+.do-pick-table .col-lot { width: 14%; }
+.do-pick-table .col-product-cc { width: 12%; }
+.do-pick-table .col-qty { width: 11%; }
+.do-pick-table .col-status { width: 8%; }
+.do-pick-table .col-explain { width: 5%; }
+
+.do-pick-check {
+  padding-right: 0 !important;
+  color: #98a2b3;
+}
+
+.do-pick-check mat-icon {
+  display: block;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.do-pick-check-all {
+  display: flex;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #98a2b3;
+  cursor: pointer;
+}
+
+.do-pick-check-all:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.do-pick-num {
+  text-align: right !important;
+}
+
+.do-pick-main {
+  font-weight: 600;
+  color: #101828;
+}
+
+.do-pick-shipment {
+  font-weight: 700;
+  color: #475467;
+}
+
+.do-pick-unit {
+  margin-left: 3px;
+  font-size: 12px;
+  color: #98a2b3;
+}
+
+/* one tbody per shipment; a darker line splits shipments */
+.do-pick-group td {
+  border-bottom-color: #f2f4f7;
+}
+
+.do-pick-group tr:last-child td {
+  border-bottom: 1px solid #d0d5dd;
+}
+
+.do-pick-status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4338ca;
+}
+
+.do-pick-status-text::before {
+  content: '';
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.do-pick-row {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.do-pick-row:hover td {
+  background: #f8fafc;
+}
+
+.do-pick-row.selected td,
+.do-pick-row.selected + .do-pick-detail > td {
+  background: #eaf0ff;
+}
+
+.do-pick-row.selected td:first-child {
+  box-shadow: inset 3px 0 0 #1d4ed8;
+}
+
+.do-pick-row.selected .do-pick-check {
+  color: #1d4ed8;
+}
+
+.do-pick-row.expanded td {
+  border-bottom-color: transparent;
+}
+
+.do-pick-explain {
+  text-align: center;
+  padding-left: 0 !important;
+}
+
+.do-pick-explain-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.do-pick-explain-btn:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* open = solid blue, same as job-list's .shipment-explain-button.open */
+.do-pick-explain-btn.open {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.do-pick-explain-btn mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+}
+
+.do-pick-explain-btn.open mat-icon {
+  transform: rotate(180deg);
+}
+
+.do-pick-detail > td {
+  height: auto;
+  padding: 0 12px 12px 44px !important;
+  background: #f8fafc;
+  white-space: normal;
+}
+
+.do-pick-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px 16px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+}
+
+.do-pick-detail-grid > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.do-pick-detail-grid span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #98a2b3;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.do-pick-detail-grid strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.do-pick-detail-wide {
+  grid-column: 1 / -1;
+}
+
+.do-pick-paginator {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+}
+
+/* data-source note under the paginator (as job-list's .shipment-source-note) */
+.do-pick-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  color: #1e40af;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.do-pick-note mat-icon {
+  flex-shrink: 0;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #1d4ed8;
+}
+
+.custom-modal__footer .do-pick-selected {
+  margin-right: auto;
+  font-size: 13px;
+  color: #475569;
+  align-self: center;
+}
+
+/* Picker filters -- same 3x2 grid as job-list's shipment list filter */
+.do-pick-filter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: end;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.do-pick-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.do-pick-field label {
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.do-pick-input,
+.do-pick-date {
+  width: 100%;
+  height: 42px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.do-pick-input::placeholder {
+  color: #94a3b8;
+}
+
+.do-pick-input:hover,
+.do-pick-date:hover {
+  border-color: #93c5fd;
+}
+
+.do-pick-input:focus,
+.do-pick-date:focus-within {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+}
+
+/* mat-select drawn as the same 42px box; padding on the inner trigger so
+   the panel lines up with the box's left edge */
+.do-pick-select {
+  display: flex !important;
+  align-items: stretch;
+  padding: 0 !important;
+  cursor: pointer;
+}
+
+::ng-deep .do-pick-select .mat-mdc-select-trigger {
+  width: 100%;
+  height: 100%;
+  padding: 0 12px 0 14px;
+  box-sizing: border-box;
+}
+
+::ng-deep .do-pick-select .mat-mdc-select-value {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+::ng-deep .do-pick-select.mat-mdc-select-focused {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+}
+
+.do-pick-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px 0 12px;
+  cursor: pointer;
+}
+
+.do-pick-date mat-icon {
+  flex-shrink: 0;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+}
+
+.do-pick-date input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.do-pick-status-group {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.do-pick-status-group .do-pick-field {
+  flex: 1;
+}
+
+.do-pick-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.do-pick-actions .clear-button,
+.do-pick-actions .search-button {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+}
+
+.do-pick-actions .clear-button img,
+.do-pick-actions .search-button img {
+  width: 16px;
+}
+
+/* "ทั้งหมด" is the placeholder (value null), so show it in the normal text colour */
+::ng-deep .do-pick-select .mat-mdc-select-placeholder {
+  color: #0f172a;
+}
+
+::ng-deep .do-pick-paginator .mat-mdc-paginator-page-size-label {
+  white-space: nowrap;
+}
+
+/* table keeps its natural height inside the flex list box */
+.do-pick-table {
+  flex: none;
+}
+
+/* empty / loading / error state -- centered in the space under the header */
+.do-pick-state {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.do-pick-state .app-empty-state-icon {
+  margin-bottom: 8px;
+}
+
+.do-pick-state-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.do-pick-state-sub {
+  font-size: 12.5px;
+  color: #94a3b8;
+}
+
+/* note + paginator share one row */
+.do-pick-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+}
+
+.do-pick-foot .do-pick-note {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* compact paginator so it fits beside the note */
+::ng-deep .do-pick-paginator .mat-mdc-paginator-container {
+  min-height: 44px;
+  padding: 0;
+  justify-content: flex-end;
+}
+
+::ng-deep .do-pick-paginator .mat-mdc-paginator-page-size {
+  margin-right: 8px;
+}
+
+::ng-deep .do-pick-paginator .mat-mdc-paginator-page-size-select {
+  width: 72px;
+  margin: 0 4px;
+}
+
+::ng-deep .do-pick-paginator .mat-mdc-paginator-range-actions {
+  gap: 0;
+}
+
+::ng-deep .do-pick-paginator .mat-mdc-paginator-range-label {
+  margin: 0 12px 0 8px;
+}
+
+/* header checkbox: spacing comes from the label gap (checkbox margin 10px + row gap 6px = 16px, so the text lines up with the DO no) */
+.do-check-label .do-check {
+  margin: 0 0 0 2px;
+}
+
+/* Bulk actions in the DO sub-header (shown when DOs are ticked) */
+.do-bulk-actions {
+  justify-content: flex-end;
+}
+
+.do-bulk-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  margin-right: 2px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #1d4ed8;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   MOVE DO MODAL -- "+ DO" picker layout, orange tone
+   ═══════════════════════════════════════════════════ */
+.custom-modal--move .modal-header-icon--move {
+  color: #ea580c;
+}
+
+.move-summary {
+  padding: 10px 14px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+}
+
+.move-summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.move-summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9a3412;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.move-summary-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #ea580c;
+  color: #ffffff;
+  font-size: 11px;
+}
+
+.move-summary-total {
+  font-size: 13px;
+  color: #7c2d12;
+}
+
+.move-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 64px;
+  overflow-y: auto;
+}
+
+.move-do-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 10px;
+  background: #ffffff;
+  border: 1px solid #fdba74;
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: #7c2d12;
+}
+
+.move-do-chip span {
+  font-size: 11.5px;
+  color: #c2410c;
+}
+
+.custom-modal--move .do-pick-input:focus,
+.custom-modal--move .do-pick-select.mat-mdc-select-focused {
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.14);
+}
+
+/* picked destination row -- orange instead of the picker's blue */
+.custom-modal--move .do-pick-row.selected td,
+.custom-modal--move .do-pick-row.selected:hover td,
+.custom-modal--move .do-pick-row.selected + .do-pick-detail > td {
+  background: #fff7ed;
+}
+
+.custom-modal--move .do-pick-row.selected td:first-child {
+  box-shadow: inset 3px 0 0 #ea580c;
+}
+
+.custom-modal--move .do-pick-row.selected .do-pick-check {
+  color: #ea580c;
+}
+
+.custom-modal--move .search-button {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  box-shadow: 0 8px 20px rgba(234, 88, 12, 0.2), 0 2px 6px rgba(234, 88, 12, 0.12);
+}
+
+.move-target-text {
+  color: #c2410c;
+}
+
+/* orange confirm button */
+.custom-modal--move .modal-btn-save {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.24);
+}
+
+.custom-modal--move .modal-btn-save:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+}
+
+/* Move modal also shows the DO summary, so its list starts a bit shorter
+   (still fits 1366x768 without scrolling the whole body) */
+.custom-modal--move .do-pick-list {
+  min-height: 220px;
+}
+
+/* ═══════════════════════════════════════════════════
+   EDIT DO MODAL -- same inputs as the DO picker filter
+   ═══════════════════════════════════════════════════ */
+.custom-modal--edit {
+  max-width: 720px;
+}
+
+.custom-modal--edit .modal-header-icon--edit {
+  color: #4f46e5;
+}
+
+.edit-do-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 12px;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.edit-do-span2 {
+  grid-column: span 2;
+}
+
+.edit-do-wide {
+  grid-column: 1 / -1;
+}
+
+.edit-do-grid .do-pick-field label .required {
+  color: #dc2626;
+}
+
+.edit-do-grid input[type='number']::-webkit-outer-spin-button,
+.edit-do-grid input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.edit-do-grid input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* ═══════════════════════════════════════════════════
+   NOTICE / CONFIRM MODAL (notify) -- replaces SweetAlert
+   ═══════════════════════════════════════════════════ */
+.notice-overlay {
+  z-index: 1060; /* above the other modals of this page */
+}
+
+.notice-modal {
+  max-width: 440px;
+  --notice-color: #2563eb;
+  --notice-bg: #eff6ff;
+}
+
+.notice--success { --notice-color: #16a34a; --notice-bg: #f0fdf4; }
+.notice--error { --notice-color: #dc2626; --notice-bg: #fef2f2; }
+.notice--warning { --notice-color: #d97706; --notice-bg: #fffbeb; }
+.notice--question { --notice-color: #2563eb; --notice-bg: #eff6ff; }
+
+.notice-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 28px 22px;
+  text-align: center;
+  border-top: 4px solid var(--notice-color);
+}
+
+.notice-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: var(--notice-bg);
+  color: var(--notice-color);
+}
+
+.notice-icon mat-icon {
+  font-size: 30px;
+  width: 30px;
+  height: 30px;
+}
+
+.notice-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.notice-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475569;
+  word-break: break-word;
+}
+
+.notice-footer {
+  justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════════
+   SPLIT DO MODAL -- Move DO layout, purple tone
+   ═══════════════════════════════════════════════════ */
+.custom-modal--pick.custom-modal--split {
+  max-width: 1240px;
+}
+
+.custom-modal--split .split-summary {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+
+.custom-modal--split .move-summary-title,
+.custom-modal--split .move-summary-total {
+  color: #4c1d95;
+}
+
+.custom-modal--split .move-do-chip {
+  background: #ffffff;
+  border-color: #ddd6fe;
+  color: #5b21b6;
+}
+
+.custom-modal--split .move-do-chip span {
+  color: #7c3aed;
+}
+
+.split-qty-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: #4c1d95;
+}
+
+.split-qty-row label {
+  font-weight: 600;
+}
+
+
+.split-qty-remain {
+  margin-left: auto;
+}
+
+.custom-modal--split .do-pick-input:focus,
+.custom-modal--split .do-pick-select.mat-mdc-select-focused {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+}
+
+.custom-modal--split .do-pick-row.selected td,
+.custom-modal--split .do-pick-row.selected:hover td,
+.custom-modal--split .do-pick-row.selected + .do-pick-detail > td {
+  background: #f5f3ff;
+}
+
+.custom-modal--split .do-pick-row.selected td:first-child {
+  box-shadow: inset 3px 0 0 #7c3aed;
+}
+
+.custom-modal--split .do-pick-row.selected .do-pick-check {
+  color: #7c3aed;
+}
+
+.custom-modal--split .search-button {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.2), 0 2px 6px rgba(124, 58, 237, 0.12);
+}
+
+.split-target-text {
+  color: #6d28d9;
+}
+
+.custom-modal--split .do-pick-list {
+  min-height: 220px;
+}
+
+/* ═══════════════════════════════════════════════════
+   MERGE DO MODAL -- "+ DO" picker layout, teal tone
+   ═══════════════════════════════════════════════════ */
+.modal-header-icon--merge,
+.custom-modal--merge .modal-header-icon--merge {
+  color: #0d9488;
+}
+
+.custom-modal--merge .do-pick-input:focus,
+.custom-modal--merge .do-pick-select.mat-mdc-select-focused {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.14);
+}
+
+.custom-modal--merge .do-pick-row.selected td,
+.custom-modal--merge .do-pick-row.selected:hover td,
+.custom-modal--merge .do-pick-row.selected + .do-pick-detail > td {
+  background: #f0fdfa;
+}
+
+.custom-modal--merge .do-pick-row.selected td:first-child {
+  box-shadow: inset 3px 0 0 #0d9488;
+}
+
+.custom-modal--merge .do-pick-row.selected .do-pick-check,
+.custom-modal--merge .do-pick-check-all {
+  color: #0d9488;
+}
+
+.custom-modal--merge .search-button {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  box-shadow: 0 8px 20px rgba(13, 148, 136, 0.2), 0 2px 6px rgba(13, 148, 136, 0.12);
+}
+
+.btn-merge-confirm,
+.custom-modal--merge .modal-btn-save {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%) !important;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.24);
+}
+
+/* Merge DO summary -- teal version of the split summary */
+.custom-modal--merge .merge-summary {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+.custom-modal--merge .move-summary-title,
+.custom-modal--merge .move-summary-total,
+.custom-modal--merge .split-qty-row {
+  color: #134e4a;
+}
+
+.custom-modal--merge .move-do-chip {
+  background: #ffffff;
+  border-color: #99f6e4;
+  color: #0f766e;
+}
+
+.custom-modal--merge .move-do-chip span {
+  color: #0d9488;
+}
+
+.merge-total-text {
+  color: #0f766e;
+}
+
+.custom-modal--merge .do-pick-list {
+  min-height: 220px;
+}

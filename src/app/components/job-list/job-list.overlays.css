@@ -1,0 +1,394 @@
+/*  job-list overlay styles -- the Product CC mat-menu and the From / To
+    Location mat-select panel render in the CDK overlay under <body>,
+    outside job-list's encapsulated styles, so they live in this global
+    stylesheet (imported by src/styles.css) next to the component. */
+
+/*  job-list.html Product CC dropdown (mat-menu renders in the CDK overlay,
+    outside the component, so its panel styles live here). */
+.mat-mdc-menu-panel.product-cc-menu {
+  min-width: 180px;
+  max-height: 360px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.16),
+    0 2px 6px rgba(15, 23, 42, 0.08);
+  margin-top: 6px;
+}
+
+.product-cc-menu .mat-mdc-menu-content {
+  padding: 6px;
+}
+
+.product-cc-menu .product-cc-menu-title {
+  padding: 6px 10px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.product-cc-menu .product-cc-menu-item {
+  min-height: 36px;
+  justify-content: space-between;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.product-cc-menu .product-cc-menu-item .mat-mdc-menu-item-text {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.product-cc-menu .product-cc-menu-item:hover {
+  background: #eff6ff;
+}
+
+.product-cc-menu .product-cc-menu-item.selected {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.product-cc-menu .product-cc-menu-item .mat-icon {
+  order: 2;
+  margin: 0 0 0 12px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #1d4ed8;
+}
+
+/*  job-list.html From / To Location dropdown (mat-select panel renders in
+    the CDK overlay, so it's styled here). Same blue palette as the job-list
+    header bar / Inspect button: search box on top, "ทั้งหมด" reset row,
+    then one clickable header row per location type (selects the whole
+    type) with its locations indented under a left guide line. */
+.mat-mdc-select-panel.location-filter-panel {
+  min-width: 300px;
+  max-height: 440px;
+  padding: 0 0 6px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.16),
+    0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.location-filter-panel .location-filter-search {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 10px 10px 8px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.location-filter-panel .location-filter-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.location-filter-panel .location-filter-search-box:focus-within {
+  border-color: #1d4ed8;
+  background: #fff;
+}
+
+.location-filter-panel .location-filter-search-box .mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+}
+
+.location-filter-panel .location-filter-search-box input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+/*  All rows */
+.location-filter-panel .mat-mdc-option {
+  min-height: 38px;
+  margin: 2px 6px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.location-filter-panel .mat-mdc-option:hover {
+  background: #eff6ff;
+}
+
+.location-filter-panel .mat-mdc-option.mdc-list-item--selected {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.location-filter-panel .mat-mdc-option .mdc-list-item__primary-text {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.location-filter-panel .mat-mdc-option .mat-pseudo-checkbox {
+  display: none;
+}
+
+/*  mat-option projects a <mat-icon> into its own slot BEFORE the text
+    wrapper, so the text wrapper's `gap` never reaches it -- spacing comes
+    from margin-right instead. Material's `.mat-mdc-option .mat-icon
+    { margin-right: 16px } would otherwise win, hence !important. */
+.location-filter-panel .mat-mdc-option .location-option-icon {
+  flex-shrink: 0;
+  margin: 0 8px 0 0 !important;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #1d4ed8;
+}
+
+/*  Location type header row */
+.location-filter-panel .mat-mdc-option.location-option-group {
+  margin-top: 8px;
+  background: #f1f5f9;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.location-filter-panel .mat-mdc-option.location-option-group:hover {
+  background: #e2e8f0;
+}
+
+.location-filter-panel .mat-mdc-option.location-option-group.mdc-list-item--selected {
+  background: #1d4ed8;
+  color: #fff;
+
+  .location-option-icon {
+    color: #fff;
+  }
+
+  .location-option-all {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+}
+
+.location-filter-panel .location-option-group-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-filter-panel .location-option-all {
+  margin-left: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/*  Location rows under a type -- indented with a left guide line */
+.location-filter-panel .mat-mdc-option.location-option-item {
+  min-height: 34px;
+  /* margin-left: 22px; */
+  padding-left: 14px;
+  border-left: 2px solid #e2e8f0;
+  border-radius: 0 8px 8px 0;
+}
+
+.location-filter-panel .mat-mdc-option.location-option-item.mdc-list-item--selected {
+  border-left-color: #1d4ed8;
+}
+
+/*  =====================================================================
+    Multi-select filter panels (From Plant / To Warehouse / ปลายทาง CC /
+    สถานะ) -- panelClass="filter-multi-panel" in job-list.html. Same card
+    look as .location-filter-panel; wider than the field so "code + name"
+    rows stay on one line.
+    ===================================================================== */
+.mat-mdc-select-panel.filter-multi-panel {
+  min-width: 280px;
+  max-height: 400px;
+  padding: 0 0 6px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.16),
+    0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+/*  Shipment modal Status filter: small gap under its box. */
+.mat-mdc-select-panel.shipment-status-panel {
+  margin-top: 6px;
+}
+
+.filter-multi-panel .filter-multi-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 12px 6px 16px;
+  margin-bottom: 4px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.filter-multi-panel .filter-multi-count {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.filter-multi-panel .filter-multi-clear {
+  padding: 3px 10px;
+  border: none;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.filter-multi-panel .filter-multi-clear:hover {
+  background: #bfdbfe;
+}
+
+.filter-multi-panel .mat-mdc-option {
+  min-height: 38px;
+  margin: 2px 6px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.filter-multi-panel .mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background: #f1f5f9;
+}
+
+.filter-multi-panel .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+  background: #eff6ff;
+}
+
+.filter-multi-panel .mat-mdc-option .mdc-list-item__primary-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.filter-multi-panel .mat-pseudo-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  border-radius: 4px;
+  border-color: #94a3b8;
+}
+
+.filter-multi-panel .mat-pseudo-checkbox-checked {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+.filter-multi-panel .filter-option-code {
+  flex-shrink: 0;
+  min-width: 44px;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/*  สถานะ options: colored dot, same hue as the card's status badge
+    (.badge .pending / .wh-approved / ... in job-list.css). */
+.filter-multi-panel .filter-status-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.filter-multi-panel .filter-status-dot.pending {
+  background: #d4a106;
+}
+
+.filter-multi-panel .filter-status-dot.wh-approved {
+  background: #6011aa;
+}
+
+.filter-multi-panel .filter-status-dot.in-progress {
+  background: #1677ff;
+}
+
+.filter-multi-panel .filter-status-dot.complete {
+  background: #52c41a;
+}
+
+.filter-multi-panel .filter-status-dot.mapping-do {
+  background: #eb2f96;
+}
+
+.filter-multi-panel .mdc-list-item--selected .filter-option-code {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.filter-multi-panel .filter-option-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*  Confirm Map DO opens ON TOP of the still-open #shipmentListModal
+    (job-list.ts onSubmitMapDo). Both modals share Bootstrap's default
+    z-index, so lift the confirm modal and the second backdrop above the
+    shipment list -- the list stays visible, dimmed, underneath.
+    This file is global, so the backdrop rule is scoped to this modal: other
+    stacked modals stay at z-index 1055 and a 1060 backdrop would cover them. */
+#mapDoConfirmModal {
+  z-index: 1065;
+}
+
+body:has(#mapDoConfirmModal.show) .modal-backdrop ~ .modal-backdrop {
+  z-index: 1060;
+}
