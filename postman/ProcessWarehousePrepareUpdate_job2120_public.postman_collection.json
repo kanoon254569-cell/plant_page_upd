@@ -1,0 +1,33 @@
+{
+  "info": {
+    "name": "iLogistic - ProcessWarehousePrepareUpdate (ตัวอย่างสาธารณะ)",
+    "description": "ตัวอย่างคำขอสำหรับทดสอบ endpoint ProcessWarehousePrepareUpdate ในสภาพแวดล้อม QAS\nกำหนดค่า iLogisticBaseUrl และ iLogisticApiKey จากแหล่งที่ได้รับอนุญาตก่อนใช้งาน\nค่า ID และข้อมูลใน body เป็น placeholder กรุณาแทนด้วยข้อมูลทดสอบที่ได้รับอนุญาต ห้ามใส่ข้อมูลจริงหรือ secret ลงในไฟล์นี้",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "iLogisticBaseUrl", "value": "" },
+    { "key": "iLogisticApiKey", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "ProcessWarehousePrepareUpdate - ตัวอย่าง",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "x-api-key", "value": "{{iLogisticApiKey}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"shipmentId\": 0,\n  \"deliverId\": 0,\n  \"startprocessprepare\": \"2026-01-01T09:00:00.000\",\n  \"endprocessprepare\": \"2026-01-01T09:01:00.000\",\n  \"storagezoneId\": 0,\n  \"palletcodeId\": 0,\n  \"palletlot\": \"SAMPLE\",\n  \"palletqty\": 1,\n  \"palletweight\": 1,\n  \"specialtypepackageid\": 0,\n  \"userId\": 0\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{iLogisticBaseUrl}}/api/v1/Process/ProcessWarehousePrepareUpdate",
+          "host": ["{{iLogisticBaseUrl}}"],
+          "path": ["api", "v1", "Process", "ProcessWarehousePrepareUpdate"]
+        }
+      }
+    }
+  ]
+}
